@@ -39,7 +39,7 @@ ANTI_FREQ_SLCT1_ad	alpha_setting.h	307;"	d
 ANTI_FREQ_SLCT1_fc	alpha_setting.h	197;"	d
 BATRY_WRNING_ad	alpha_setting.h	346;"	d
 BATRY_WRNING_fc	alpha_setting.h	236;"	d
-BITS_BUFFER_SIZE	alpha_setting.h	373;"	d
+BITS_BUFFER_SIZE	alpha_setting.h	372;"	d
 BRDCST_CANCEL_ad	alpha_setting.h	313;"	d
 BRDCST_CANCEL_fc	alpha_setting.h	203;"	d
 BRK_TIMING_ad	alpha_setting.h	320;"	d
@@ -87,8 +87,8 @@ CONT_E_THROUGH_ad	alpha_setting.h	369;"	d
 CONT_E_THROUGH_fc	alpha_setting.h	259;"	d
 CTRL_MOD_SLCT_ad	alpha_setting.h	290;"	d
 CTRL_MOD_SLCT_fc	alpha_setting.h	180;"	d
-CYC_END_DECT_ad	alpha_setting.h	326;"	d
-CYC_END_DECT_fc	alpha_setting.h	216;"	d
+CYC_END_DETC_ad	alpha_setting.h	326;"	d
+CYC_END_DETC_fc	alpha_setting.h	216;"	d
 DATA_ERROR_ad	alpha_setting.h	335;"	d
 DATA_ERROR_fc	alpha_setting.h	225;"	d
 DEPS	Makefile	/^DEPS =$(_DEPS)$/;"	m
@@ -129,8 +129,8 @@ EXTR_REGN_RESIST_OH_ad	alpha_setting.h	288;"	d
 EXTR_REGN_RESIST_OH_fc	alpha_setting.h	178;"	d
 FALSE	am335x_setting.c	12;"	d	file:
 FALSE	modbus.h	48;"	d
-FRC_STP_DECT_ad	alpha_setting.h	345;"	d
-FRC_STP_DECT_fc	alpha_setting.h	235;"	d
+FRC_STP_DETC_ad	alpha_setting.h	345;"	d
+FRC_STP_DETC_fc	alpha_setting.h	235;"	d
 FREE_RUN_ad	alpha_setting.h	304;"	d
 FREE_RUN_fc	alpha_setting.h	194;"	d
 FWD_ad	alpha_setting.h	264;"	d
@@ -176,8 +176,8 @@ HAVE_WORKING_FORK	config.h	118;"	d
 HAVE_WORKING_VFORK	config.h	121;"	d
 HMING_CMPL_ad	alpha_setting.h	327;"	d
 HMING_CMPL_fc	alpha_setting.h	217;"	d
-HM_PST_LS_DECT_ad	alpha_setting.h	344;"	d
-HM_PST_LS_DECT_fc	alpha_setting.h	234;"	d
+HM_PST_LS_DETC_ad	alpha_setting.h	344;"	d
+HM_PST_LS_DETC_fc	alpha_setting.h	234;"	d
 IMME_VLU_CHG_CMPL_ad	alpha_setting.h	360;"	d
 IMME_VLU_CHG_CMPL_fc	alpha_setting.h	250;"	d
 IMME_VLU_CHG_ad	alpha_setting.h	279;"	d
@@ -190,10 +190,10 @@ IMME_VLU_CTINU_ad	alpha_setting.h	278;"	d
 IMME_VLU_CTINU_fc	alpha_setting.h	168;"	d
 INP_ad	alpha_setting.h	317;"	d
 INP_fc	alpha_setting.h	207;"	d
-INTRUPT_INPUT_ad	alpha_setting.h	299;"	d
-INTRUPT_INPUT_fc	alpha_setting.h	189;"	d
 INTRUPT_IN_EN_ad	alpha_setting.h	298;"	d
 INTRUPT_IN_EN_fc	alpha_setting.h	188;"	d
+INTRUPT_IN_ad	alpha_setting.h	299;"	d
+INTRUPT_IN_fc	alpha_setting.h	189;"	d
 INTRUPT_PST_DECT_ad	alpha_setting.h	364;"	d
 INTRUPT_PST_DECT_fc	alpha_setting.h	254;"	d
 LIBMODBUS_VERSION	modbus-version.h	31;"	d
@@ -206,8 +206,8 @@ LIBMODBUS_VERSION_STRING	modbus-version.h	35;"	d
 LIBS	Makefile	/^LIBS=-lpthread$/;"	m
 LIFE_WRNING_ad	alpha_setting.h	347;"	d
 LIFE_WRNING_fc	alpha_setting.h	237;"	d
-LMTER_DECT_ad	alpha_setting.h	324;"	d
-LMTER_DECT_fc	alpha_setting.h	214;"	d
+LMTER_DETC_ad	alpha_setting.h	324;"	d
+LMTER_DETC_fc	alpha_setting.h	214;"	d
 LS_ad	alpha_setting.h	268;"	d
 LS_fc	alpha_setting.h	158;"	d
 LT_OBJDIR	config.h	125;"	d
@@ -279,14 +279,14 @@ ORLD_WRNING_ad	alpha_setting.h	332;"	d
 ORLD_WRNING_fc	alpha_setting.h	222;"	d
 OS_BSD	modbus-tcp.c	44;"	d	file:
 OS_WIN32	modbus-tcp.c	30;"	d	file:
-OT_DECT_ad	alpha_setting.h	325;"	d
-OT_DECT_fc	alpha_setting.h	215;"	d
-OT_MINUS_DECT_ad	alpha_setting.h	343;"	d
-OT_MINUS_DECT_fc	alpha_setting.h	233;"	d
+OT_DETC_ad	alpha_setting.h	325;"	d
+OT_DETC_fc	alpha_setting.h	215;"	d
+OT_MINUS_DETC_ad	alpha_setting.h	343;"	d
+OT_MINUS_DETC_fc	alpha_setting.h	233;"	d
 OT_MINUS_ad	alpha_setting.h	270;"	d
 OT_MINUS_fc	alpha_setting.h	160;"	d
-OT_PLUS_DECT_ad	alpha_setting.h	342;"	d
-OT_PLUS_DECT_fc	alpha_setting.h	232;"	d
+OT_PLUS_DETC_ad	alpha_setting.h	342;"	d
+OT_PLUS_DETC_fc	alpha_setting.h	232;"	d
 OT_PLUS_ad	alpha_setting.h	269;"	d
 OT_PLUS_fc	alpha_setting.h	159;"	d
 OUT10_ad	alpha_setting.h	137;"	d
@@ -361,10 +361,10 @@ PACKAGE_URL	config.h	143;"	d
 PACKAGE_VERSION	config.h	146;"	d
 PAUSE_ad	alpha_setting.h	286;"	d
 PAUSE_fc	alpha_setting.h	176;"	d
-POINT_DECT_AREA1_ad	alpha_setting.h	322;"	d
-POINT_DECT_AREA1_fc	alpha_setting.h	212;"	d
-POINT_DECT_AREA2_ad	alpha_setting.h	323;"	d
-POINT_DECT_AREA2_fc	alpha_setting.h	213;"	d
+POINT_DETC_AREA1_ad	alpha_setting.h	322;"	d
+POINT_DETC_AREA1_fc	alpha_setting.h	212;"	d
+POINT_DETC_AREA2_ad	alpha_setting.h	323;"	d
+POINT_DETC_AREA2_fc	alpha_setting.h	213;"	d
 PROPORTIONAL_CTRL_ad	alpha_setting.h	285;"	d
 PROPORTIONAL_CTRL_fc	alpha_setting.h	175;"	d
 PST_CANCEL_ad	alpha_setting.h	287;"	d
@@ -384,35 +384,35 @@ RANGE2_OF_PST_ad	alpha_setting.h	363;"	d
 RANGE2_OF_PST_fc	alpha_setting.h	253;"	d
 RDY_ad	alpha_setting.h	316;"	d
 RDY_fc	alpha_setting.h	206;"	d
-REGISTERS_BUFFER_SIZE	alpha_setting.h	372;"	d
+REGISTERS_BUFFER_SIZE	alpha_setting.h	371;"	d
 REV_ad	alpha_setting.h	265;"	d
 REV_fc	alpha_setting.h	155;"	d
 RST_ad	alpha_setting.h	272;"	d
 RST_fc	alpha_setting.h	162;"	d
+SERVO_ON_ad	alpha_setting.h	263;"	d
+SERVO_ON_fc	alpha_setting.h	153;"	d
 SHUT_RDWR	modbus-tcp.c	37;"	d	file:
 SPD_COINCD_ad	alpha_setting.h	330;"	d
 SPD_COINCD_fc	alpha_setting.h	220;"	d
-SPD_LMT_DTC_ad	alpha_setting.h	318;"	d
-SPD_LMT_DTC_fc	alpha_setting.h	208;"	d
+SPD_LMT_DETC_ad	alpha_setting.h	318;"	d
+SPD_LMT_DETC_fc	alpha_setting.h	208;"	d
 START_ad	alpha_setting.h	266;"	d
 START_fc	alpha_setting.h	156;"	d
 STDC_HEADERS	config.h	149;"	d
-S_ON_ad	alpha_setting.h	263;"	d
-S_ON_fc	alpha_setting.h	153;"	d
 S_RDY_ad	alpha_setting.h	333;"	d
 S_RDY_fc	alpha_setting.h	223;"	d
 TARGET	Makefile	/^TARGET=client-test$/;"	m
 TEACHING_ad	alpha_setting.h	289;"	d
 TEACHING_fc	alpha_setting.h	179;"	d
 TIME_WITH_SYS_TIME	config.h	152;"	d
-TRQU_CTRL_ad	alpha_setting.h	292;"	d
-TRQU_CTRL_fc	alpha_setting.h	182;"	d
+TRQ_CTRL_ad	alpha_setting.h	292;"	d
+TRQ_CTRL_fc	alpha_setting.h	182;"	d
 TRQ_LMT0_ad	alpha_setting.h	276;"	d
 TRQ_LMT0_fc	alpha_setting.h	166;"	d
 TRQ_LMT1_ad	alpha_setting.h	277;"	d
 TRQ_LMT1_fc	alpha_setting.h	167;"	d
-TRQ_LMT_DECT_ad	alpha_setting.h	331;"	d
-TRQ_LMT_DECT_fc	alpha_setting.h	221;"	d
+TRQ_LMT_DETC_ad	alpha_setting.h	331;"	d
+TRQ_LMT_DETC_fc	alpha_setting.h	221;"	d
 TRUE	am335x_setting.c	13;"	d	file:
 TRUE	modbus.h	52;"	d
 VERSION	config.h	155;"	d

@@ -15,7 +15,7 @@ int serve_on()
 		fprintf(stderr,"ERR:[S-RDY] not ON");
 		return -1;
 	}
-	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,S_ON_ad,1); i++){
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,SERVO_ON_ad,1); i++){
 		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
 		return -1;
 	}
@@ -24,7 +24,7 @@ int serve_on()
 
 int serve_off()
 {
-	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,S_ON_ad,0); i++){
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,SERVO_ON_ad,0); i++){
 		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
 		return -1;
 	}

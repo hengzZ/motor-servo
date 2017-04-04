@@ -67,7 +67,10 @@
 #include "modbus.h"
 #include "global_setting.h"
 
-// REGISTER ADDRESS:
+// REGISTER ADDRESS:[for parameter setting]
+#define     PA1_01_ad                       0x4000
+#define     PA2_40_ad                       0x4127
+
 #define     PA3_9_ad                        0x4208
 #define     PA3_10_ad                       0x4209
 #define     PA3_11_ad                       0x420A
@@ -102,7 +105,7 @@
 #define     PA3_70_ad                       0x4245
 #define     PA3_71_ad                       0x4246
 
-// COIL ADDRESS:
+// COIL ADDRESS:[for controlling]                                       [Setting Register]
 #define     CONT1_ad                        0x0400                      //PA3_01
 #define     CONT2_ad                        0x0401                      //PA3_02
 #define     CONT3_ad                        0x0402                      //PA3_03
@@ -150,7 +153,7 @@
 
 // Function Code:
 // OUT Signals:
-#define     S_ON_fc                         1
+#define     SERVO_ON_fc                     1
 #define     FWD_fc                          2
 #define     REV_fc                          3
 #define     START_fc                        4
@@ -179,14 +182,14 @@
 #define     TEACHING_fc                     35
 #define     CTRL_MOD_SLCT_fc                36
 #define     PST_CTRL_fc                     37
-#define     TRQU_CTRL_fc                    38
+#define     TRQ_CTRL_fc                     38
 #define     OVERRIDE_EN_fc                  43
 #define     OVERRIDE1_fc                    44
 #define     OVERRIDE2_fc                    45
 #define     OVERRIDE4_fc                    46
 #define     OVERRIDE8_fc                    47
 #define     INTRUPT_IN_EN_fc                48
-#define     INTRUPT_INPUT_fc                49
+#define     INTRUPT_IN_fc                   49
 #define     DEVIATION_CLR_fc                50
 #define     X1_fc                           51
 #define     X2_fc                           52
@@ -205,20 +208,20 @@
 // IN Signals:
 #define     RDY_fc                          1
 #define     INP_fc                          2
-#define     SPD_LMT_DTC_fc                  11
+#define     SPD_LMT_DETC_fc                 11
 #define     OVER_WR_CMPL_fc                 13
 #define     BRK_TIMING_fc                   14
 #define     ALRM_DECT_fc                    16
-#define     POINT_DECT_AREA1_fc             17
-#define     POINT_DECT_AREA2_fc             18
-#define     LMTER_DECT_fc                   19
-#define     OT_DECT_fc                      20
-#define     CYC_END_DECT_fc                 21
+#define     POINT_DETC_AREA1_fc             17
+#define     POINT_DETC_AREA2_fc             18
+#define     LMTER_DETC_fc                   19
+#define     OT_DETC_fc                      20
+#define     CYC_END_DETC_fc                 21
 #define     HMING_CMPL_fc                   22
 #define     ZRO_DEVI_fc                     23
 #define     ZRO_SPEED_fc                    24
 #define     SPD_COINCD_fc                   25
-#define     TRQ_LMT_DECT_fc                 26
+#define     TRQ_LMT_DETC_fc                 26
 #define     ORLD_WRNING_fc                  27
 #define     S_RDY_fc                        28
 #define     ED_PRMSION_RSP_fc               29
@@ -229,10 +232,10 @@
 #define     ALRM_CODE2_fc                   34
 #define     ALRM_CODE3_fc                   35
 #define     ALRM_CODE4_fc                   36
-#define     OT_PLUS_DECT_fc                 38
-#define     OT_MINUS_DECT_fc                39
-#define     HM_PST_LS_DECT_fc               40
-#define     FRC_STP_DECT_fc                 41
+#define     OT_PLUS_DETC_fc                 38
+#define     OT_MINUS_DETC_fc                39
+#define     HM_PST_LS_DETC_fc               40
+#define     FRC_STP_DETC_fc                 41
 #define     BATRY_WRNING_fc                 45
 #define     LIFE_WRNING_fc                  46
 #define     MD0_fc                          60
@@ -260,7 +263,7 @@
 
 // Signal Control Address:
 // IN Signals:
-#define     S_ON_ad                         CONT9_ad
+#define     SERVO_ON_ad                     CONT9_ad
 #define     FWD_ad                          CONT10_ad
 #define     REV_ad                          CONT11_ad
 #define     START_ad                        CONT12_ad
@@ -289,14 +292,14 @@
 #define     TEACHING_ad                     
 #define     CTRL_MOD_SLCT_ad                CONT21_ad
 #define     PST_CTRL_ad                     
-#define     TRQU_CTRL_ad                    
+#define     TRQ_CTRL_ad                     
 #define     OVERRIDE_EN_ad                  
 #define     OVERRIDE1_ad                    
 #define     OVERRIDE2_ad                    
 #define     OVERRIDE4_ad                    
 #define     OVERRIDE8_ad                    
 #define     INTRUPT_IN_EN_ad                
-#define     INTRUPT_INPUT_ad                
+#define     INTRUPT_IN_ad                   
 #define     DEVIATION_CLR_ad                
 #define     X1_ad                           CONT22_ad
 #define     X2_ad                           CONT23_ad
@@ -315,20 +318,20 @@
 // OUT Signals:
 #define     RDY_ad                          OUT1_ad
 #define     INP_ad                          OUT2_ad
-#define     SPD_LMT_DTC_ad                  
+#define     SPD_LMT_DETC_ad                 
 #define     OVER_WR_CMPL_ad                 
 #define     BRK_TIMING_ad                   
 #define     ALRM_DECT_ad                    OUT3_ad
-#define     POINT_DECT_AREA1_ad             
-#define     POINT_DECT_AREA2_ad             
-#define     LMTER_DECT_ad                   
-#define     OT_DECT_ad                      
-#define     CYC_END_DECT_ad                 
+#define     POINT_DETC_AREA1_ad             
+#define     POINT_DETC_AREA2_ad             
+#define     LMTER_DETC_ad                   
+#define     OT_DETC_ad                      
+#define     CYC_END_DETC_ad                 
 #define     HMING_CMPL_ad                   
 #define     ZRO_DEVI_ad                     
 #define     ZRO_SPEED_ad                    
 #define     SPD_COINCD_ad                   
-#define     TRQ_LMT_DECT_ad                 
+#define     TRQ_LMT_DETC_ad                 
 #define     ORLD_WRNING_ad                  
 #define     S_RDY_ad                        OUT6_ad
 #define     ED_PRMSION_RSP_ad               
@@ -339,10 +342,10 @@
 #define     ALRM_CODE2_ad                   
 #define     ALRM_CODE3_ad                   
 #define     ALRM_CODE4_ad                   
-#define     OT_PLUS_DECT_ad                 
-#define     OT_MINUS_DECT_ad                
-#define     HM_PST_LS_DECT_ad               
-#define     FRC_STP_DECT_ad                 
+#define     OT_PLUS_DETC_ad                 
+#define     OT_MINUS_DETC_ad                
+#define     HM_PST_LS_DETC_ad               
+#define     FRC_STP_DETC_ad                 
 #define     BATRY_WRNING_ad                 
 #define     LIFE_WRNING_ad                  
 #define     MD0_ad                          
@@ -368,7 +371,6 @@
 #define     CONT_D_THROUGH_ad               
 #define     CONT_E_THROUGH_ad               
 
-
 #define		REGISTERS_BUFFER_SIZE	12
 #define		BITS_BUFFER_SIZE		24
 
@@ -382,7 +384,7 @@ extern uint8_t	 *tab_rp_bits;
 
 // Init parameters when reset the system.
 // Return: return 1 if successful, -1 means some parameters setting failed.
-int init_parameters();
+void init_parameters();
 
 // Init recv(reply)/sent(query) buffers for modbus communication
 void init_buffers_for_modbus();
