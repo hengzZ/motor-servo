@@ -90,6 +90,20 @@ void io_signals_mapping()
 	modbus_write_registers(ctx, PA3_12_ad, 2, tab_rq_registers);
 
 	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[1] = EMG_fc;
+	modbus_write_registers(ctx, PA3_13_ad, 2, tab_rq_registers);
+	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[1] = PAUSE_fc;
+	modbus_write_registers(ctx, PA3_14_ad, 2, tab_rq_registers);
+	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[1] = PST_CANCEL_fc;
+	modbus_write_registers(ctx, PA3_15_ad, 2, tab_rq_registers);
+	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[1] = FREE_RUN_fc;
+	modbus_write_registers(ctx, PA3_16_ad, 2, tab_rq_registers);
+
+
+	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = CTRL_MOD_SLCT_fc;
 	modbus_write_registers(ctx, PA3_21_ad, 2, tab_rq_registers);
 
@@ -127,7 +141,6 @@ void positioning_data_operation_485_setting()
 	//		3									Position control  |   Speed control
 	//		4									Position control  |	 Torque control
 	//		5									   Speed control  |	 Torque control
-	
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = 0x0001;
 	modbus_write_registers(ctx, PA1_01_ad,  2,  tab_rq_registers);

@@ -16,6 +16,16 @@ int serve_on();
 int serve_off();
 int is_ready();
 
+void forced_stop_on();
+void forced_stop_off();
+void pause_on();
+void pause_off();
+void positioning_cancel_on();
+void positioning_cancel_off();
+void free_run_on();
+void free_run_off();
+
+
 // function for test use, implementing in file alpha_test.c
 void forward_command_test();
 void immediate_value_data_op_test();

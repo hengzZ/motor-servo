@@ -3,6 +3,29 @@
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
 
+void positive_positioning()
+{
+
+}
+void negative_positioning()
+{
+
+}
+void cruise()
+{
+
+}
+
+void forward_run()
+{
+
+}
+void backward_run()
+{
+
+}
+
+
 int serve_on()
 {
 	int rc;
@@ -41,44 +64,57 @@ int is_ready()
 	return -1;
 }
 
-void positive_positioning()
-{
-
-}
-void negative_positioning()
-{
-
-}
-void cruise()
-{
-
-}
-
-void forward_run()
-{
-
-}
-void backward_run()
-{
-
-}
 // Interrupting/Stopping Operation
-void forced_stop()
+// [EMG]: forced stop.
+void forced_stop_on()
 {
-
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, EMG_ad, 1); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
+}
+void forced_stop_off()
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, EMG_ad, 0); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
 }
 
-void pause()
+void pause_on()
 {
-
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PAUSE_ad, 1); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
+}
+void pause_off()
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PAUSE_ad, 0); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
 }
 
-void positioning_cancel()
+void positioning_cancel_on()
 {
-
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PST_CANCEL_ad, 1); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
+}
+void positioning_cancel_off()
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PST_CANCEL_ad, 0); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
 }
 
-void free_run()
+// if free-run is turned on, operation is stoped and the motor keeps rotating due to the inertia of the load.
+void free_run_on()
 {
-
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, FREE_RUN_ad, 1); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
+}
+void free_run_off()
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, FREE_RUN_ad, 0); i++){
+		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
+	}
 }

@@ -271,7 +271,7 @@
 #define     LS_ad                           
 #define     OT_PLUS_ad                      
 #define     OT_MINUS_ad                     
-#define     EMG_ad                          
+#define     EMG_ad                          CONT13_ad
 #define     RST_ad                          
 #define     ACCO_ad                         
 #define     PST_PRESET_ad                   
@@ -286,8 +286,8 @@
 #define     CMD_PULSE_RTO1_ad               
 #define     COM_PULSE_RTO2_ad               
 #define     PROPORTIONAL_CTRL_ad            
-#define     PAUSE_ad                        
-#define     PST_CANCEL_ad                   
+#define     PAUSE_ad                        CONT14_ad
+#define     PST_CANCEL_ad                   CONT15_ad
 #define     EXTR_REGN_RESIST_OH_ad          
 #define     TEACHING_ad                     
 #define     CTRL_MOD_SLCT_ad                CONT21_ad
@@ -304,7 +304,7 @@
 #define     X1_ad                           CONT22_ad
 #define     X2_ad                           CONT23_ad
 #define     X3_ad                           CONT24_ad
-#define     FREE_RUN_ad                     
+#define     FREE_RUN_ad                     CONT16_ad
 #define     EDT_PERMISSION_ad               
 #define     ANTI_FREQ_SLCT0_ad              
 #define     ANTI_FREQ_SLCT1_ad              
