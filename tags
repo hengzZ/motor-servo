@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-ABS_POSITION_MODE	alpha_motion_control.h	14;"	d
+ABS_POSITION_MODE	alpha_motion_control.h	15;"	d
 ACCO_ad	alpha_setting.h	282;"	d
 ACCO_fc	alpha_setting.h	172;"	d
 AD0_ad	alpha_setting.h	317;"	d
@@ -17,7 +17,7 @@ AD3_ad	alpha_setting.h	320;"	d
 AD3_fc	alpha_setting.h	210;"	d
 ADDR_ERROR_ad	alpha_setting.h	345;"	d
 ADDR_ERROR_fc	alpha_setting.h	235;"	d
-ALPHA_MOTION_CONTROL_H	alpha_motion_control.h	12;"	d
+ALPHA_MOTION_CONTROL_H	alpha_motion_control.h	13;"	d
 ALPHA_SETTING_H	alpha_setting.h	65;"	d
 ALRM_CODE0_ad	alpha_setting.h	346;"	d
 ALRM_CODE0_fc	alpha_setting.h	236;"	d
@@ -128,7 +128,7 @@ ENOTSUP	modbus-rtu-private.h	41;"	d
 ETIMEDOUT	modbus-tcp.h	31;"	d
 EXTR_REGN_RESIST_OH_ad	alpha_setting.h	297;"	d
 EXTR_REGN_RESIST_OH_fc	alpha_setting.h	187;"	d
-FALSE	am335x_setting.c	12;"	d	file:
+FALSE	am335x_setting.c	13;"	d	file:
 FALSE	modbus.h	48;"	d
 FRC_STP_DETC_ad	alpha_setting.h	354;"	d
 FRC_STP_DETC_fc	alpha_setting.h	244;"	d
@@ -194,7 +194,7 @@ IMME_VLU_DEC_TIM_ad	alpha_setting.h	112;"	d
 IMME_VLU_POSITION_ad	alpha_setting.h	109;"	d
 IMME_VLU_SPEED_ad	alpha_setting.h	110;"	d
 IMME_VLU_STATUS_ad	alpha_setting.h	108;"	d
-INC_POSITION_MODE	alpha_motion_control.h	15;"	d
+INC_POSITION_MODE	alpha_motion_control.h	16;"	d
 INP_ad	alpha_setting.h	326;"	d
 INP_fc	alpha_setting.h	216;"	d
 INTRUPT_IN_EN_ad	alpha_setting.h	307;"	d
@@ -219,6 +219,8 @@ LS_ad	alpha_setting.h	277;"	d
 LS_fc	alpha_setting.h	167;"	d
 LT_OBJDIR	config.h	125;"	d
 MAX_MESSAGE_LENGTH	modbus.c	44;"	d	file:
+MAX_STRIDE	am335x_setting.c	18;"	d	file:
+MAX_STRIDE	am335x_setting.h	9;"	d
 MD0_ad	alpha_setting.h	357;"	d
 MD0_fc	alpha_setting.h	247;"	d
 MD1_ad	alpha_setting.h	358;"	d
@@ -422,7 +424,7 @@ TRQ_LMT1_ad	alpha_setting.h	286;"	d
 TRQ_LMT1_fc	alpha_setting.h	176;"	d
 TRQ_LMT_DETC_ad	alpha_setting.h	340;"	d
 TRQ_LMT_DETC_fc	alpha_setting.h	230;"	d
-TRUE	am335x_setting.c	13;"	d	file:
+TRUE	am335x_setting.c	14;"	d	file:
 TRUE	modbus.h	52;"	d
 VERSION	config.h	155;"	d
 WINVER	modbus-tcp.c	34;"	d	file:
@@ -541,14 +543,16 @@ compute_response_length_from_request	modbus.c	/^static unsigned int compute_resp
 connect	modbus-private.h	/^    int (*connect) (modbus_t *ctx);$/;"	m	struct:_modbus_backend
 crc16	modbus-rtu.c	/^static uint16_t crc16(uint8_t *buffer, uint16_t buffer_length)$/;"	f	file:
 cruise	alpha_motion_control.c	/^void cruise()$/;"	f
-cruise_left_position	alpha_motion_control.c	/^static uint16_t cruise_left_position[2];$/;"	v	file:
-cruise_right_position	alpha_motion_control.c	/^static uint16_t cruise_right_position[2];$/;"	v	file:
-cruise_speed	alpha_motion_control.c	/^static uint16_t cruise_speed[2];$/;"	v	file:
+cruise_left_position	alpha_motion_control.c	/^uint16_t cruise_left_position[2];$/;"	v
+cruise_right_position	alpha_motion_control.c	/^uint16_t cruise_right_position[2];$/;"	v
+cruise_speed	alpha_motion_control.c	/^uint16_t cruise_speed[2];$/;"	v
 ctx	alpha_setting.c	/^modbus_t *ctx = NULL;$/;"	v
+cur_v	am335x_setting.c	/^unsigned short  cur_v;$/;"	v
 data_bit	modbus-rtu-private.h	/^    uint8_t data_bit;$/;"	m	struct:_modbus_rtu
 debug	modbus-private.h	/^    int debug;$/;"	m	struct:_modbus
-debugnum	am335x_setting.c	25;"	d	file:
+debugnum	am335x_setting.c	31;"	d	file:
 device	modbus-rtu-private.h	/^    char device[64];$/;"	m	struct:_modbus_rtu
+encoder_position	am335x_setting.c	/^int encoder_position;$/;"	v
 error_recovery	modbus-private.h	/^    int error_recovery;$/;"	m	struct:_modbus
 fd	am335x_setting.c	/^int fd=-1;$/;"	v
 fd	modbus-rtu-private.h	/^	HANDLE fd;$/;"	m	struct:win32_ser
@@ -562,9 +566,8 @@ free_run_off	alpha_motion_control.c	/^void free_run_off()$/;"	f
 free_run_on	alpha_motion_control.c	/^void free_run_on()$/;"	f
 function	modbus-private.h	/^    int function;$/;"	m	struct:_sft
 header_length	modbus-private.h	/^    unsigned int header_length;$/;"	m	struct:_modbus_backend
-help	client.c	/^void help()$/;"	f
-imme_acceleration_time	alpha_motion_control.c	/^static uint16_t imme_acceleration_time[2];$/;"	v	file:
-imme_deceleration_time	alpha_motion_control.c	/^static uint16_t imme_deceleration_time[2];$/;"	v	file:
+imme_acceleration_time	alpha_motion_control.c	/^uint16_t imme_acceleration_time[2];$/;"	v
+imme_deceleration_time	alpha_motion_control.c	/^uint16_t imme_deceleration_time[2];$/;"	v
 immediate_value_data_op_test	alpha_motion_test.c	/^void immediate_value_data_op_test()$/;"	f
 immediate_value_date_operation_485_setting	alpha_setting.c	/^void immediate_value_date_operation_485_setting()$/;"	f
 immediate_value_operation_run	alpha_motion_control.c	/^void immediate_value_operation_run()$/;"	f
@@ -572,8 +575,9 @@ init_buffers_for_modbus	alpha_setting.c	/^void init_buffers_for_modbus()$/;"	f
 init_parameters	alpha_setting.c	/^void init_parameters()$/;"	f
 io_signals_mapping	alpha_setting.c	/^void io_signals_mapping()$/;"	f
 ip	modbus-tcp-private.h	/^    char ip[16];$/;"	m	struct:_modbus_tcp
-is_INP	alpha_motion_control.c	/^static inline int is_INP()$/;"	f	file:
+is_INP	alpha_motion_control.c	/^int is_INP()$/;"	f
 is_ready	alpha_motion_control.c	/^int is_ready()$/;"	f
+left_cruise	alpha_motion_control.c	/^void left_cruise()$/;"	f
 left_direction_run	alpha_motion_control.c	/^void left_direction_run()$/;"	f
 libmodbus_version_major	modbus.c	/^const unsigned int libmodbus_version_major = LIBMODBUS_VERSION_MAJOR;$/;"	v
 libmodbus_version_micro	modbus.c	/^const unsigned int libmodbus_version_micro = LIBMODBUS_VERSION_MICRO;$/;"	v
@@ -655,6 +659,7 @@ positioning_cancel_off	alpha_motion_control.c	/^void positioning_cancel_off()$/;
 positioning_cancel_on	alpha_motion_control.c	/^void positioning_cancel_on()$/;"	f
 positioning_data_operation_485_setting	alpha_setting.c	/^void positioning_data_operation_485_setting()$/;"	f
 pre_check_confirmation	modbus-private.h	/^    int (*pre_check_confirmation) (modbus_t *ctx, const uint8_t *req,$/;"	m	struct:_modbus_backend
+pre_v	am335x_setting.c	/^unsigned short  pre_v;$/;"	v
 prepare_response_tid	modbus-private.h	/^    int (*prepare_response_tid) (const uint8_t *req, int *req_length);$/;"	m	struct:_modbus_backend
 read_io_status	modbus.c	/^static int read_io_status(modbus_t *ctx, int function,$/;"	f	file:
 read_registers	modbus.c	/^static int read_registers(modbus_t *ctx, int function, int addr, int nb,$/;"	f	file:
@@ -664,6 +669,7 @@ recv	modbus-private.h	/^    ssize_t (*recv) (modbus_t *ctx, uint8_t *rsp, int rs
 response_exception	modbus.c	/^static int response_exception(modbus_t *ctx, sft_t *sft,$/;"	f	file:
 response_io_status	modbus.c	/^static int response_io_status(int address, int nb,$/;"	f	file:
 response_timeout	modbus-private.h	/^    struct timeval response_timeout;$/;"	m	struct:_modbus	typeref:struct:_modbus::timeval
+right_cruise	alpha_motion_control.c	/^void right_cruise()$/;"	f
 right_direction_run	alpha_motion_control.c	/^void right_direction_run()$/;"	f
 s	modbus-private.h	/^    int s;$/;"	m	struct:_modbus
 select	modbus-private.h	/^    int (*select) (modbus_t *ctx, fd_set *rfds, struct timeval *tv, int msg_length);$/;"	m	struct:_modbus_backend
@@ -675,11 +681,13 @@ serve_off	alpha_motion_control.c	/^int serve_off()$/;"	f
 serve_on	alpha_motion_control.c	/^int serve_on()$/;"	f
 service	modbus-tcp-private.h	/^    char service[_MODBUS_TCP_PI_SERVICE_LENGTH];$/;"	m	struct:_modbus_tcp_pi
 set_Parity	am335x_setting.c	/^int set_Parity(int fd,int databits,int stopbits,int parity)$/;"	f
+set_abs_control_mode	alpha_motion_control.c	/^void set_abs_control_mode()$/;"	f
 set_cruise_left_position	alpha_motion_control.c	/^void set_cruise_left_position(const int32_t position)$/;"	f
 set_cruise_right_position	alpha_motion_control.c	/^void set_cruise_right_position(const int32_t position)$/;"	f
 set_cruise_speed	alpha_motion_control.c	/^void set_cruise_speed(const uint32_t speed)$/;"	f
 set_imme_acceleration_time	alpha_motion_control.c	/^void set_imme_acceleration_time(const uint32_t time)$/;"	f
 set_imme_deceleration_time	alpha_motion_control.c	/^void set_imme_deceleration_time(const uint32_t time)$/;"	f
+set_inc_control_mode	alpha_motion_control.c	/^void set_inc_control_mode()$/;"	f
 set_slave	modbus-private.h	/^    int (*set_slave) (modbus_t *ctx, int slave);$/;"	m	struct:_modbus_backend
 set_speed	am335x_setting.c	/^void set_speed(int fd, int speed)$/;"	f
 sft_t	modbus-private.h	/^} sft_t;$/;"	t	typeref:struct:_sft
@@ -688,6 +696,7 @@ slave	modbus-private.h	/^    int slave;$/;"	m	struct:_sft
 speed_arr	am335x_setting.c	/^int speed_arr[] = {  B115200, B57600, B38400, B19200, B9600, B4800,$/;"	v
 ssize_t	modbus-private.h	/^typedef int ssize_t;$/;"	t
 stop_bit	modbus-rtu-private.h	/^    uint8_t stop_bit;$/;"	m	struct:_modbus_rtu
+stride	am335x_setting.c	/^int stride;$/;"	v
 strlcpy	modbus.c	/^size_t strlcpy(char *dest, const char *src, size_t dest_size)$/;"	f
 t_id	modbus-private.h	/^    int t_id;$/;"	m	struct:_sft
 tab_bits	modbus.h	/^    uint8_t *tab_bits;$/;"	m	struct:__anon4
@@ -700,9 +709,7 @@ tab_rq_bits	alpha_setting.c	/^uint8_t  *tab_rq_bits;$/;"	v
 tab_rq_registers	alpha_setting.c	/^uint16_t *tab_rq_registers;$/;"	v
 table_crc_hi	modbus-rtu.c	/^static const uint8_t table_crc_hi[] = {$/;"	v	file:
 table_crc_lo	modbus-rtu.c	/^static const uint8_t table_crc_lo[] = {$/;"	v	file:
-v	am335x_setting.c	/^unsigned short  v;$/;"	v
 w_ser	modbus-rtu-private.h	/^    struct win32_ser w_ser;$/;"	m	struct:_modbus_rtu	typeref:struct:_modbus_rtu::win32_ser
-wait_until_inposition_on	alpha_motion_control.c	/^void wait_until_inposition_on()$/;"	f
 win32_ser	modbus-rtu-private.h	/^struct win32_ser {$/;"	s
 win32_ser_init	modbus-rtu.c	/^static void win32_ser_init(struct win32_ser *ws) {$/;"	f	file:
 win32_ser_read	modbus-rtu.c	/^static int win32_ser_read(struct win32_ser *ws, uint8_t *p_msg,$/;"	f	file:

@@ -9,16 +9,21 @@
 #include     <errno.h> 
 #include     <pthread.h> 
 #include     <sys/ioctl.h> 
+
 #define FALSE 1
 #define TRUE 0
 
-
-int fd=-1;
-
-char buff[512];
+// assume that every stride is less than half cycle(65536/2).
+// if absolute stride large than 32768, it means stride over zero.
+#define MAX_STRIDE	32768
 unsigned short  cur_v;
 unsigned short  pre_v;
+int stride;
+int encoder_position;
 
+
+int fd=-1;
+char buff[512];
 int speed_arr[] = {  B115200, B57600, B38400, B19200, B9600, B4800,
 		    B2400, B1200};
 int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400, 1200};
@@ -141,10 +146,21 @@ int set_Parity(int fd,int databits,int stopbits,int parity)
 
 void receivethread(void)
 {
-  int nread;
+    int nread;
 
-  while(1)    
-  {   
+    for(;;)
+    {
+	if((nread = read(fd,buff,100))>0) 
+	{
+	    buff[nread]='\0';
+	    memcpy(&cur_v,buff+3,2);
+	    pre_v = cur_v;
+	    break;
+	}
+    }
+
+    while(1)    
+    {   
 	if((nread = read(fd,buff,100))>0) 
 	{
 	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
@@ -153,13 +169,28 @@ void receivethread(void)
 	    //	fprintf(stderr,"%.2x ",buff[i]);
 	    //}
 	    memcpy(&cur_v,buff+3,2);
-	    //printf("%d\n",v);
+	    //printf("%d\n",cur_v);
+
+	    // calculate the stride 
+	    int temp_stride = cur_v - pre_v;
+	    if(abs(temp_stride) > MAX_STRIDE && temp_stride > 0)
+		stride = cur_v - 65535 - pre_v;
+	    else if (abs(temp_stride) > MAX_STRIDE && temp_stride < 0)
+		stride = cur_v + 65535 - pre_v;
+	    else
+		stride = temp_stride;
+	    // update current position
+	    encoder_position += stride;
+	    //printf("%d\n",encoder_position);
+
+	    // update pre_v
+	    pre_v = cur_v;
 	}
 	
 	usleep(1000/**1000*/);
-   } 
+    } 
  
- return;
+    return;
 }
 
 // Listening UART signal
@@ -167,18 +198,18 @@ int listening_uart(const char* device, int baud, char parity, int data_bit, int 
 {
     pthread_t receiveid;
     fd = open(device, O_RDWR);
-	if (fd < 0){
-		fprintf(stderr,"open device %s faild\n", device);
-		return -1;
-	}
-	set_speed(fd,baud);
-	set_Parity(fd,data_bit,stop_bit,parity);	
-	pthread_create(&receiveid,NULL,(void*)receivethread,NULL);
-	return 1;
+    if (fd < 0){
+	fprintf(stderr,"open device %s faild\n", device);
+	return -1;
+    }
+    set_speed(fd,baud);
+    set_Parity(fd,data_bit,stop_bit,parity);	
+    pthread_create(&receiveid,NULL,(void*)receivethread,NULL);
+    return 1;
 }
 
 void close_uart()
 {
-	close(fd);
+    close(fd);
 }
 

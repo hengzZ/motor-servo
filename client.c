@@ -34,31 +34,27 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	// listening am335x UART
-	// ret = listening_uart("/dev/ttyO2",9600,'N',8,1);
-	// if(ret != 1){
-	// 	fprintf(stderr,"ERR:open am335x uart failed.\n");
-	// 	serve_off();
-	// 	free_buffers_for_modbus();
-	// 	close_modbus_rtu_master();
-	// 	return -1;
-	// }
-	// Control thread Init
+	ret = listening_uart("/dev/ttyO2",9600,'N',8,1);
+	if(ret != 1){
+		fprintf(stderr,"ERR:open am335x uart failed.\n");
+		serve_off();
+		free_buffers_for_modbus();
+		close_modbus_rtu_master();
+		return -1;
+	}
 
-	// // Motor Control
+
 	// set_cruise_left_position(10000);
 	// set_cruise_right_position(-10000);
 	// set_cruise_speed(10000);
-	// //cruise();
-	// left_direction_run();
-	
+	while(0)
+	{
 
+	}
 
-	// test alpha
-	//fprintf(stderr,"INF:test immediate value data control.\n");
-	//immediate_value_data_op_test();
-
-	// pause
-	fprintf(stderr,"INF:press Enter to continue..\n");
+	// // test alpha
+	// fprintf(stderr,"INF:test immediate value data control.\n");
+	// immediate_value_data_op_test();
 	getchar();
 
 

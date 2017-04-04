@@ -8,6 +8,7 @@
 //  05               turning the motor                               2,  3,  4,  5
 //  06               determing the home position                     6,  7,  8,  49,16
 //  07               Signal irrelativant to motor operation          11,55
+//*************************************************************************************************************************************
 #ifndef ALPHA_MOTION_CONTROL_H
 #define ALPHA_MOTION_CONTROL_H
 
@@ -16,8 +17,8 @@
 
 void left_direction_run();
 void right_direction_run();
-
 void cruise();
+
 void set_cruise_left_position(const int32_t position);
 void set_cruise_right_position(const int32_t position);
 void set_cruise_speed(const uint32_t speed);
@@ -38,8 +39,7 @@ void positioning_cancel_off();
 void free_run_on();
 void free_run_off();
 
-
-// function for test use, implementing in file alpha_test.c
+// functions for test use, implementing in file alpha_test.c
 void forward_command_test();
 void immediate_value_data_op_test();
 
