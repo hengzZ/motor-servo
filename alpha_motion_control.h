@@ -11,7 +11,20 @@
 #ifndef ALPHA_MOTION_CONTROL_H
 #define ALPHA_MOTION_CONTROL_H
 
+#define ABS_POSITION_MODE   0
+#define INC_POSITION_MODE   1
 
+void left_direction_run();
+void right_direction_run();
+
+void cruise();
+void set_cruise_left_position(const int32_t position);
+void set_cruise_right_position(const int32_t position);
+void set_cruise_speed(const uint32_t speed);
+void set_imme_acceleration_time(const uint32_t time);
+void set_imme_deceleration_time(const uint32_t time);
+
+// coil signal
 int serve_on();
 int serve_off();
 int is_ready();

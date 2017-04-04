@@ -105,6 +105,12 @@
 #define     PA3_70_ad                       0x4245
 #define     PA3_71_ad                       0x4246
 
+#define     IMME_VLU_STATUS_ad              0x5100
+#define     IMME_VLU_POSITION_ad            0x5101
+#define     IMME_VLU_SPEED_ad               0x5102
+#define     IMME_VLU_ACC_TIM_ad             0x5103
+#define     IMME_VLU_DEC_TIM_ad             0x5104
+
 // COIL ADDRESS:[for controlling]                                       [Setting Register]
 #define     CONT1_ad                        0x0400                      //PA3_01
 #define     CONT2_ad                        0x0401                      //PA3_02

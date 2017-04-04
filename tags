@@ -4,106 +4,107 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-ACCO_ad	alpha_setting.h	276;"	d
-ACCO_fc	alpha_setting.h	166;"	d
-AD0_ad	alpha_setting.h	311;"	d
-AD0_fc	alpha_setting.h	201;"	d
-AD1_ad	alpha_setting.h	312;"	d
-AD1_fc	alpha_setting.h	202;"	d
-AD2_ad	alpha_setting.h	313;"	d
-AD2_fc	alpha_setting.h	203;"	d
-AD3_ad	alpha_setting.h	314;"	d
-AD3_fc	alpha_setting.h	204;"	d
-ADDR_ERROR_ad	alpha_setting.h	339;"	d
-ADDR_ERROR_fc	alpha_setting.h	229;"	d
+ABS_POSITION_MODE	alpha_motion_control.h	14;"	d
+ACCO_ad	alpha_setting.h	282;"	d
+ACCO_fc	alpha_setting.h	172;"	d
+AD0_ad	alpha_setting.h	317;"	d
+AD0_fc	alpha_setting.h	207;"	d
+AD1_ad	alpha_setting.h	318;"	d
+AD1_fc	alpha_setting.h	208;"	d
+AD2_ad	alpha_setting.h	319;"	d
+AD2_fc	alpha_setting.h	209;"	d
+AD3_ad	alpha_setting.h	320;"	d
+AD3_fc	alpha_setting.h	210;"	d
+ADDR_ERROR_ad	alpha_setting.h	345;"	d
+ADDR_ERROR_fc	alpha_setting.h	235;"	d
 ALPHA_MOTION_CONTROL_H	alpha_motion_control.h	12;"	d
 ALPHA_SETTING_H	alpha_setting.h	65;"	d
-ALRM_CODE0_ad	alpha_setting.h	340;"	d
-ALRM_CODE0_fc	alpha_setting.h	230;"	d
-ALRM_CODE1_ad	alpha_setting.h	341;"	d
-ALRM_CODE1_fc	alpha_setting.h	231;"	d
-ALRM_CODE2_ad	alpha_setting.h	342;"	d
-ALRM_CODE2_fc	alpha_setting.h	232;"	d
-ALRM_CODE3_ad	alpha_setting.h	343;"	d
-ALRM_CODE3_fc	alpha_setting.h	233;"	d
-ALRM_CODE4_ad	alpha_setting.h	344;"	d
-ALRM_CODE4_fc	alpha_setting.h	234;"	d
-ALRM_DECT_ad	alpha_setting.h	324;"	d
-ALRM_DECT_fc	alpha_setting.h	214;"	d
-ALRM_DETC_ad	alpha_setting.h	360;"	d
-ALRM_DETC_fc	alpha_setting.h	250;"	d
+ALRM_CODE0_ad	alpha_setting.h	346;"	d
+ALRM_CODE0_fc	alpha_setting.h	236;"	d
+ALRM_CODE1_ad	alpha_setting.h	347;"	d
+ALRM_CODE1_fc	alpha_setting.h	237;"	d
+ALRM_CODE2_ad	alpha_setting.h	348;"	d
+ALRM_CODE2_fc	alpha_setting.h	238;"	d
+ALRM_CODE3_ad	alpha_setting.h	349;"	d
+ALRM_CODE3_fc	alpha_setting.h	239;"	d
+ALRM_CODE4_ad	alpha_setting.h	350;"	d
+ALRM_CODE4_fc	alpha_setting.h	240;"	d
+ALRM_DECT_ad	alpha_setting.h	330;"	d
+ALRM_DECT_fc	alpha_setting.h	220;"	d
+ALRM_DETC_ad	alpha_setting.h	366;"	d
+ALRM_DETC_fc	alpha_setting.h	256;"	d
 AM335X_SETTING_H	am335x_setting.h	2;"	d
-ANTI_FREQ_SLCT0_ad	alpha_setting.h	309;"	d
-ANTI_FREQ_SLCT0_fc	alpha_setting.h	199;"	d
-ANTI_FREQ_SLCT1_ad	alpha_setting.h	310;"	d
-ANTI_FREQ_SLCT1_fc	alpha_setting.h	200;"	d
-BATRY_WRNING_ad	alpha_setting.h	349;"	d
-BATRY_WRNING_fc	alpha_setting.h	239;"	d
-BITS_BUFFER_SIZE	alpha_setting.h	375;"	d
-BRDCST_CANCEL_ad	alpha_setting.h	316;"	d
-BRDCST_CANCEL_fc	alpha_setting.h	206;"	d
-BRK_TIMING_ad	alpha_setting.h	323;"	d
-BRK_TIMING_fc	alpha_setting.h	213;"	d
+ANTI_FREQ_SLCT0_ad	alpha_setting.h	315;"	d
+ANTI_FREQ_SLCT0_fc	alpha_setting.h	205;"	d
+ANTI_FREQ_SLCT1_ad	alpha_setting.h	316;"	d
+ANTI_FREQ_SLCT1_fc	alpha_setting.h	206;"	d
+BATRY_WRNING_ad	alpha_setting.h	355;"	d
+BATRY_WRNING_fc	alpha_setting.h	245;"	d
+BITS_BUFFER_SIZE	alpha_setting.h	381;"	d
+BRDCST_CANCEL_ad	alpha_setting.h	322;"	d
+BRDCST_CANCEL_fc	alpha_setting.h	212;"	d
+BRK_TIMING_ad	alpha_setting.h	329;"	d
+BRK_TIMING_fc	alpha_setting.h	219;"	d
 CC	Makefile	/^CC=arm-linux-gnueabihf-gcc$/;"	m
 CFLAGS	Makefile	/^CFLAGS=-I.\/$/;"	m
-CMD_PST_CMPL_ad	alpha_setting.h	364;"	d
-CMD_PST_CMPL_fc	alpha_setting.h	254;"	d
-CMD_PULSE_INHIBIT_ad	alpha_setting.h	285;"	d
-CMD_PULSE_INHIBIT_fc	alpha_setting.h	175;"	d
-CMD_PULSE_RTO1_ad	alpha_setting.h	286;"	d
-CMD_PULSE_RTO1_fc	alpha_setting.h	176;"	d
-COM_PULSE_RTO2_ad	alpha_setting.h	287;"	d
-COM_PULSE_RTO2_fc	alpha_setting.h	177;"	d
-CONT10_ad	alpha_setting.h	116;"	d
-CONT11_ad	alpha_setting.h	117;"	d
-CONT12_ad	alpha_setting.h	118;"	d
-CONT13_ad	alpha_setting.h	119;"	d
-CONT14_ad	alpha_setting.h	120;"	d
-CONT15_ad	alpha_setting.h	121;"	d
-CONT16_ad	alpha_setting.h	122;"	d
-CONT17_ad	alpha_setting.h	123;"	d
-CONT18_ad	alpha_setting.h	124;"	d
-CONT19_ad	alpha_setting.h	125;"	d
-CONT1_ad	alpha_setting.h	109;"	d
-CONT20_ad	alpha_setting.h	126;"	d
-CONT21_ad	alpha_setting.h	127;"	d
-CONT22_ad	alpha_setting.h	128;"	d
-CONT23_ad	alpha_setting.h	129;"	d
-CONT24_ad	alpha_setting.h	130;"	d
-CONT2_ad	alpha_setting.h	110;"	d
-CONT3_ad	alpha_setting.h	111;"	d
-CONT4_ad	alpha_setting.h	112;"	d
-CONT5_ad	alpha_setting.h	113;"	d
-CONT9_ad	alpha_setting.h	115;"	d
-CONT_A_THROUGH_ad	alpha_setting.h	368;"	d
-CONT_A_THROUGH_fc	alpha_setting.h	258;"	d
-CONT_B_THROUGH_ad	alpha_setting.h	369;"	d
-CONT_B_THROUGH_fc	alpha_setting.h	259;"	d
-CONT_C_THROUGH_ad	alpha_setting.h	370;"	d
-CONT_C_THROUGH_fc	alpha_setting.h	260;"	d
-CONT_D_THROUGH_ad	alpha_setting.h	371;"	d
-CONT_D_THROUGH_fc	alpha_setting.h	261;"	d
-CONT_E_THROUGH_ad	alpha_setting.h	372;"	d
-CONT_E_THROUGH_fc	alpha_setting.h	262;"	d
-CTRL_MOD_SLCT_ad	alpha_setting.h	293;"	d
-CTRL_MOD_SLCT_fc	alpha_setting.h	183;"	d
-CYC_END_DETC_ad	alpha_setting.h	329;"	d
-CYC_END_DETC_fc	alpha_setting.h	219;"	d
-DATA_ERROR_ad	alpha_setting.h	338;"	d
-DATA_ERROR_fc	alpha_setting.h	228;"	d
+CMD_PST_CMPL_ad	alpha_setting.h	370;"	d
+CMD_PST_CMPL_fc	alpha_setting.h	260;"	d
+CMD_PULSE_INHIBIT_ad	alpha_setting.h	291;"	d
+CMD_PULSE_INHIBIT_fc	alpha_setting.h	181;"	d
+CMD_PULSE_RTO1_ad	alpha_setting.h	292;"	d
+CMD_PULSE_RTO1_fc	alpha_setting.h	182;"	d
+COM_PULSE_RTO2_ad	alpha_setting.h	293;"	d
+COM_PULSE_RTO2_fc	alpha_setting.h	183;"	d
+CONT10_ad	alpha_setting.h	122;"	d
+CONT11_ad	alpha_setting.h	123;"	d
+CONT12_ad	alpha_setting.h	124;"	d
+CONT13_ad	alpha_setting.h	125;"	d
+CONT14_ad	alpha_setting.h	126;"	d
+CONT15_ad	alpha_setting.h	127;"	d
+CONT16_ad	alpha_setting.h	128;"	d
+CONT17_ad	alpha_setting.h	129;"	d
+CONT18_ad	alpha_setting.h	130;"	d
+CONT19_ad	alpha_setting.h	131;"	d
+CONT1_ad	alpha_setting.h	115;"	d
+CONT20_ad	alpha_setting.h	132;"	d
+CONT21_ad	alpha_setting.h	133;"	d
+CONT22_ad	alpha_setting.h	134;"	d
+CONT23_ad	alpha_setting.h	135;"	d
+CONT24_ad	alpha_setting.h	136;"	d
+CONT2_ad	alpha_setting.h	116;"	d
+CONT3_ad	alpha_setting.h	117;"	d
+CONT4_ad	alpha_setting.h	118;"	d
+CONT5_ad	alpha_setting.h	119;"	d
+CONT9_ad	alpha_setting.h	121;"	d
+CONT_A_THROUGH_ad	alpha_setting.h	374;"	d
+CONT_A_THROUGH_fc	alpha_setting.h	264;"	d
+CONT_B_THROUGH_ad	alpha_setting.h	375;"	d
+CONT_B_THROUGH_fc	alpha_setting.h	265;"	d
+CONT_C_THROUGH_ad	alpha_setting.h	376;"	d
+CONT_C_THROUGH_fc	alpha_setting.h	266;"	d
+CONT_D_THROUGH_ad	alpha_setting.h	377;"	d
+CONT_D_THROUGH_fc	alpha_setting.h	267;"	d
+CONT_E_THROUGH_ad	alpha_setting.h	378;"	d
+CONT_E_THROUGH_fc	alpha_setting.h	268;"	d
+CTRL_MOD_SLCT_ad	alpha_setting.h	299;"	d
+CTRL_MOD_SLCT_fc	alpha_setting.h	189;"	d
+CYC_END_DETC_ad	alpha_setting.h	335;"	d
+CYC_END_DETC_fc	alpha_setting.h	225;"	d
+DATA_ERROR_ad	alpha_setting.h	344;"	d
+DATA_ERROR_fc	alpha_setting.h	234;"	d
 DEPS	Makefile	/^DEPS =$(_DEPS)$/;"	m
-DEVIATION_CLR_ad	alpha_setting.h	303;"	d
-DEVIATION_CLR_fc	alpha_setting.h	193;"	d
+DEVIATION_CLR_ad	alpha_setting.h	309;"	d
+DEVIATION_CLR_fc	alpha_setting.h	199;"	d
 ECONNREFUSED	modbus-tcp.h	30;"	d
 ECONNRESET	modbus-tcp.h	29;"	d
-EDT_PERMISSION_ad	alpha_setting.h	308;"	d
-EDT_PERMISSION_fc	alpha_setting.h	198;"	d
-ED_PRMSION_RSP_ad	alpha_setting.h	337;"	d
-ED_PRMSION_RSP_fc	alpha_setting.h	227;"	d
-ELCT_GEAR_NUM_SEL0_ad	alpha_setting.h	283;"	d
-ELCT_GEAR_NUM_SEL0_fc	alpha_setting.h	173;"	d
-ELCT_GEAR_NUM_SEL1_ad	alpha_setting.h	284;"	d
-ELCT_GEAR_NUM_SEL1_fc	alpha_setting.h	174;"	d
+EDT_PERMISSION_ad	alpha_setting.h	314;"	d
+EDT_PERMISSION_fc	alpha_setting.h	204;"	d
+ED_PRMSION_RSP_ad	alpha_setting.h	343;"	d
+ED_PRMSION_RSP_fc	alpha_setting.h	233;"	d
+ELCT_GEAR_NUM_SEL0_ad	alpha_setting.h	289;"	d
+ELCT_GEAR_NUM_SEL0_fc	alpha_setting.h	179;"	d
+ELCT_GEAR_NUM_SEL1_ad	alpha_setting.h	290;"	d
+ELCT_GEAR_NUM_SEL1_fc	alpha_setting.h	180;"	d
 EMBBADCRC	modbus.h	115;"	d
 EMBBADDATA	modbus.h	116;"	d
 EMBBADEXC	modbus.h	117;"	d
@@ -119,24 +120,24 @@ EMBXMEMPAR	modbus.h	110;"	d
 EMBXNACK	modbus.h	109;"	d
 EMBXSBUSY	modbus.h	108;"	d
 EMBXSFAIL	modbus.h	106;"	d
-EMG_ad	alpha_setting.h	274;"	d
-EMG_fc	alpha_setting.h	164;"	d
+EMG_ad	alpha_setting.h	280;"	d
+EMG_fc	alpha_setting.h	170;"	d
 ENCONDER_H	encoder.h	2;"	d
 ENOPROTOOPT	modbus-tcp.h	32;"	d
 ENOTSUP	modbus-rtu-private.h	41;"	d
 ETIMEDOUT	modbus-tcp.h	31;"	d
-EXTR_REGN_RESIST_OH_ad	alpha_setting.h	291;"	d
-EXTR_REGN_RESIST_OH_fc	alpha_setting.h	181;"	d
+EXTR_REGN_RESIST_OH_ad	alpha_setting.h	297;"	d
+EXTR_REGN_RESIST_OH_fc	alpha_setting.h	187;"	d
 FALSE	am335x_setting.c	12;"	d	file:
 FALSE	modbus.h	48;"	d
-FRC_STP_DETC_ad	alpha_setting.h	348;"	d
-FRC_STP_DETC_fc	alpha_setting.h	238;"	d
-FREE_RUN_ad	alpha_setting.h	307;"	d
-FREE_RUN_fc	alpha_setting.h	197;"	d
-FWD_ad	alpha_setting.h	267;"	d
-FWD_fc	alpha_setting.h	157;"	d
-GAIN_SWITCH_ad	alpha_setting.h	278;"	d
-GAIN_SWITCH_fc	alpha_setting.h	168;"	d
+FRC_STP_DETC_ad	alpha_setting.h	354;"	d
+FRC_STP_DETC_fc	alpha_setting.h	244;"	d
+FREE_RUN_ad	alpha_setting.h	313;"	d
+FREE_RUN_fc	alpha_setting.h	203;"	d
+FWD_ad	alpha_setting.h	273;"	d
+FWD_fc	alpha_setting.h	163;"	d
+GAIN_SWITCH_ad	alpha_setting.h	284;"	d
+GAIN_SWITCH_fc	alpha_setting.h	174;"	d
 GLOBAL_SETTING_H	global_setting.h	2;"	d
 HAVE_ARPA_INET_H	config.h	5;"	d
 HAVE_DECL_TIOCSRS485	config.h	9;"	d
@@ -174,28 +175,34 @@ HAVE_UNISTD_H	config.h	106;"	d
 HAVE_VFORK	config.h	109;"	d
 HAVE_WORKING_FORK	config.h	118;"	d
 HAVE_WORKING_VFORK	config.h	121;"	d
-HMING_CMPL_ad	alpha_setting.h	330;"	d
-HMING_CMPL_fc	alpha_setting.h	220;"	d
-HM_PST_LS_DETC_ad	alpha_setting.h	347;"	d
-HM_PST_LS_DETC_fc	alpha_setting.h	237;"	d
-IMME_VLU_CHG_CMPL_ad	alpha_setting.h	363;"	d
-IMME_VLU_CHG_CMPL_fc	alpha_setting.h	253;"	d
-IMME_VLU_CHG_ad	alpha_setting.h	282;"	d
-IMME_VLU_CHG_fc	alpha_setting.h	172;"	d
-IMME_VLU_CNTIN_CMPL_ad	alpha_setting.h	362;"	d
-IMME_VLU_CNTIN_CMPL_fc	alpha_setting.h	252;"	d
-IMME_VLU_CNTIN_PERMS_ad	alpha_setting.h	361;"	d
-IMME_VLU_CNTIN_PERMS_fc	alpha_setting.h	251;"	d
-IMME_VLU_CTINU_ad	alpha_setting.h	281;"	d
-IMME_VLU_CTINU_fc	alpha_setting.h	171;"	d
-INP_ad	alpha_setting.h	320;"	d
-INP_fc	alpha_setting.h	210;"	d
-INTRUPT_IN_EN_ad	alpha_setting.h	301;"	d
-INTRUPT_IN_EN_fc	alpha_setting.h	191;"	d
-INTRUPT_IN_ad	alpha_setting.h	302;"	d
-INTRUPT_IN_fc	alpha_setting.h	192;"	d
-INTRUPT_PST_DECT_ad	alpha_setting.h	367;"	d
-INTRUPT_PST_DECT_fc	alpha_setting.h	257;"	d
+HMING_CMPL_ad	alpha_setting.h	336;"	d
+HMING_CMPL_fc	alpha_setting.h	226;"	d
+HM_PST_LS_DETC_ad	alpha_setting.h	353;"	d
+HM_PST_LS_DETC_fc	alpha_setting.h	243;"	d
+IMME_VLU_ACC_TIM_ad	alpha_setting.h	111;"	d
+IMME_VLU_CHG_CMPL_ad	alpha_setting.h	369;"	d
+IMME_VLU_CHG_CMPL_fc	alpha_setting.h	259;"	d
+IMME_VLU_CHG_ad	alpha_setting.h	288;"	d
+IMME_VLU_CHG_fc	alpha_setting.h	178;"	d
+IMME_VLU_CNTIN_CMPL_ad	alpha_setting.h	368;"	d
+IMME_VLU_CNTIN_CMPL_fc	alpha_setting.h	258;"	d
+IMME_VLU_CNTIN_PERMS_ad	alpha_setting.h	367;"	d
+IMME_VLU_CNTIN_PERMS_fc	alpha_setting.h	257;"	d
+IMME_VLU_CTINU_ad	alpha_setting.h	287;"	d
+IMME_VLU_CTINU_fc	alpha_setting.h	177;"	d
+IMME_VLU_DEC_TIM_ad	alpha_setting.h	112;"	d
+IMME_VLU_POSITION_ad	alpha_setting.h	109;"	d
+IMME_VLU_SPEED_ad	alpha_setting.h	110;"	d
+IMME_VLU_STATUS_ad	alpha_setting.h	108;"	d
+INC_POSITION_MODE	alpha_motion_control.h	15;"	d
+INP_ad	alpha_setting.h	326;"	d
+INP_fc	alpha_setting.h	216;"	d
+INTRUPT_IN_EN_ad	alpha_setting.h	307;"	d
+INTRUPT_IN_EN_fc	alpha_setting.h	197;"	d
+INTRUPT_IN_ad	alpha_setting.h	308;"	d
+INTRUPT_IN_fc	alpha_setting.h	198;"	d
+INTRUPT_PST_DECT_ad	alpha_setting.h	373;"	d
+INTRUPT_PST_DECT_fc	alpha_setting.h	263;"	d
 LIBMODBUS_VERSION	modbus-version.h	31;"	d
 LIBMODBUS_VERSION_CHECK	modbus-version.h	44;"	d
 LIBMODBUS_VERSION_HEX	modbus-version.h	38;"	d
@@ -204,51 +211,51 @@ LIBMODBUS_VERSION_MICRO	modbus-version.h	28;"	d
 LIBMODBUS_VERSION_MINOR	modbus-version.h	25;"	d
 LIBMODBUS_VERSION_STRING	modbus-version.h	35;"	d
 LIBS	Makefile	/^LIBS=-lpthread$/;"	m
-LIFE_WRNING_ad	alpha_setting.h	350;"	d
-LIFE_WRNING_fc	alpha_setting.h	240;"	d
-LMTER_DETC_ad	alpha_setting.h	327;"	d
-LMTER_DETC_fc	alpha_setting.h	217;"	d
-LS_ad	alpha_setting.h	271;"	d
-LS_fc	alpha_setting.h	161;"	d
+LIFE_WRNING_ad	alpha_setting.h	356;"	d
+LIFE_WRNING_fc	alpha_setting.h	246;"	d
+LMTER_DETC_ad	alpha_setting.h	333;"	d
+LMTER_DETC_fc	alpha_setting.h	223;"	d
+LS_ad	alpha_setting.h	277;"	d
+LS_fc	alpha_setting.h	167;"	d
 LT_OBJDIR	config.h	125;"	d
 MAX_MESSAGE_LENGTH	modbus.c	44;"	d	file:
-MD0_ad	alpha_setting.h	351;"	d
-MD0_fc	alpha_setting.h	241;"	d
-MD1_ad	alpha_setting.h	352;"	d
-MD1_fc	alpha_setting.h	242;"	d
-MD2_ad	alpha_setting.h	353;"	d
-MD2_fc	alpha_setting.h	243;"	d
-MD3_ad	alpha_setting.h	354;"	d
-MD3_fc	alpha_setting.h	244;"	d
-MD4_ad	alpha_setting.h	355;"	d
-MD4_fc	alpha_setting.h	245;"	d
-MD5_ad	alpha_setting.h	356;"	d
-MD5_fc	alpha_setting.h	246;"	d
-MD6_ad	alpha_setting.h	357;"	d
-MD6_fc	alpha_setting.h	247;"	d
-MD7_ad	alpha_setting.h	358;"	d
-MD7_fc	alpha_setting.h	248;"	d
+MD0_ad	alpha_setting.h	357;"	d
+MD0_fc	alpha_setting.h	247;"	d
+MD1_ad	alpha_setting.h	358;"	d
+MD1_fc	alpha_setting.h	248;"	d
+MD2_ad	alpha_setting.h	359;"	d
+MD2_fc	alpha_setting.h	249;"	d
+MD3_ad	alpha_setting.h	360;"	d
+MD3_fc	alpha_setting.h	250;"	d
+MD4_ad	alpha_setting.h	361;"	d
+MD4_fc	alpha_setting.h	251;"	d
+MD5_ad	alpha_setting.h	362;"	d
+MD5_fc	alpha_setting.h	252;"	d
+MD6_ad	alpha_setting.h	363;"	d
+MD6_fc	alpha_setting.h	253;"	d
+MD7_ad	alpha_setting.h	364;"	d
+MD7_fc	alpha_setting.h	254;"	d
 MODBUS_BEGIN_DECLS	modbus.h	38;"	d
 MODBUS_BEGIN_DECLS	modbus.h	41;"	d
 MODBUS_BROADCAST_ADDRESS	modbus.h	63;"	d
 MODBUS_END_DECLS	modbus.h	39;"	d
 MODBUS_END_DECLS	modbus.h	42;"	d
 MODBUS_ENOBASE	modbus.h	85;"	d
-MODBUS_ERROR_RECOVERY_LINK	modbus.h	/^    MODBUS_ERROR_RECOVERY_LINK          = (1<<1),$/;"	e	enum:__anon4
-MODBUS_ERROR_RECOVERY_NONE	modbus.h	/^    MODBUS_ERROR_RECOVERY_NONE          = 0,$/;"	e	enum:__anon4
-MODBUS_ERROR_RECOVERY_PROTOCOL	modbus.h	/^    MODBUS_ERROR_RECOVERY_PROTOCOL      = (1<<2),$/;"	e	enum:__anon4
-MODBUS_EXCEPTION_ACKNOWLEDGE	modbus.h	/^    MODBUS_EXCEPTION_ACKNOWLEDGE,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_GATEWAY_PATH	modbus.h	/^    MODBUS_EXCEPTION_GATEWAY_PATH,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_GATEWAY_TARGET	modbus.h	/^    MODBUS_EXCEPTION_GATEWAY_TARGET,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS	modbus.h	/^    MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE	modbus.h	/^    MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_ILLEGAL_FUNCTION	modbus.h	/^    MODBUS_EXCEPTION_ILLEGAL_FUNCTION = 0x01,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_MAX	modbus.h	/^    MODBUS_EXCEPTION_MAX$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_MEMORY_PARITY	modbus.h	/^    MODBUS_EXCEPTION_MEMORY_PARITY,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_NEGATIVE_ACKNOWLEDGE	modbus.h	/^    MODBUS_EXCEPTION_NEGATIVE_ACKNOWLEDGE,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_NOT_DEFINED	modbus.h	/^    MODBUS_EXCEPTION_NOT_DEFINED,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_SLAVE_OR_SERVER_BUSY	modbus.h	/^    MODBUS_EXCEPTION_SLAVE_OR_SERVER_BUSY,$/;"	e	enum:__anon2
-MODBUS_EXCEPTION_SLAVE_OR_SERVER_FAILURE	modbus.h	/^    MODBUS_EXCEPTION_SLAVE_OR_SERVER_FAILURE,$/;"	e	enum:__anon2
+MODBUS_ERROR_RECOVERY_LINK	modbus.h	/^    MODBUS_ERROR_RECOVERY_LINK          = (1<<1),$/;"	e	enum:__anon5
+MODBUS_ERROR_RECOVERY_NONE	modbus.h	/^    MODBUS_ERROR_RECOVERY_NONE          = 0,$/;"	e	enum:__anon5
+MODBUS_ERROR_RECOVERY_PROTOCOL	modbus.h	/^    MODBUS_ERROR_RECOVERY_PROTOCOL      = (1<<2),$/;"	e	enum:__anon5
+MODBUS_EXCEPTION_ACKNOWLEDGE	modbus.h	/^    MODBUS_EXCEPTION_ACKNOWLEDGE,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_GATEWAY_PATH	modbus.h	/^    MODBUS_EXCEPTION_GATEWAY_PATH,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_GATEWAY_TARGET	modbus.h	/^    MODBUS_EXCEPTION_GATEWAY_TARGET,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS	modbus.h	/^    MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE	modbus.h	/^    MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_ILLEGAL_FUNCTION	modbus.h	/^    MODBUS_EXCEPTION_ILLEGAL_FUNCTION = 0x01,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_MAX	modbus.h	/^    MODBUS_EXCEPTION_MAX$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_MEMORY_PARITY	modbus.h	/^    MODBUS_EXCEPTION_MEMORY_PARITY,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_NEGATIVE_ACKNOWLEDGE	modbus.h	/^    MODBUS_EXCEPTION_NEGATIVE_ACKNOWLEDGE,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_NOT_DEFINED	modbus.h	/^    MODBUS_EXCEPTION_NOT_DEFINED,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_SLAVE_OR_SERVER_BUSY	modbus.h	/^    MODBUS_EXCEPTION_SLAVE_OR_SERVER_BUSY,$/;"	e	enum:__anon3
+MODBUS_EXCEPTION_SLAVE_OR_SERVER_FAILURE	modbus.h	/^    MODBUS_EXCEPTION_SLAVE_OR_SERVER_FAILURE,$/;"	e	enum:__anon3
 MODBUS_GET_HIGH_BYTE	modbus.h	201;"	d
 MODBUS_GET_INT16_FROM_INT8	modbus.h	204;"	d
 MODBUS_GET_INT32_FROM_INT16	modbus.h	203;"	d
@@ -265,61 +272,61 @@ MODBUS_SET_INT16_TO_INT8	modbus.h	205;"	d
 MODBUS_TCP_DEFAULT_PORT	modbus-tcp.h	35;"	d
 MODBUS_TCP_MAX_ADU_LENGTH	modbus-tcp.h	41;"	d
 MODBUS_TCP_SLAVE	modbus-tcp.h	36;"	d
-MSG_CONFIRMATION	modbus.c	/^    MSG_CONFIRMATION$/;"	e	enum:__anon6	file:
-MSG_INDICATION	modbus.c	/^    MSG_INDICATION,$/;"	e	enum:__anon6	file:
+MSG_CONFIRMATION	modbus.c	/^    MSG_CONFIRMATION$/;"	e	enum:__anon2	file:
+MSG_INDICATION	modbus.c	/^    MSG_INDICATION,$/;"	e	enum:__anon2	file:
 MSG_LENGTH_UNDEFINED	modbus.c	36;"	d	file:
 MSG_NOSIGNAL	modbus-tcp.c	57;"	d	file:
 OBJS	Makefile	/^OBJS =$(_OBJS)$/;"	m
 OFF	modbus.h	56;"	d
 ON	modbus.h	60;"	d
 OPLOOPS	global_setting.h	4;"	d
-ORG_ad	alpha_setting.h	270;"	d
-ORG_fc	alpha_setting.h	160;"	d
-ORLD_WRNING_ad	alpha_setting.h	335;"	d
-ORLD_WRNING_fc	alpha_setting.h	225;"	d
+ORG_ad	alpha_setting.h	276;"	d
+ORG_fc	alpha_setting.h	166;"	d
+ORLD_WRNING_ad	alpha_setting.h	341;"	d
+ORLD_WRNING_fc	alpha_setting.h	231;"	d
 OS_BSD	modbus-tcp.c	44;"	d	file:
 OS_WIN32	modbus-tcp.c	30;"	d	file:
-OT_DETC_ad	alpha_setting.h	328;"	d
-OT_DETC_fc	alpha_setting.h	218;"	d
-OT_MINUS_DETC_ad	alpha_setting.h	346;"	d
-OT_MINUS_DETC_fc	alpha_setting.h	236;"	d
-OT_MINUS_ad	alpha_setting.h	273;"	d
-OT_MINUS_fc	alpha_setting.h	163;"	d
-OT_PLUS_DETC_ad	alpha_setting.h	345;"	d
-OT_PLUS_DETC_fc	alpha_setting.h	235;"	d
-OT_PLUS_ad	alpha_setting.h	272;"	d
-OT_PLUS_fc	alpha_setting.h	162;"	d
-OUT10_ad	alpha_setting.h	140;"	d
-OUT11_ad	alpha_setting.h	141;"	d
-OUT12_ad	alpha_setting.h	142;"	d
-OUT13_ad	alpha_setting.h	143;"	d
-OUT14_ad	alpha_setting.h	144;"	d
-OUT15_ad	alpha_setting.h	145;"	d
-OUT16_ad	alpha_setting.h	146;"	d
-OUT17_ad	alpha_setting.h	147;"	d
-OUT18_ad	alpha_setting.h	148;"	d
-OUT19_ad	alpha_setting.h	149;"	d
-OUT1_ad	alpha_setting.h	132;"	d
-OUT20_ad	alpha_setting.h	150;"	d
-OUT21_ad	alpha_setting.h	151;"	d
-OUT2_ad	alpha_setting.h	133;"	d
-OUT3_ad	alpha_setting.h	134;"	d
-OUT6_ad	alpha_setting.h	136;"	d
-OUT7_ad	alpha_setting.h	137;"	d
-OUT8_ad	alpha_setting.h	138;"	d
-OUT9_ad	alpha_setting.h	139;"	d
-OVERRIDE1_ad	alpha_setting.h	297;"	d
-OVERRIDE1_fc	alpha_setting.h	187;"	d
-OVERRIDE2_ad	alpha_setting.h	298;"	d
-OVERRIDE2_fc	alpha_setting.h	188;"	d
-OVERRIDE4_ad	alpha_setting.h	299;"	d
-OVERRIDE4_fc	alpha_setting.h	189;"	d
-OVERRIDE8_ad	alpha_setting.h	300;"	d
-OVERRIDE8_fc	alpha_setting.h	190;"	d
-OVERRIDE_EN_ad	alpha_setting.h	296;"	d
-OVERRIDE_EN_fc	alpha_setting.h	186;"	d
-OVER_WR_CMPL_ad	alpha_setting.h	322;"	d
-OVER_WR_CMPL_fc	alpha_setting.h	212;"	d
+OT_DETC_ad	alpha_setting.h	334;"	d
+OT_DETC_fc	alpha_setting.h	224;"	d
+OT_MINUS_DETC_ad	alpha_setting.h	352;"	d
+OT_MINUS_DETC_fc	alpha_setting.h	242;"	d
+OT_MINUS_ad	alpha_setting.h	279;"	d
+OT_MINUS_fc	alpha_setting.h	169;"	d
+OT_PLUS_DETC_ad	alpha_setting.h	351;"	d
+OT_PLUS_DETC_fc	alpha_setting.h	241;"	d
+OT_PLUS_ad	alpha_setting.h	278;"	d
+OT_PLUS_fc	alpha_setting.h	168;"	d
+OUT10_ad	alpha_setting.h	146;"	d
+OUT11_ad	alpha_setting.h	147;"	d
+OUT12_ad	alpha_setting.h	148;"	d
+OUT13_ad	alpha_setting.h	149;"	d
+OUT14_ad	alpha_setting.h	150;"	d
+OUT15_ad	alpha_setting.h	151;"	d
+OUT16_ad	alpha_setting.h	152;"	d
+OUT17_ad	alpha_setting.h	153;"	d
+OUT18_ad	alpha_setting.h	154;"	d
+OUT19_ad	alpha_setting.h	155;"	d
+OUT1_ad	alpha_setting.h	138;"	d
+OUT20_ad	alpha_setting.h	156;"	d
+OUT21_ad	alpha_setting.h	157;"	d
+OUT2_ad	alpha_setting.h	139;"	d
+OUT3_ad	alpha_setting.h	140;"	d
+OUT6_ad	alpha_setting.h	142;"	d
+OUT7_ad	alpha_setting.h	143;"	d
+OUT8_ad	alpha_setting.h	144;"	d
+OUT9_ad	alpha_setting.h	145;"	d
+OVERRIDE1_ad	alpha_setting.h	303;"	d
+OVERRIDE1_fc	alpha_setting.h	193;"	d
+OVERRIDE2_ad	alpha_setting.h	304;"	d
+OVERRIDE2_fc	alpha_setting.h	194;"	d
+OVERRIDE4_ad	alpha_setting.h	305;"	d
+OVERRIDE4_fc	alpha_setting.h	195;"	d
+OVERRIDE8_ad	alpha_setting.h	306;"	d
+OVERRIDE8_fc	alpha_setting.h	196;"	d
+OVERRIDE_EN_ad	alpha_setting.h	302;"	d
+OVERRIDE_EN_fc	alpha_setting.h	192;"	d
+OVER_WR_CMPL_ad	alpha_setting.h	328;"	d
+OVER_WR_CMPL_fc	alpha_setting.h	218;"	d
 PA1_01_ad	alpha_setting.h	71;"	d
 PA2_40_ad	alpha_setting.h	72;"	d
 PA3_10_ad	alpha_setting.h	75;"	d
@@ -361,74 +368,74 @@ PACKAGE_STRING	config.h	137;"	d
 PACKAGE_TARNAME	config.h	140;"	d
 PACKAGE_URL	config.h	143;"	d
 PACKAGE_VERSION	config.h	146;"	d
-PAUSE_ad	alpha_setting.h	289;"	d
-PAUSE_fc	alpha_setting.h	179;"	d
-POINT_DETC_AREA1_ad	alpha_setting.h	325;"	d
-POINT_DETC_AREA1_fc	alpha_setting.h	215;"	d
-POINT_DETC_AREA2_ad	alpha_setting.h	326;"	d
-POINT_DETC_AREA2_fc	alpha_setting.h	216;"	d
-PROPORTIONAL_CTRL_ad	alpha_setting.h	288;"	d
-PROPORTIONAL_CTRL_fc	alpha_setting.h	178;"	d
-PST_CANCEL_ad	alpha_setting.h	290;"	d
-PST_CANCEL_fc	alpha_setting.h	180;"	d
-PST_CTRL_ad	alpha_setting.h	294;"	d
-PST_CTRL_fc	alpha_setting.h	184;"	d
-PST_DATA_SLCT_ad	alpha_setting.h	315;"	d
-PST_DATA_SLCT_fc	alpha_setting.h	205;"	d
-PST_PRESET_ad	alpha_setting.h	277;"	d
-PST_PRESET_fc	alpha_setting.h	167;"	d
-PST_PRST_CMPL_ad	alpha_setting.h	359;"	d
-PST_PRST_CMPL_fc	alpha_setting.h	249;"	d
+PAUSE_ad	alpha_setting.h	295;"	d
+PAUSE_fc	alpha_setting.h	185;"	d
+POINT_DETC_AREA1_ad	alpha_setting.h	331;"	d
+POINT_DETC_AREA1_fc	alpha_setting.h	221;"	d
+POINT_DETC_AREA2_ad	alpha_setting.h	332;"	d
+POINT_DETC_AREA2_fc	alpha_setting.h	222;"	d
+PROPORTIONAL_CTRL_ad	alpha_setting.h	294;"	d
+PROPORTIONAL_CTRL_fc	alpha_setting.h	184;"	d
+PST_CANCEL_ad	alpha_setting.h	296;"	d
+PST_CANCEL_fc	alpha_setting.h	186;"	d
+PST_CTRL_ad	alpha_setting.h	300;"	d
+PST_CTRL_fc	alpha_setting.h	190;"	d
+PST_DATA_SLCT_ad	alpha_setting.h	321;"	d
+PST_DATA_SLCT_fc	alpha_setting.h	211;"	d
+PST_PRESET_ad	alpha_setting.h	283;"	d
+PST_PRESET_fc	alpha_setting.h	173;"	d
+PST_PRST_CMPL_ad	alpha_setting.h	365;"	d
+PST_PRST_CMPL_fc	alpha_setting.h	255;"	d
 PY_BUF_SIZE	modbus-rtu-private.h	44;"	d
-RANGE1_OF_PST_ad	alpha_setting.h	365;"	d
-RANGE1_OF_PST_fc	alpha_setting.h	255;"	d
-RANGE2_OF_PST_ad	alpha_setting.h	366;"	d
-RANGE2_OF_PST_fc	alpha_setting.h	256;"	d
-RDY_ad	alpha_setting.h	319;"	d
-RDY_fc	alpha_setting.h	209;"	d
-REGISTERS_BUFFER_SIZE	alpha_setting.h	374;"	d
-REV_ad	alpha_setting.h	268;"	d
-REV_fc	alpha_setting.h	158;"	d
-RST_ad	alpha_setting.h	275;"	d
-RST_fc	alpha_setting.h	165;"	d
-SERVO_ON_ad	alpha_setting.h	266;"	d
-SERVO_ON_fc	alpha_setting.h	156;"	d
+RANGE1_OF_PST_ad	alpha_setting.h	371;"	d
+RANGE1_OF_PST_fc	alpha_setting.h	261;"	d
+RANGE2_OF_PST_ad	alpha_setting.h	372;"	d
+RANGE2_OF_PST_fc	alpha_setting.h	262;"	d
+RDY_ad	alpha_setting.h	325;"	d
+RDY_fc	alpha_setting.h	215;"	d
+REGISTERS_BUFFER_SIZE	alpha_setting.h	380;"	d
+REV_ad	alpha_setting.h	274;"	d
+REV_fc	alpha_setting.h	164;"	d
+RST_ad	alpha_setting.h	281;"	d
+RST_fc	alpha_setting.h	171;"	d
+SERVO_ON_ad	alpha_setting.h	272;"	d
+SERVO_ON_fc	alpha_setting.h	162;"	d
 SHUT_RDWR	modbus-tcp.c	37;"	d	file:
-SPD_COINCD_ad	alpha_setting.h	333;"	d
-SPD_COINCD_fc	alpha_setting.h	223;"	d
-SPD_LMT_DETC_ad	alpha_setting.h	321;"	d
-SPD_LMT_DETC_fc	alpha_setting.h	211;"	d
-START_ad	alpha_setting.h	269;"	d
-START_fc	alpha_setting.h	159;"	d
+SPD_COINCD_ad	alpha_setting.h	339;"	d
+SPD_COINCD_fc	alpha_setting.h	229;"	d
+SPD_LMT_DETC_ad	alpha_setting.h	327;"	d
+SPD_LMT_DETC_fc	alpha_setting.h	217;"	d
+START_ad	alpha_setting.h	275;"	d
+START_fc	alpha_setting.h	165;"	d
 STDC_HEADERS	config.h	149;"	d
-S_RDY_ad	alpha_setting.h	336;"	d
-S_RDY_fc	alpha_setting.h	226;"	d
+S_RDY_ad	alpha_setting.h	342;"	d
+S_RDY_fc	alpha_setting.h	232;"	d
 TARGET	Makefile	/^TARGET=client-test$/;"	m
-TEACHING_ad	alpha_setting.h	292;"	d
-TEACHING_fc	alpha_setting.h	182;"	d
+TEACHING_ad	alpha_setting.h	298;"	d
+TEACHING_fc	alpha_setting.h	188;"	d
 TIME_WITH_SYS_TIME	config.h	152;"	d
-TRQ_CTRL_ad	alpha_setting.h	295;"	d
-TRQ_CTRL_fc	alpha_setting.h	185;"	d
-TRQ_LMT0_ad	alpha_setting.h	279;"	d
-TRQ_LMT0_fc	alpha_setting.h	169;"	d
-TRQ_LMT1_ad	alpha_setting.h	280;"	d
-TRQ_LMT1_fc	alpha_setting.h	170;"	d
-TRQ_LMT_DETC_ad	alpha_setting.h	334;"	d
-TRQ_LMT_DETC_fc	alpha_setting.h	224;"	d
+TRQ_CTRL_ad	alpha_setting.h	301;"	d
+TRQ_CTRL_fc	alpha_setting.h	191;"	d
+TRQ_LMT0_ad	alpha_setting.h	285;"	d
+TRQ_LMT0_fc	alpha_setting.h	175;"	d
+TRQ_LMT1_ad	alpha_setting.h	286;"	d
+TRQ_LMT1_fc	alpha_setting.h	176;"	d
+TRQ_LMT_DETC_ad	alpha_setting.h	340;"	d
+TRQ_LMT_DETC_fc	alpha_setting.h	230;"	d
 TRUE	am335x_setting.c	13;"	d	file:
 TRUE	modbus.h	52;"	d
 VERSION	config.h	155;"	d
 WINVER	modbus-tcp.c	34;"	d	file:
-X1_ad	alpha_setting.h	304;"	d
-X1_fc	alpha_setting.h	194;"	d
-X2_ad	alpha_setting.h	305;"	d
-X2_fc	alpha_setting.h	195;"	d
-X3_ad	alpha_setting.h	306;"	d
-X3_fc	alpha_setting.h	196;"	d
-ZRO_DEVI_ad	alpha_setting.h	331;"	d
-ZRO_DEVI_fc	alpha_setting.h	221;"	d
-ZRO_SPEED_ad	alpha_setting.h	332;"	d
-ZRO_SPEED_fc	alpha_setting.h	222;"	d
+X1_ad	alpha_setting.h	310;"	d
+X1_fc	alpha_setting.h	200;"	d
+X2_ad	alpha_setting.h	311;"	d
+X2_fc	alpha_setting.h	201;"	d
+X3_ad	alpha_setting.h	312;"	d
+X3_fc	alpha_setting.h	202;"	d
+ZRO_DEVI_ad	alpha_setting.h	337;"	d
+ZRO_DEVI_fc	alpha_setting.h	227;"	d
+ZRO_SPEED_ad	alpha_setting.h	338;"	d
+ZRO_SPEED_fc	alpha_setting.h	228;"	d
 _BYTE_TIMEOUT	modbus-private.h	52;"	d
 _DEPS	Makefile	/^_DEPS= alpha_setting.h alpha_motion_control.h am335x_setting.h encoder.h global_setting.h \\$/;"	m
 _FC_READ_COILS	modbus-private.h	55;"	d
@@ -443,8 +450,8 @@ _FC_WRITE_MULTIPLE_REGISTERS	modbus-private.h	63;"	d
 _FC_WRITE_SINGLE_COIL	modbus-private.h	59;"	d
 _FC_WRITE_SINGLE_REGISTER	modbus-private.h	60;"	d
 _MIN_REQ_LENGTH	modbus-private.h	44;"	d
-_MODBUS_BACKEND_TYPE_RTU	modbus-private.h	/^    _MODBUS_BACKEND_TYPE_RTU=0,$/;"	e	enum:__anon1
-_MODBUS_BACKEND_TYPE_TCP	modbus-private.h	/^    _MODBUS_BACKEND_TYPE_TCP$/;"	e	enum:__anon1
+_MODBUS_BACKEND_TYPE_RTU	modbus-private.h	/^    _MODBUS_BACKEND_TYPE_RTU=0,$/;"	e	enum:__anon6
+_MODBUS_BACKEND_TYPE_TCP	modbus-private.h	/^    _MODBUS_BACKEND_TYPE_TCP$/;"	e	enum:__anon6
 _MODBUS_EXCEPTION_RSP_LENGTH	modbus-private.h	48;"	d
 _MODBUS_H_	modbus.h	20;"	d
 _MODBUS_PRIVATE_H_	modbus-private.h	20;"	d
@@ -466,9 +473,9 @@ _MODBUS_VERSION_H_	modbus-version.h	19;"	d
 _OBJS	Makefile	/^_OBJS= alpha_setting.o alpha_motion_control.o alpha_motion_test.o am335x_setting.o client.o encoder.o \\$/;"	m
 _REPORT_SLAVE_ID	modbus-private.h	46;"	d
 _RESPONSE_TIMEOUT	modbus-private.h	51;"	d
-_STEP_DATA	modbus.c	/^    _STEP_DATA$/;"	e	enum:__anon5	file:
-_STEP_FUNCTION	modbus.c	/^    _STEP_FUNCTION,$/;"	e	enum:__anon5	file:
-_STEP_META	modbus.c	/^    _STEP_META,$/;"	e	enum:__anon5	file:
+_STEP_DATA	modbus.c	/^    _STEP_DATA$/;"	e	enum:__anon1	file:
+_STEP_FUNCTION	modbus.c	/^    _STEP_FUNCTION,$/;"	e	enum:__anon1	file:
+_STEP_META	modbus.c	/^    _STEP_META,$/;"	e	enum:__anon1	file:
 _error_print	modbus.c	/^void _error_print(modbus_t *ctx, const char *context)$/;"	f
 _modbus	modbus-private.h	/^struct _modbus {$/;"	s
 _modbus_backend	modbus-private.h	/^typedef struct _modbus_backend {$/;"	s
@@ -511,11 +518,10 @@ _modbus_tcp_send_msg_pre	modbus-tcp.c	/^int _modbus_tcp_send_msg_pre(uint8_t *re
 _modbus_tcp_set_ipv4_options	modbus-tcp.c	/^static int _modbus_tcp_set_ipv4_options(int s)$/;"	f	file:
 _sft	modbus-private.h	/^typedef struct _sft {$/;"	s
 _sleep_and_flush	modbus.c	/^int _sleep_and_flush(modbus_t *ctx)$/;"	f
-_step_t	modbus.c	/^} _step_t;$/;"	t	typeref:enum:__anon5	file:
+_step_t	modbus.c	/^} _step_t;$/;"	t	typeref:enum:__anon1	file:
 backend	modbus-private.h	/^    const modbus_backend_t *backend;$/;"	m	struct:_modbus
 backend_data	modbus-private.h	/^    void *backend_data;$/;"	m	struct:_modbus
 backend_type	modbus-private.h	/^    unsigned int backend_type;$/;"	m	struct:_modbus_backend
-backward_run	alpha_motion_control.c	/^void backward_run()$/;"	f
 baud	modbus-rtu-private.h	/^    int baud;$/;"	m	struct:_modbus_rtu
 buf	modbus-rtu-private.h	/^	uint8_t buf[PY_BUF_SIZE];$/;"	m	struct:win32_ser
 buff	am335x_setting.c	/^char buff[512];$/;"	v
@@ -535,6 +541,9 @@ compute_response_length_from_request	modbus.c	/^static unsigned int compute_resp
 connect	modbus-private.h	/^    int (*connect) (modbus_t *ctx);$/;"	m	struct:_modbus_backend
 crc16	modbus-rtu.c	/^static uint16_t crc16(uint8_t *buffer, uint16_t buffer_length)$/;"	f	file:
 cruise	alpha_motion_control.c	/^void cruise()$/;"	f
+cruise_left_position	alpha_motion_control.c	/^static uint16_t cruise_left_position[2];$/;"	v	file:
+cruise_right_position	alpha_motion_control.c	/^static uint16_t cruise_right_position[2];$/;"	v	file:
+cruise_speed	alpha_motion_control.c	/^static uint16_t cruise_speed[2];$/;"	v	file:
 ctx	alpha_setting.c	/^modbus_t *ctx = NULL;$/;"	v
 data_bit	modbus-rtu-private.h	/^    uint8_t data_bit;$/;"	m	struct:_modbus_rtu
 debug	modbus-private.h	/^    int debug;$/;"	m	struct:_modbus
@@ -545,21 +554,27 @@ fd	am335x_setting.c	/^int fd=-1;$/;"	v
 fd	modbus-rtu-private.h	/^	HANDLE fd;$/;"	m	struct:win32_ser
 filter_request	modbus-private.h	/^    int (*filter_request) (modbus_t *ctx, int slave);$/;"	m	struct:_modbus_backend
 flush	modbus-private.h	/^    int (*flush) (modbus_t *ctx);$/;"	m	struct:_modbus_backend
-forced_stop	alpha_motion_control.c	/^void forced_stop()$/;"	f
+forced_stop_off	alpha_motion_control.c	/^void forced_stop_off()$/;"	f
+forced_stop_on	alpha_motion_control.c	/^void forced_stop_on()$/;"	f
 forward_command_test	alpha_motion_test.c	/^void forward_command_test()$/;"	f
-forward_run	alpha_motion_control.c	/^void forward_run()$/;"	f
 free_buffers_for_modbus	alpha_setting.c	/^void free_buffers_for_modbus()$/;"	f
-free_run	alpha_motion_control.c	/^void free_run()$/;"	f
+free_run_off	alpha_motion_control.c	/^void free_run_off()$/;"	f
+free_run_on	alpha_motion_control.c	/^void free_run_on()$/;"	f
 function	modbus-private.h	/^    int function;$/;"	m	struct:_sft
 header_length	modbus-private.h	/^    unsigned int header_length;$/;"	m	struct:_modbus_backend
 help	client.c	/^void help()$/;"	f
+imme_acceleration_time	alpha_motion_control.c	/^static uint16_t imme_acceleration_time[2];$/;"	v	file:
+imme_deceleration_time	alpha_motion_control.c	/^static uint16_t imme_deceleration_time[2];$/;"	v	file:
 immediate_value_data_op_test	alpha_motion_test.c	/^void immediate_value_data_op_test()$/;"	f
 immediate_value_date_operation_485_setting	alpha_setting.c	/^void immediate_value_date_operation_485_setting()$/;"	f
+immediate_value_operation_run	alpha_motion_control.c	/^void immediate_value_operation_run()$/;"	f
 init_buffers_for_modbus	alpha_setting.c	/^void init_buffers_for_modbus()$/;"	f
 init_parameters	alpha_setting.c	/^void init_parameters()$/;"	f
 io_signals_mapping	alpha_setting.c	/^void io_signals_mapping()$/;"	f
 ip	modbus-tcp-private.h	/^    char ip[16];$/;"	m	struct:_modbus_tcp
+is_INP	alpha_motion_control.c	/^static inline int is_INP()$/;"	f	file:
 is_ready	alpha_motion_control.c	/^int is_ready()$/;"	f
+left_direction_run	alpha_motion_control.c	/^void left_direction_run()$/;"	f
 libmodbus_version_major	modbus.c	/^const unsigned int libmodbus_version_major = LIBMODBUS_VERSION_MAJOR;$/;"	v
 libmodbus_version_micro	modbus.c	/^const unsigned int libmodbus_version_micro = LIBMODBUS_VERSION_MICRO;$/;"	v
 libmodbus_version_minor	modbus.c	/^const unsigned int libmodbus_version_minor = LIBMODBUS_VERSION_MINOR;$/;"	v
@@ -567,10 +582,10 @@ listening_uart	am335x_setting.c	/^int listening_uart(const char* device, int bau
 main	client.c	/^int main(int argc, char** argv)$/;"	f
 max_adu_length	modbus-private.h	/^    unsigned int max_adu_length;$/;"	m	struct:_modbus_backend
 modbus_backend_t	modbus-private.h	/^} modbus_backend_t;$/;"	t	typeref:struct:_modbus_backend
-modbus_bakend_type_t	modbus-private.h	/^} modbus_bakend_type_t;$/;"	t	typeref:enum:__anon1
+modbus_bakend_type_t	modbus-private.h	/^} modbus_bakend_type_t;$/;"	t	typeref:enum:__anon6
 modbus_close	modbus.c	/^void modbus_close(modbus_t *ctx)$/;"	f
 modbus_connect	modbus.c	/^int modbus_connect(modbus_t *ctx)$/;"	f
-modbus_error_recovery_mode	modbus.h	/^} modbus_error_recovery_mode;$/;"	t	typeref:enum:__anon4
+modbus_error_recovery_mode	modbus.h	/^} modbus_error_recovery_mode;$/;"	t	typeref:enum:__anon5
 modbus_flush	modbus.c	/^int modbus_flush(modbus_t *ctx)$/;"	f
 modbus_free	modbus.c	/^void modbus_free(modbus_t *ctx)$/;"	f
 modbus_get_byte_from_bits	modbus-data.c	/^uint8_t modbus_get_byte_from_bits(const uint8_t *src, int index,$/;"	f
@@ -581,7 +596,7 @@ modbus_get_response_timeout	modbus.c	/^void modbus_get_response_timeout(modbus_t
 modbus_get_socket	modbus.c	/^int modbus_get_socket(modbus_t *ctx)$/;"	f
 modbus_mapping_free	modbus.c	/^void modbus_mapping_free(modbus_mapping_t *mb_mapping)$/;"	f
 modbus_mapping_new	modbus.c	/^modbus_mapping_t* modbus_mapping_new(int nb_bits, int nb_input_bits,$/;"	f
-modbus_mapping_t	modbus.h	/^} modbus_mapping_t;$/;"	t	typeref:struct:__anon3
+modbus_mapping_t	modbus.h	/^} modbus_mapping_t;$/;"	t	typeref:struct:__anon4
 modbus_new_rtu	modbus-rtu.c	/^modbus_t* modbus_new_rtu(const char *device,$/;"	f
 modbus_new_tcp	modbus-tcp.c	/^modbus_t* modbus_new_tcp(const char *ip, int port)$/;"	f
 modbus_new_tcp_pi	modbus-tcp.c	/^modbus_t* modbus_new_tcp_pi(const char *node, const char *service)$/;"	f
@@ -620,25 +635,25 @@ modbus_write_bit	modbus.c	/^int modbus_write_bit(modbus_t *ctx, int addr, int st
 modbus_write_bits	modbus.c	/^int modbus_write_bits(modbus_t *ctx, int addr, int nb, const uint8_t *src)$/;"	f
 modbus_write_register	modbus.c	/^int modbus_write_register(modbus_t *ctx, int addr, int value)$/;"	f
 modbus_write_registers	modbus.c	/^int modbus_write_registers(modbus_t *ctx, int addr, int nb, const uint16_t *src)$/;"	f
-msg_type_t	modbus.c	/^} msg_type_t;$/;"	t	typeref:enum:__anon6	file:
+msg_type_t	modbus.c	/^} msg_type_t;$/;"	t	typeref:enum:__anon2	file:
 n_bytes	modbus-rtu-private.h	/^	DWORD n_bytes;$/;"	m	struct:win32_ser
 name_arr	am335x_setting.c	/^int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400, 1200};$/;"	v
-nb_bits	modbus.h	/^    int nb_bits;$/;"	m	struct:__anon3
-nb_input_bits	modbus.h	/^    int nb_input_bits;$/;"	m	struct:__anon3
-nb_input_registers	modbus.h	/^    int nb_input_registers;$/;"	m	struct:__anon3
-nb_registers	modbus.h	/^    int nb_registers;$/;"	m	struct:__anon3
-negative_positioning	alpha_motion_control.c	/^void negative_positioning()$/;"	f
+nb_bits	modbus.h	/^    int nb_bits;$/;"	m	struct:__anon4
+nb_input_bits	modbus.h	/^    int nb_input_bits;$/;"	m	struct:__anon4
+nb_input_registers	modbus.h	/^    int nb_input_registers;$/;"	m	struct:__anon4
+nb_registers	modbus.h	/^    int nb_registers;$/;"	m	struct:__anon4
 node	modbus-tcp-private.h	/^    char node[_MODBUS_TCP_PI_NODE_LENGTH];$/;"	m	struct:_modbus_tcp_pi
 old_dcb	modbus-rtu-private.h	/^    DCB old_dcb;$/;"	m	struct:_modbus_rtu
 old_tios	modbus-rtu-private.h	/^    struct termios old_tios;$/;"	m	struct:_modbus_rtu	typeref:struct:_modbus_rtu::termios
 open_modbus_rtu_master	alpha_setting.c	/^int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave)$/;"	f
 parity	modbus-rtu-private.h	/^    char parity;$/;"	m	struct:_modbus_rtu
-pause	alpha_motion_control.c	/^void pause()$/;"	f
+pause_off	alpha_motion_control.c	/^void pause_off()$/;"	f
+pause_on	alpha_motion_control.c	/^void pause_on()$/;"	f
 port	modbus-tcp-private.h	/^    int port;$/;"	m	struct:_modbus_tcp
 port	modbus-tcp-private.h	/^    int port;$/;"	m	struct:_modbus_tcp_pi
-positioning_cancel	alpha_motion_control.c	/^void positioning_cancel()$/;"	f
+positioning_cancel_off	alpha_motion_control.c	/^void positioning_cancel_off()$/;"	f
+positioning_cancel_on	alpha_motion_control.c	/^void positioning_cancel_on()$/;"	f
 positioning_data_operation_485_setting	alpha_setting.c	/^void positioning_data_operation_485_setting()$/;"	f
-positive_positioning	alpha_motion_control.c	/^void positive_positioning()$/;"	f
 pre_check_confirmation	modbus-private.h	/^    int (*pre_check_confirmation) (modbus_t *ctx, const uint8_t *req,$/;"	m	struct:_modbus_backend
 prepare_response_tid	modbus-private.h	/^    int (*prepare_response_tid) (const uint8_t *req, int *req_length);$/;"	m	struct:_modbus_backend
 read_io_status	modbus.c	/^static int read_io_status(modbus_t *ctx, int function,$/;"	f	file:
@@ -649,6 +664,7 @@ recv	modbus-private.h	/^    ssize_t (*recv) (modbus_t *ctx, uint8_t *rsp, int rs
 response_exception	modbus.c	/^static int response_exception(modbus_t *ctx, sft_t *sft,$/;"	f	file:
 response_io_status	modbus.c	/^static int response_io_status(int address, int nb,$/;"	f	file:
 response_timeout	modbus-private.h	/^    struct timeval response_timeout;$/;"	m	struct:_modbus	typeref:struct:_modbus::timeval
+right_direction_run	alpha_motion_control.c	/^void right_direction_run()$/;"	f
 s	modbus-private.h	/^    int s;$/;"	m	struct:_modbus
 select	modbus-private.h	/^    int (*select) (modbus_t *ctx, fd_set *rfds, struct timeval *tv, int msg_length);$/;"	m	struct:_modbus_backend
 send	modbus-private.h	/^    ssize_t (*send) (modbus_t *ctx, const uint8_t *req, int req_length);$/;"	m	struct:_modbus_backend
@@ -659,6 +675,11 @@ serve_off	alpha_motion_control.c	/^int serve_off()$/;"	f
 serve_on	alpha_motion_control.c	/^int serve_on()$/;"	f
 service	modbus-tcp-private.h	/^    char service[_MODBUS_TCP_PI_SERVICE_LENGTH];$/;"	m	struct:_modbus_tcp_pi
 set_Parity	am335x_setting.c	/^int set_Parity(int fd,int databits,int stopbits,int parity)$/;"	f
+set_cruise_left_position	alpha_motion_control.c	/^void set_cruise_left_position(const int32_t position)$/;"	f
+set_cruise_right_position	alpha_motion_control.c	/^void set_cruise_right_position(const int32_t position)$/;"	f
+set_cruise_speed	alpha_motion_control.c	/^void set_cruise_speed(const uint32_t speed)$/;"	f
+set_imme_acceleration_time	alpha_motion_control.c	/^void set_imme_acceleration_time(const uint32_t time)$/;"	f
+set_imme_deceleration_time	alpha_motion_control.c	/^void set_imme_deceleration_time(const uint32_t time)$/;"	f
 set_slave	modbus-private.h	/^    int (*set_slave) (modbus_t *ctx, int slave);$/;"	m	struct:_modbus_backend
 set_speed	am335x_setting.c	/^void set_speed(int fd, int speed)$/;"	f
 sft_t	modbus-private.h	/^} sft_t;$/;"	t	typeref:struct:_sft
@@ -669,10 +690,10 @@ ssize_t	modbus-private.h	/^typedef int ssize_t;$/;"	t
 stop_bit	modbus-rtu-private.h	/^    uint8_t stop_bit;$/;"	m	struct:_modbus_rtu
 strlcpy	modbus.c	/^size_t strlcpy(char *dest, const char *src, size_t dest_size)$/;"	f
 t_id	modbus-private.h	/^    int t_id;$/;"	m	struct:_sft
-tab_bits	modbus.h	/^    uint8_t *tab_bits;$/;"	m	struct:__anon3
-tab_input_bits	modbus.h	/^    uint8_t *tab_input_bits;$/;"	m	struct:__anon3
-tab_input_registers	modbus.h	/^    uint16_t *tab_input_registers;$/;"	m	struct:__anon3
-tab_registers	modbus.h	/^    uint16_t *tab_registers;$/;"	m	struct:__anon3
+tab_bits	modbus.h	/^    uint8_t *tab_bits;$/;"	m	struct:__anon4
+tab_input_bits	modbus.h	/^    uint8_t *tab_input_bits;$/;"	m	struct:__anon4
+tab_input_registers	modbus.h	/^    uint16_t *tab_input_registers;$/;"	m	struct:__anon4
+tab_registers	modbus.h	/^    uint16_t *tab_registers;$/;"	m	struct:__anon4
 tab_rp_bits	alpha_setting.c	/^uint8_t	 *tab_rp_bits;$/;"	v
 tab_rp_registers	alpha_setting.c	/^uint16_t *tab_rp_registers; $/;"	v
 tab_rq_bits	alpha_setting.c	/^uint8_t  *tab_rq_bits;$/;"	v
@@ -681,6 +702,7 @@ table_crc_hi	modbus-rtu.c	/^static const uint8_t table_crc_hi[] = {$/;"	v	file:
 table_crc_lo	modbus-rtu.c	/^static const uint8_t table_crc_lo[] = {$/;"	v	file:
 v	am335x_setting.c	/^unsigned short  v;$/;"	v
 w_ser	modbus-rtu-private.h	/^    struct win32_ser w_ser;$/;"	m	struct:_modbus_rtu	typeref:struct:_modbus_rtu::win32_ser
+wait_until_inposition_on	alpha_motion_control.c	/^void wait_until_inposition_on()$/;"	f
 win32_ser	modbus-rtu-private.h	/^struct win32_ser {$/;"	s
 win32_ser_init	modbus-rtu.c	/^static void win32_ser_init(struct win32_ser *ws) {$/;"	f	file:
 win32_ser_read	modbus-rtu.c	/^static int win32_ser_read(struct win32_ser *ws, uint8_t *p_msg,$/;"	f	file:
