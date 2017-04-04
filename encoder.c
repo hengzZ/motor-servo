@@ -1,17 +1,2 @@
 #include "encoder.h"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

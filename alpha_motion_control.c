@@ -38,12 +38,16 @@ void wait_until_inposition_on()
 	while(1!=is_INP()){ }
 }
 
-
+// Immediate value data setting: 
+//		The immediate value status of immediate data is configured as follows:
+//		Data||4 bytes|| Immediate value status			1byte	(ntoe: bit0 configure the command method,0:ABS 1:INC)
+//					 || Immediate value value M code	1byte
+//					 || Not used						2bytes
 // Unidirectional movement
 void left_direction_run()
 {
-	tab_rq_registers[0] = 0x0000;
-	tab_rq_registers[1] = INC_POSITION_MODE;
+	tab_rq_registers[0] = INC_POSITION_MODE << 8;
+	tab_rq_registers[1] = 0x0000;
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
 		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
 	}
@@ -62,8 +66,8 @@ void left_direction_run()
 }
 void right_direction_run()
 {
-	tab_rq_registers[0] = 0x0000;
-	tab_rq_registers[1] = INC_POSITION_MODE;
+	tab_rq_registers[0] = INC_POSITION_MODE << 8;
+	tab_rq_registers[1] = 0x0000;
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
 		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
 	}
@@ -84,8 +88,8 @@ void right_direction_run()
 // Cruise Control (巡航控制)
 void cruise()
 {
-	tab_rq_registers[0] = 0x0000;
-	tab_rq_registers[1] = ABS_POSITION_MODE;
+	tab_rq_registers[0] = ABS_POSITION_MODE << 8;
+	tab_rq_registers[1] = 0x0000;
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
 		if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
 	}

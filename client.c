@@ -6,15 +6,6 @@
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
 
-void help()
-{
-	fprintf(stderr,"\nIntrodution:\n");
-	fprintf(stderr,"	1.this is a client test program.\n");
-	fprintf(stderr,"	2.function: test alpha motor control with listening encoder on am335x uart.\n");
-	fprintf(stderr,"Note:\n");
-	fprintf(stderr,"	1.press Enter to run demo.\n");
-	fprintf(stderr,"	2.when motor stop run, press Enter to serve off and exit program.\n\n");
-}
 
 int main(int argc, char** argv)
 {
@@ -53,7 +44,13 @@ int main(int argc, char** argv)
 	// }
 	// Control thread Init
 
-	// Motor Control
+	// // Motor Control
+	// set_cruise_left_position(10000);
+	// set_cruise_right_position(-10000);
+	// set_cruise_speed(10000);
+	// //cruise();
+	// left_direction_run();
+	
 
 
 	// test alpha

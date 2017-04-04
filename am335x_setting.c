@@ -16,7 +16,8 @@
 int fd=-1;
 
 char buff[512];
-unsigned short  v;
+unsigned short  cur_v;
+unsigned short  pre_v;
 
 int speed_arr[] = {  B115200, B57600, B38400, B19200, B9600, B4800,
 		    B2400, B1200};
@@ -146,14 +147,13 @@ void receivethread(void)
   {   
 	if((nread = read(fd,buff,100))>0) 
 	{
-		//printf("[RECEIVE] Len is %d,content is :\n",nread);
+	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
 	    buff[nread]='\0';
-		//for(int i = 0; i < nread; i++){
-		//	fprintf(stderr,"%.2x ",buff[i]);
-		//}
-		memcpy(&v,buff+3,2);
-
-		printf("%d\n",v);
+	    //for(int i = 0; i < nread; i++){
+	    //	fprintf(stderr,"%.2x ",buff[i]);
+	    //}
+	    memcpy(&cur_v,buff+3,2);
+	    //printf("%d\n",v);
 	}
 	
 	usleep(1000/**1000*/);
