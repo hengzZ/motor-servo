@@ -24,6 +24,8 @@ void set_cruise_right_position(const int32_t position);
 void set_cruise_speed(const uint32_t speed);
 void set_imme_acceleration_time(const uint32_t time);
 void set_imme_deceleration_time(const uint32_t time);
+void immediate_value_operation_run();
+int is_INP();
 
 // coil signal
 int serve_on();
