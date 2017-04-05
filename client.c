@@ -15,9 +15,6 @@ int  parse_ini_file(char * ini_name);
 
 int main(int argc, char** argv)
 {
-    // test log
-    /* close printf buffer */
-    setbuf(stdout, NULL);
     /* initialize EasyLogger */
     elog_init();
     /* set EasyLogger log format */
@@ -27,34 +24,33 @@ int main(int argc, char** argv)
     elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
     elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
     elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
-
     /* start EasyLogger */
     elog_start();
 
-    while(true) {
-    /* test log output for all level */
-    log_a("Hello EasyLogger!");
-    log_e("Hello EasyLogger!");
-    log_w("Hello EasyLogger!");
-    log_i("Hello EasyLogger!");
-    log_d("Hello EasyLogger!");
-    log_v("Hello EasyLogger!");
-    // elog_raw("Hello EasyLogger!");
-    sleep(5);
-    }
-	
-    // // test iniparser
-    // int status ;
-
-    // if (argc<2) {
-    //     create_example_ini_file();
-    //     status = parse_ini_file("configure.ini");
-    // } else {
-    //     status = parse_ini_file(argv[1]);
+    // while(true) {
+    //     /* test log output for all level */
+    //     log_a("Hello EasyLogger!");
+    //     log_e("Hello EasyLogger!");
+    //     log_w("Hello EasyLogger!");
+    //     log_i("Hello EasyLogger!");
+    //     log_d("Hello EasyLogger!");
+    //     log_v("Hello EasyLogger!");
+    //     // elog_raw("Hello EasyLogger!");
+    //     sleep(5);
     // }
-    // return status ;
+	
+    /* initialize iniparser */
+    int status ;
+    if (argc<2) {
+        create_example_ini_file();
+        status = parse_ini_file("configure.ini");
+    } else {
+        status = parse_ini_file(argv[1]);
+    }
+    return status;
 
 
+    //
     // int ret;
 
     // // init
@@ -115,7 +111,7 @@ int main(int argc, char** argv)
 
 void create_example_ini_file(void)
 {
-    FILE    *   ini ;
+    FILE* ini;
 
     if ((ini=fopen("configure.ini", "w"))==NULL) {
         fprintf(stderr, "iniparser: cannot create example.ini\n");

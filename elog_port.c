@@ -33,6 +33,8 @@
 #include <time.h>
 
 static pthread_mutex_t output_lock;
+// zhihengw add
+static FILE* logfile=NULL;
 
 /**
  * EasyLogger port initialize
@@ -43,6 +45,13 @@ ElogErrCode elog_port_init(void) {
     ElogErrCode result = ELOG_NO_ERR;
 
     pthread_mutex_init(&output_lock, NULL);
+
+    // zhihengw add
+    logfile=fopen("./log.txt","a+");
+    if(NULL==logfile)
+    {
+        return -1;
+    }
 
     return result;
 }
@@ -55,7 +64,11 @@ ElogErrCode elog_port_init(void) {
  */
 void elog_port_output(const char *log, size_t size) {
     /* output to terminal */
-    printf("%.*s", (int)size, log);
+    // printf("%.*s", (int)size, log);
+
+    // output to log file added by zhihengw
+    fprintf(logfile,"%.*s",(int)size, log);
+    fflush(logfile);
 }
 
 /**
