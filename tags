@@ -678,6 +678,7 @@ elog_async_output	elog_async.c	/^void elog_async_output(const char *log, size_t 
 elog_async_output_notice	elog_async.c	/^void elog_async_output_notice(void) {$/;"	f
 elog_buf_enabled	elog_buf.c	/^void elog_buf_enabled(bool enabled) {$/;"	f
 elog_buf_output	elog_buf.c	/^void elog_buf_output(const char *log, size_t size) {$/;"	f
+elog_close	elog.c	/^ElogErrCode elog_close(void) {$/;"	f
 elog_cpyln	elog_utils.c	/^size_t elog_cpyln(char *line, const char *log, size_t len) {$/;"	f
 elog_d	elog.h	190;"	d
 elog_d	elog.h	76;"	d
@@ -702,6 +703,7 @@ elog_output	elog.c	/^void elog_output(uint8_t level, const char *tag, const char
 elog_output_lock	elog.c	/^void elog_output_lock(void) {$/;"	f
 elog_output_lock_enabled	elog.c	/^void elog_output_lock_enabled(bool enabled) {$/;"	f
 elog_output_unlock	elog.c	/^void elog_output_unlock(void) {$/;"	f
+elog_port_close	elog_port.c	/^ElogErrCode elog_port_close(void) {$/;"	f
 elog_port_get_p_info	elog_port.c	/^const char *elog_port_get_p_info(void) {$/;"	f
 elog_port_get_t_info	elog_port.c	/^const char *elog_port_get_t_info(void) {$/;"	f
 elog_port_get_time	elog_port.c	/^const char *elog_port_get_time(void) {$/;"	f

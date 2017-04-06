@@ -185,6 +185,14 @@ ElogErrCode elog_init(void) {
     return result;
 }
 
+// zhihengw add
+void elog_close(void) {
+    extern ElogErrCode elog_port_close(void);
+
+    /* port close*/
+    elog_port_close();
+}
+
 /**
  * EasyLogger start after initialize.
  */
@@ -199,7 +207,7 @@ void elog_start(void) {
 #endif
 
     /* show version */
-    log_i("EasyLogger V%s is initialize success.", ELOG_SW_VERSION);
+    // log_i("EasyLogger V%s is initialize success.", ELOG_SW_VERSION);
 }
 
 /**

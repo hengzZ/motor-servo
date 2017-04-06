@@ -52,9 +52,20 @@ ElogErrCode elog_port_init(void) {
     {
         return -1;
     }
+    // set buffer
+    setbuf(logfile,NULL);
 
     return result;
 }
+// zhihengw add
+ElogErrCode elog_port_close(void) {
+    ElogErrCode result = ELOG_NO_ERR;
+    // zhihengw add
+    fclose(logfile);
+
+    return result;
+}
+
 
 /**
  * output log port interface
@@ -68,7 +79,7 @@ void elog_port_output(const char *log, size_t size) {
 
     // output to log file added by zhihengw
     fprintf(logfile,"%.*s",(int)size, log);
-    fflush(logfile);
+    //fflush(logfile);
 }
 
 /**

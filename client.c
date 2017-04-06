@@ -105,6 +105,8 @@ int main(int argc, char** argv)
     // close_uart();
     // free_buffers_for_modbus();
     // close_modbus_rtu_master();
+    elog_close();
+
     return 0;
 }
 
@@ -114,17 +116,12 @@ void create_example_ini_file(void)
     FILE* ini;
 
     if ((ini=fopen("configure.ini", "w"))==NULL) {
-        fprintf(stderr, "iniparser: cannot create example.ini\n");
+        log_e("iniparser: cannot create configure.ini");
         return ;
     }
 
     fprintf(ini,
-    "#\n"
-    "# This is an example of ini file\n"
-    "#\n"
-    "\n"
     "[Pizza]\n"
-    "\n"
     "Ham       = yes ;\n"
     "Mushrooms = TRUE ;\n"
     "Capres    = 0 ;\n"
@@ -132,7 +129,6 @@ void create_example_ini_file(void)
     "\n"
     "\n"
     "[Wine]\n"
-    "\n"
     "Grape     = Cabernet Sauvignon ;\n"
     "Year      = 1989 ;\n"
     "Country   = Spain ;\n"
@@ -154,7 +150,7 @@ int parse_ini_file(char * ini_name)
 
     ini = iniparser_load(ini_name);
     if (ini==NULL) {
-        fprintf(stderr, "cannot parse file: %s\n", ini_name);
+        log_e("cannot parse ini file.");
         return -1 ;
     }
     iniparser_dump(ini, stderr);

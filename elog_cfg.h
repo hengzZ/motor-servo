@@ -48,7 +48,7 @@
 /* enable log color */
 #define ELOG_COLOR_ENABLE
 /* enable asynchronous output mode */
-#define ELOG_ASYNC_OUTPUT_ENABLE
+//#define ELOG_ASYNC_OUTPUT_ENABLE
 /* buffer size for asynchronous output mode */
 #define ELOG_ASYNC_OUTPUT_BUF_SIZE           (ELOG_LINE_BUF_SIZE * 100)
 /* each asynchronous output's log which must end with newline sign */
