@@ -40,15 +40,15 @@ int main(int argc, char** argv)
     // }
 	
     /* initialize iniparser */
-    int status ;
-    if (argc<2) {
+    int status = parse_ini_file("configure.ini");
+    if(-1 == status)
+    {
+        int ret = 0;
         create_example_ini_file();
-        status = parse_ini_file("configure.ini");
-    } else {
-        status = parse_ini_file(argv[1]);
+        ret = parse_ini_file("configure.ini");
+        if(-1 == ret) return -1;
     }
-    return status;
-
+    log_i("Init Success.");
 
     //
     // int ret;
@@ -127,7 +127,6 @@ void create_example_ini_file(void)
     "Capres    = 0 ;\n"
     "Cheese    = Non ;\n"
     "\n"
-    "\n"
     "[Wine]\n"
     "Grape     = Cabernet Sauvignon ;\n"
     "Year      = 1989 ;\n"
@@ -135,8 +134,8 @@ void create_example_ini_file(void)
     "Alcohol   = 12.5  ;\n"
     "\n");
     fclose(ini);
+    log_i("create default configure.ini");
 }
-
 
 int parse_ini_file(char * ini_name)
 {
