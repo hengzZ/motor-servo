@@ -10,6 +10,8 @@
 #include     <pthread.h> 
 #include     <sys/ioctl.h> 
 
+#include    "elog.h"
+
 #define FALSE 1
 #define TRUE 0
 
@@ -150,13 +152,13 @@ void receivethread(void)
 
     for(;;)
     {
-	if((nread = read(fd,buff,100))>0) 
-	{
-	    buff[nread]='\0';
-	    memcpy(&cur_v,buff+3,2);
-	    pre_v = cur_v;
-	    break;
-	}
+        if((nread = read(fd,buff,100))>0) 
+        {
+            buff[nread]='\0';
+            memcpy(&cur_v,buff+3,2);
+            pre_v = cur_v;
+            break;
+        }
     }
 
     while(1)    
@@ -174,14 +176,15 @@ void receivethread(void)
 	    // calculate the stride 
 	    int temp_stride = cur_v - pre_v;
 	    if(abs(temp_stride) > MAX_STRIDE && temp_stride > 0)
-		stride = cur_v - 65535 - pre_v;
+	        stride = cur_v - 65535 - pre_v;
 	    else if (abs(temp_stride) > MAX_STRIDE && temp_stride < 0)
-		stride = cur_v + 65535 - pre_v;
+	        stride = cur_v + 65535 - pre_v;
 	    else
-		stride = temp_stride;
+	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    //printf("%d\n",encoder_position);
+	    printf("INF: Current Position: %.10d\n",encoder_position);
+	    log_e("listening.");
 
 	    // update pre_v
 	    pre_v = cur_v;
@@ -196,14 +199,18 @@ void receivethread(void)
 // Listening UART signal
 int listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit)
 {
+    int ret;
+
     pthread_t receiveid;
     fd = open(device, O_RDWR);
     if (fd < 0){
 	return -1;
     }
     set_speed(fd,baud);
-    set_Parity(fd,data_bit,stop_bit,parity);	
+    set_Parity(fd,data_bit,stop_bit,parity);
+
     pthread_create(&receiveid,NULL,(void*)receivethread,NULL);
+    pthread_detach(receiveid);
     return 0;
 }
 

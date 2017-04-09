@@ -9,9 +9,15 @@
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
 
+//[cruise] [left] [right]
+//[emergency] [free on] [position cancel] [pause] 
+//[deceleration time] [acceleration time] [speed]
+//[left position] [right position]
+volatile uint32_t g_flags;
 
 void create_example_ini_file(void);
 int  parse_ini_file(char * ini_name);
+
 
 int main(int argc, char** argv)
 {
@@ -28,7 +34,6 @@ int main(int argc, char** argv)
     elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
     /* start EasyLogger */
     elog_start();
-
     // while(true) {
     //     /* test log output for all level */
     //     log_a("Hello EasyLogger!");
@@ -67,19 +72,25 @@ int main(int argc, char** argv)
     // init_parameters();
     // log_i("Init Parameter Done.");
     
-    // serve on
-    if(serve_on()) ret = is_ready();
-    if(ret != 1){
-    	log_e("servo_on is ON, but is_ready OFF");
-    	serve_off();
-    	free_buffers_for_modbus();
-    	close_modbus_rtu_master();
-    	return -1;
-    }
     // listening am335x UART
     ret = listening_uart("/dev/ttyO2",9600,'N',8,1);
+    if(-1 == ret){
+    	log_e("open am335x uart failed.");
+    	free_buffers_for_modbus();
+    	close_modbus_rtu_master();
+    	return -1;
+    }
+    // serve on
+    ret = serve_on();
+    if(-1 == ret){
+        log_e("servo on failed.");
+    	free_buffers_for_modbus();
+    	close_modbus_rtu_master();
+    	return -1;
+    }
+    ret = is_ready();
     if(ret != 1){
-    	fprintf(stderr,"ERR:open am335x uart failed.\n");
+    	log_e("servo_on is ON, but is_ready OFF.");
     	serve_off();
     	free_buffers_for_modbus();
     	close_modbus_rtu_master();
@@ -87,25 +98,44 @@ int main(int argc, char** argv)
     }
 
 
-    // // set_cruise_left_position(10000);
-    // // set_cruise_right_position(-10000);
-    // // set_cruise_speed(10000);
-    // while(0)
-    // {
+    // Motion Control
+    ret = set_abs_control_mode();
+    if(-1 == ret){
+    	serve_off();
+        close_uart();
+    	free_buffers_for_modbus();
+    	close_modbus_rtu_master();
+        elog_close();
+    	return -1;
+    }
+    set_cruise_left_position(10000);
+    set_cruise_right_position(-10000);
+    ret = set_cruise_speed(10000);
+    if(-1 == ret){
+    	serve_off();
+        close_uart();
+    	free_buffers_for_modbus();
+    	close_modbus_rtu_master();
+        elog_close();
+    	return -1;
+    }
+    // cruise();
+    while(TRUE)
+    {
+        
+    }
 
-    // }
 
     // // // test alpha
     // // fprintf(stderr,"INF:test immediate value data control.\n");
     // // immediate_value_data_op_test();
     // getchar();
 
-
-    // // close
-    // serve_off();
-    // close_uart();
-    // free_buffers_for_modbus();
-    // close_modbus_rtu_master();
+    // close
+    serve_off();
+    close_uart();
+    free_buffers_for_modbus();
+    close_modbus_rtu_master();
     elog_close();
 
     return 0;
