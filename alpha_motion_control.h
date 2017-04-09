@@ -12,34 +12,44 @@
 #ifndef ALPHA_MOTION_CONTROL_H
 #define ALPHA_MOTION_CONTROL_H
 
+#include "alpha_setting.h"
+
 #define ABS_POSITION_MODE   0
 #define INC_POSITION_MODE   1
 
-void left_direction_run();
-void right_direction_run();
+
+// control
+int left_direction_run();
+int right_direction_run();
+int left_cruise();
+int right_cruise();
 void cruise();
 
-void set_cruise_left_position(const int32_t position);
-void set_cruise_right_position(const int32_t position);
-void set_cruise_speed(const uint32_t speed);
-void set_imme_acceleration_time(const uint32_t time);
-void set_imme_deceleration_time(const uint32_t time);
-void immediate_value_operation_run();
+// Motion control setting
+int set_abs_control_mode();
+int set_inc_control_mode();
+int immediate_value_operation_run();
+int set_cruise_left_position(const int32_t position);
+int set_cruise_right_position(const int32_t position);
+int set_cruise_speed(const uint32_t speed);
+int set_imme_acceleration_time(const uint32_t time);
+int set_imme_deceleration_time(const uint32_t time);
 int is_INP();
 
-// coil signal
+// Servo control
 int serve_on();
 int serve_off();
 int is_ready();
 
-void forced_stop_on();
-void forced_stop_off();
-void pause_on();
-void pause_off();
-void positioning_cancel_on();
-void positioning_cancel_off();
-void free_run_on();
-void free_run_off();
+// Interrupting/Stopping Operation
+int forced_stop_on();
+int forced_stop_off();
+int pause_on();
+int pause_off();
+int positioning_cancel_on();
+int positioning_cancel_off();
+int free_run_on();
+int free_run_off();
 
 // functions for test use, implementing in file alpha_test.c
 void forward_command_test();

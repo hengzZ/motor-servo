@@ -91,5 +91,4 @@ void immediate_value_data_op_test()
 		while(1 != modbus_read_bits(ctx,0x0501,1,tab_rp_bits)){ }
 		if(1 == tab_rp_bits[0]) break;
 	}
-
 }

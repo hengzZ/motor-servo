@@ -65,7 +65,9 @@
 #define ALPHA_SETTING_H
 
 #include "modbus.h"
-#include "global_setting.h"
+
+// resent numbers when failes.
+#define OPLOOPS	2
 
 // REGISTER ADDRESS:[for parameter setting]
 #define     PA1_01_ad                       0x4000
@@ -389,16 +391,17 @@ extern uint8_t	 *tab_rp_bits;
 
 
 // Init parameters when reset the system.
-// Return: return 1 if successful, -1 means some parameters setting failed.
+// note: it just need once.
 void init_parameters();
 
 // Init recv(reply)/sent(query) buffers for modbus communication
-void init_buffers_for_modbus();
+// note: return 0 if successful, -1 for fails.
+int init_buffers_for_modbus();
 // Free(anti-init) buffers initialed buffers
 void free_buffers_for_modbus();
 
 // Open modbus
-// Return: return 1 if successful, -1 for fails.
+// note: return 0 if successful, -1 for fails.
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave);
 // Close modbus
 void close_modbus_rtu_master();

@@ -6,6 +6,7 @@
 
 modbus_t *ctx = NULL;
 
+// receive buffers for reply/query.
 uint16_t *tab_rq_registers;
 uint8_t  *tab_rq_bits;
 uint16_t *tab_rp_registers; 
@@ -16,30 +17,27 @@ void io_signals_mapping();
 void positioning_data_operation_485_setting();
 void immediate_value_date_operation_485_setting();
 
-
+// open/close modbus master
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave)
 {
 	int rc;
 	ctx = modbus_new_rtu(device , baud, parity, data_bit, stop_bit);
 	if(ctx == NULL){
-		fprintf(stderr,"ERROR: unable to create the limodbus context.\n");
 		return -1;
 	}
 	// SERVER_ID
 	rc = modbus_set_slave(ctx,slave);
 	if(-1 == rc){
-		fprintf(stderr,"ERROR: set slave failed.\n");
 		modbus_free(ctx);
 		return -1;
 	}
 	// DEBUD mode
-	modbus_set_debug(ctx, TRUE);
+	// modbus_set_debug(ctx, TRUE);
 	if (modbus_connect(ctx) == -1) {
-		fprintf(stderr,"ERROR: connection failed.\n");
 		modbus_free(ctx);
 		return -1;
 	}
-	return 1;
+	return 0;
 }
 void  close_modbus_rtu_master()
 {
@@ -47,7 +45,8 @@ void  close_modbus_rtu_master()
 	modbus_free(ctx);
 }
 
-void init_buffers_for_modbus()
+// init/free buffers for query/reply.
+int init_buffers_for_modbus()
 {
 	tab_rq_registers = (uint16_t *) malloc(REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
 	memset(tab_rq_registers, 0, REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
@@ -57,6 +56,8 @@ void init_buffers_for_modbus()
 	memset(tab_rq_bits, 0, BITS_BUFFER_SIZE * sizeof(uint8_t));
 	tab_rp_bits = (uint8_t *)malloc(BITS_BUFFER_SIZE * sizeof(uint8_t));
 	memset(tab_rp_bits, 0, BITS_BUFFER_SIZE * sizeof(uint8_t));
+	if(tab_rq_registers == NULL || tab_rp_registers == NULL || tab_rq_bits == NULL || tab_rp_bits == NULL) return -1;
+	return 0;
 }
 void free_buffers_for_modbus()
 {
@@ -66,13 +67,7 @@ void free_buffers_for_modbus()
 	free(tab_rp_bits);
 }
 
-void init_parameters()
-{
-	// positioning_data_operation_485_setting();
-	immediate_value_date_operation_485_setting();
-	io_signals_mapping();
-}
-
+// parameter settings for reset.
 void io_signals_mapping()
 {
 	// [CONT] assign
@@ -106,7 +101,6 @@ void io_signals_mapping()
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = CTRL_MOD_SLCT_fc;
 	modbus_write_registers(ctx, PA3_21_ad, 2, tab_rq_registers);
-
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = X1_fc;
 	modbus_write_registers(ctx, PA3_22_ad, 2, tab_rq_registers);
@@ -122,7 +116,6 @@ void io_signals_mapping()
 	tab_rq_registers[1] = S_RDY_fc;
 	modbus_write_registers(ctx, PA3_56_ad, 2, tab_rq_registers);
 }
-
 //NOTES;
 // The W type servo amplifier is capable of :
 //		1. speed control and torque control with analog voltages.
@@ -145,7 +138,6 @@ void positioning_data_operation_485_setting()
 	tab_rq_registers[1] = 0x0001;
 	modbus_write_registers(ctx, PA1_01_ad,  2,  tab_rq_registers);
 }
-
 void immediate_value_date_operation_485_setting()
 {
 	// if Positioning operation, Enter 7 to PA1_01.
@@ -157,4 +149,9 @@ void immediate_value_date_operation_485_setting()
 	tab_rq_registers[1] = 0x0000;
 	modbus_write_registers(ctx, PA2_40_ad,  2,  tab_rq_registers);
 }
-
+void init_parameters()
+{
+	// positioning_data_operation_485_setting();
+	immediate_value_date_operation_485_setting();
+	io_signals_mapping();
+}

@@ -199,17 +199,15 @@ int listening_uart(const char* device, int baud, char parity, int data_bit, int 
     pthread_t receiveid;
     fd = open(device, O_RDWR);
     if (fd < 0){
-	fprintf(stderr,"open device %s faild\n", device);
 	return -1;
     }
     set_speed(fd,baud);
     set_Parity(fd,data_bit,stop_bit,parity);	
     pthread_create(&receiveid,NULL,(void*)receivethread,NULL);
-    return 1;
+    return 0;
 }
 
 void close_uart()
 {
     close(fd);
 }
-
