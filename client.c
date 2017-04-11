@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "elog.h"
 #include "iniparser.h"
@@ -9,44 +10,61 @@
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
 
-//[cruise] [left] [right]
-//[emergency] [free on] [position cancel] [pause] 
-//[deceleration time] [acceleration time] [speed]
-//[left position] [right position]
+
+typedef enum{
+    GRIGHT=1,
+    GLEFT=2,
+    GCRUISE=4,
+    GPAUSE=8,
+    GPST_CANCEL=16,
+    GFREE_ON=32,
+    GEMG=64,
+    GSPEED=128,
+    GACCE_TIME=256,
+    GDECE_TIME=512,
+    GRIGHT_PST=1024,
+    GLEFT_PST=2048
+} GFLAGS;
 volatile uint32_t g_flags;
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+void write_gflags(uint32_t flags)
+{
+    pthread_mutex_lock(&mutex);
+    g_flags = flags;
+    pthread_mutex_unlock(&mutex);
+}
+uint32_t read_gflags()
+{
+    uint32_t ret;
+    pthread_mutex_lock(&mutex);
+    ret = g_flags;
+    pthread_mutex_unlock(&mutex);
+    return ret;
+}
+
 void create_example_ini_file(void);
-int  parse_ini_file(char * ini_name);
+int  parse_ini_file(char* ini_name);
+void save_ini_file(char* ini_name);
 
 
 int main(int argc, char** argv)
 {
     int ret;
 
-    /* initialize EasyLogger */
+    // initialize EasyLogger
     elog_init();
-    /* set EasyLogger log format */
+    // set EasyLogger log format
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
     elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
     elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
     elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
     elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
     elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
-    /* start EasyLogger */
+    // start EasyLogger
     elog_start();
-    // while(true) {
-    //     /* test log output for all level */
-    //     log_a("Hello EasyLogger!");
-    //     log_e("Hello EasyLogger!");
-    //     log_w("Hello EasyLogger!");
-    //     log_i("Hello EasyLogger!");
-    //     log_d("Hello EasyLogger!");
-    //     log_v("Hello EasyLogger!");
-    //     // elog_raw("Hello EasyLogger!");
-    //     sleep(5);
-    // }
 	
-    /* initialize iniparser */
+    // initialize iniparser
     ret = parse_ini_file("configure.ini");
     if(-1 == ret)
     {
@@ -97,34 +115,50 @@ int main(int argc, char** argv)
     	return -1;
     }
 
-
-    // Motion Control
-    ret = set_abs_control_mode();
-    if(-1 == ret){
-    	serve_off();
-        close_uart();
-    	free_buffers_for_modbus();
-    	close_modbus_rtu_master();
-        elog_close();
-    	return -1;
-    }
-    set_cruise_left_position(10000);
-    set_cruise_right_position(-10000);
-    ret = set_cruise_speed(10000);
-    if(-1 == ret){
-    	serve_off();
-        close_uart();
-    	free_buffers_for_modbus();
-    	close_modbus_rtu_master();
-        elog_close();
-    	return -1;
-    }
-    // cruise();
+    // TODO
     while(TRUE)
     {
-        
-    }
+        if ( g_flags && GEMG ) 
+        {
+            break;
+        }else if ( g_flags & GFREE_ON ) 
+        {
 
+        }else if ( g_flags & GPST_CANCEL ) 
+        {
+
+        }else if ( g_flags & GPAUSE ) 
+        {
+
+        }else if ( g_flags & GSPEED ) 
+        {
+            ret = send_cruise_speed();
+            if (-1 == ret) break;
+        }else if ( g_flags & GACCE_TIME ) 
+        {
+            ret = send_imme_acceleration_time();
+            if (-1 == ret) break;
+        }else if ( g_flags & GDECE_TIME ) 
+        {
+            ret = send_imme_deceleration_time();
+            if (-1 == ret) break;
+        }else if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
+        {
+
+
+        }else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) 
+        {
+
+        }else if ( g_flags & GRIGHT ) 
+        {
+
+        }else if ( g_flags & GLEFT ) 
+        {
+
+        }else {
+
+        }
+    }
 
     // // // test alpha
     // // fprintf(stderr,"INF:test immediate value data control.\n");
@@ -152,18 +186,22 @@ void create_example_ini_file(void)
 
     // congfigure parameter
     fprintf(ini,
-    "[Pizza]\n"
-    "Ham       = yes ;\n"
-    "Mushrooms = TRUE ;\n"
-    "Capres    = 0 ;\n"
-    "Cheese    = Non ;\n"
+    "[IP]\n"
+    "RemoteIP = 192.168.0.15\n"
+    "RemoteName = root\n"
+    "ControlIP = \n"
     "\n"
-    "[Wine]\n"
-    "Grape     = Cabernet Sauvignon ;\n"
-    "Year      = 1989 ;\n"
-    "Country   = Spain ;\n"
-    "Alcohol   = 12.5  ;\n"
+    "[Motion Control]\n"
+    "cruise_speed = 1\n"
+    "cruise_left_position = -2\n"
+    "cruise_right_position = 3\n"
+    "imme_acceleration_time = 4\n"
+    "imme_deceleration_time = 5\n"
+    "\n"
+    "max_left_position = 6\n"
+    "max_right_position = 7\n"
     "\n");
+
     fclose(ini);
     log_i("create default configure.ini");
 }
@@ -171,11 +209,16 @@ void create_example_ini_file(void)
 int parse_ini_file(char * ini_name)
 {
     dictionary  *   ini ;
-    /* Some temporary variables to hold query results */
-    int             b ;
-    int             i ;
-    double          d ;
-    const char  *   s ;
+
+    int ret;
+    // temporary variables
+    int32_t cruise_left_position;
+    int32_t cruise_right_position;
+    int32_t max_left_position;
+    int32_t max_right_position;
+    uint32_t cruise_speed;
+    uint32_t imme_acceleration_time;
+    uint32_t imme_deceleration_time;
 
     ini = iniparser_load(ini_name);
     if (ini==NULL) {
@@ -184,31 +227,36 @@ int parse_ini_file(char * ini_name)
     }
     iniparser_dump(ini, stderr);
 
-    /* Get pizza attributes */
-    printf("Pizza:\n");
+    // parse
+    cruise_left_position = iniparser_getint(ini, "Motion Control:cruise_left_position", 0);
+    cruise_right_position = iniparser_getint(ini, "Motion Control:cruise_right_position", 0);
+    max_left_position = iniparser_getint(ini, "Motion Control:max_left_position", 0);
+    max_right_position = iniparser_getint(ini, "Motion Control:max_right_position", 0);
+    cruise_speed = iniparser_getint(ini, "Motion Control:cruise_speed", 0);
+    imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 0);
+    imme_deceleration_time = iniparser_getint(ini, "Motion Control:imme_deceleration_time", 0);
 
-    b = iniparser_getboolean(ini, "pizza:ham", -1);
-    printf("Ham:       [%d]\n", b);
-    b = iniparser_getboolean(ini, "pizza:mushrooms", -1);
-    printf("Mushrooms: [%d]\n", b);
-    b = iniparser_getboolean(ini, "pizza:capres", -1);
-    printf("Capres:    [%d]\n", b);
-    b = iniparser_getboolean(ini, "pizza:cheese", -1);
-    printf("Cheese:    [%d]\n", b);
+    // set control parameter
+    set_cruise_left_position(cruise_left_position);
+    set_cruise_right_position(cruise_right_position);
+    set_cruise_speed(cruise_speed);
+    set_imme_acceleration_time(imme_acceleration_time);
+    set_imme_deceleration_time(imme_deceleration_time);
+    // send setting to motor
+    ret = send_cruise_speed();
+    if (-1 == ret) return -1;
+    ret = send_imme_acceleration_time();
+    if (-1 == ret) return -1;
+    ret = send_imme_deceleration_time();
+    if (-1 == ret) return -1;
 
-    /* Get wine attributes */
-    printf("Wine:\n");
-    s = iniparser_getstring(ini, "wine:grape", NULL);
-    printf("Grape:     [%s]\n", s ? s : "UNDEF");
-
-    i = iniparser_getint(ini, "wine:year", -1);
-    printf("Year:      [%d]\n", i);
-
-    s = iniparser_getstring(ini, "wine:country", NULL);
-    printf("Country:   [%s]\n", s ? s : "UNDEF");
-
-    d = iniparser_getdouble(ini, "wine:alcohol", -1.0);
-    printf("Alcohol:   [%g]\n", d);
+    //printf("%.1d\n",cruise_speed);
+    //printf("%.1d\n",cruise_left_position);
+    //printf("%.1d\n",cruise_right_position);
+    //printf("%.1d\n",imme_acceleration_time);
+    //printf("%.1d\n",imme_deceleration_time);
+    //printf("%.1d\n",max_left_position);
+    //printf("%.1d\n",max_right_position);
 
     iniparser_freedict(ini);
     return 0 ;

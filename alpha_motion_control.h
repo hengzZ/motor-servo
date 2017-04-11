@@ -32,8 +32,11 @@ int immediate_value_operation_run();
 int set_cruise_left_position(const int32_t position);
 int set_cruise_right_position(const int32_t position);
 int set_cruise_speed(const uint32_t speed);
+int send_cruise_speed();
 int set_imme_acceleration_time(const uint32_t time);
+int send_imme_acceleration_time();
 int set_imme_deceleration_time(const uint32_t time);
+int send_imme_deceleration_time();
 int is_INP();
 
 // Servo control

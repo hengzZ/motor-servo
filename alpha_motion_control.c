@@ -180,6 +180,17 @@ int set_cruise_speed(const uint32_t speed)
 	cruise_speed[0] = speed >> 16;
 	return 0;
 }
+int send_cruise_speed()
+{
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, cruise_speed); i++){
+		if(i==OPLOOPS-1)
+		{
+			log_e("communication failed.");
+			return -1;
+		}
+	}		
+	return 0;
+}
 
 // acc/dec time: 0.1ms
 int set_imme_acceleration_time(const uint32_t time)
@@ -188,10 +199,33 @@ int set_imme_acceleration_time(const uint32_t time)
 	imme_acceleration_time[0] = time >> 16;
 	return 0;
 }
+int send_imme_acceleration_time()
+{
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, imme_acceleration_time); i++){
+		if(i==OPLOOPS-1)
+		{
+			log_e("communication failed.");
+			return -1;
+		}
+	}		
+	return 0;
+}
+
 int set_imme_deceleration_time(const uint32_t time)
 {
 	imme_deceleration_time[1] = time;
 	imme_deceleration_time[0] = time >> 16;
+	return 0;
+}
+int send_imme_deceleration_time()
+{
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, imme_deceleration_time); i++){
+		if(i==OPLOOPS-1)
+		{
+			log_e("communication failed.");
+			return -1;
+		}
+	}		
 	return 0;
 }
 
