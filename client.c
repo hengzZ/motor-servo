@@ -10,6 +10,9 @@
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
 
+extern int max_left_position;
+extern int max_right_position;
+extern int listening_console(); 
 
 typedef enum{
     GRIGHT=1,
@@ -64,16 +67,6 @@ int main(int argc, char** argv)
     // start EasyLogger
     elog_start();
 	
-    // initialize iniparser
-    ret = parse_ini_file("configure.ini");
-    if(-1 == ret)
-    {
-        create_example_ini_file();
-        ret = parse_ini_file("configure.ini");
-        if(-1 == ret) return -1;
-    }
-    log_i("Init Success.");
-
     // init buffers for modbus communication
     ret = init_buffers_for_modbus();
     if(-1 == ret){
@@ -90,6 +83,21 @@ int main(int argc, char** argv)
     // init_parameters();
     // log_i("Init Parameter Done.");
     
+    // initialize iniparser
+    ret = parse_ini_file("configure.ini");
+    if(-1 == ret)
+    {
+        create_example_ini_file();
+        ret = parse_ini_file("configure.ini");
+        if(-1 == ret)
+        {
+            log_e("initialize iniparser failed.");
+            free_buffers_for_modbus();
+            close_modbus_rtu_master();
+            return -1;
+        }
+    }
+    log_i("Init Success.");
     // listening am335x UART
     ret = listening_uart("/dev/ttyO2",9600,'N',8,1);
     if(-1 == ret){
@@ -115,48 +123,104 @@ int main(int argc, char** argv)
     	return -1;
     }
 
+    g_flags = GCRUISE | GRIGHT;
+    char str[1024];
+    sprintf(str,"%.8x",g_flags);
+    log_e(str);
     // TODO
     while(TRUE)
     {
-        if ( g_flags && GEMG ) 
+        if ( g_flags & GEMG ) 
         {
+            log_e("stop.");
             break;
         }else if ( g_flags & GFREE_ON ) 
         {
 
         }else if ( g_flags & GPST_CANCEL ) 
         {
+            log_e("positiion cancel.");
+            ret = positioning_cancel_on();
+            if(-1 == ret) break;
+            ret = positioning_cancel_off();
+            if(-1 == ret) break;
 
         }else if ( g_flags & GPAUSE ) 
         {
+            ret = pause_on();
+            if (-1 == ret) break;
 
-        }else if ( g_flags & GSPEED ) 
+        }else if ( 0 == g_flags & GPAUSE)
+        {
+            ret = pause_off();
+            if (-1 == ret) break;
+        }
+        else if ( g_flags & GSPEED ) 
         {
             ret = send_cruise_speed();
             if (-1 == ret) break;
+
         }else if ( g_flags & GACCE_TIME ) 
         {
             ret = send_imme_acceleration_time();
             if (-1 == ret) break;
+
         }else if ( g_flags & GDECE_TIME ) 
         {
             ret = send_imme_deceleration_time();
             if (-1 == ret) break;
+
         }else if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
         {
+            ret = set_abs_control_mode();
+            if(-1 == ret) break;
+            ret = right_cruise();
+            if (1 == ret) {
+                uint32_t temp = read_gflags();
+                temp = (temp & (~GRIGHT) ) | GLEFT;
 
+                char str[1024];
+                sprintf(str,"%.8x",temp);
+                log_e(str);
+                
+                write_gflags(temp);
+            }
+            else if(-1 == ret) break;
 
         }else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) 
         {
+            ret = set_abs_control_mode();
+            if(-1 == ret) break;
+            ret = left_cruise();
+            if (1 == ret) {
+                uint32_t temp = read_gflags();
+                temp = (temp & (~GLEFT) ) | GRIGHT;
+
+                char str[1024];
+                sprintf(str,"%.8x",temp);
+                log_e(str);
+
+                write_gflags(temp);
+            }
+            else if(-1 == ret) break;
 
         }else if ( g_flags & GRIGHT ) 
         {
+            ret = set_inc_control_mode();
+            if(-1 == ret) break;
+            ret = right_direction_run();
+            if(-1 == ret) break;
 
         }else if ( g_flags & GLEFT ) 
         {
+            ret = set_inc_control_mode();
+            if(-1 == ret) break;
+            ret = left_direction_run();
+            if(-1 == ret) break;
 
         }else {
-
+            ret = pause_off();
+            if(-1 == ret) break;
         }
     }
 
@@ -192,14 +256,14 @@ void create_example_ini_file(void)
     "ControlIP = \n"
     "\n"
     "[Motion Control]\n"
-    "cruise_speed = 1\n"
-    "cruise_left_position = -2\n"
-    "cruise_right_position = 3\n"
-    "imme_acceleration_time = 4\n"
-    "imme_deceleration_time = 5\n"
+    "cruise_speed = 200\n"
+    "cruise_left_position = -2000\n"
+    "cruise_right_position = 2000\n"
+    "imme_acceleration_time = 5000\n"
+    "imme_deceleration_time = 5000\n"
     "\n"
-    "max_left_position = 6\n"
-    "max_right_position = 7\n"
+    "max_left_position = -65536\n"
+    "max_right_position = 65536\n"
     "\n");
 
     fclose(ini);

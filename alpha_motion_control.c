@@ -65,7 +65,9 @@ int	left_cruise()
 			}
 		}
 		ret = immediate_value_operation_run();
-		return ret;
+		//return ret;
+		if(0 == ret) return 1;
+		else return -1;
 	}
 	return 0;
 }
@@ -83,7 +85,9 @@ int right_cruise()
 			}
 		}
 		ret = immediate_value_operation_run();
-		return ret;
+		//return ret;
+		if(0 == ret) return 1;
+		else return -1;
 	}
 	return 0;
 }

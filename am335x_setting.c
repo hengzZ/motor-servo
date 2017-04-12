@@ -22,6 +22,8 @@ unsigned short  cur_v;
 unsigned short  pre_v;
 int stride;
 int encoder_position;
+int max_left_position;
+int max_right_position;
 
 
 int fd=-1;
@@ -183,8 +185,11 @@ void receivethread(void)
 	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    printf("INF: Current Position: %.10d\n",encoder_position);
-	    log_e("listening.");
+	    printf("INF: cur_v: %.10d	",cur_v);
+	    printf("pre_v: %.10d    ",pre_v);
+	    printf("stride: %.10d\n",stride);
+	    //printf("INF: Current Position: %.10d\n",encoder_position);
+	    //log_e("listening.");
 
 	    // update pre_v
 	    pre_v = cur_v;
