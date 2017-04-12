@@ -167,8 +167,8 @@ void receivethread(void)
     {   
 	if((nread = read(fd,buff,100))>0) 
 	{
-	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
 	    buff[nread]='\0';
+	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
 	    //for(int i = 0; i < nread; i++){
 	    //	fprintf(stderr,"%.2x ",buff[i]);
 	    //}
@@ -185,10 +185,10 @@ void receivethread(void)
 	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    printf("INF: cur_v: %.10d	",cur_v);
-	    printf("pre_v: %.10d    ",pre_v);
-	    printf("stride: %.10d\n",stride);
-	    //printf("INF: Current Position: %.10d\n",encoder_position);
+	    // printf("INF: cur_v: %.10d	",cur_v);
+	    // printf("pre_v: %.10d    ",pre_v);
+	    // printf("stride: %.10d\n",stride);
+	    // printf("INF: Current Position: %.10d\n",encoder_position);
 	    //log_e("listening.");
 
 	    // update pre_v
