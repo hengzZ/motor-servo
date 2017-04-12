@@ -123,7 +123,7 @@ int main(int argc, char** argv)
     	return -1;
     }
 
-    listening_console();
+    //listening_console();
     g_flags = GCRUISE | GLEFT;
     printf("%.8d\n",read_gflags());
     // TODO
@@ -131,28 +131,25 @@ int main(int argc, char** argv)
     {
         if ( g_flags & GEMG ) 
         {
-            log_e("stop.");
             break;
 
         }
         if ( g_flags & GFREE_ON ) 
         {
-            log_e("free on.");
             break;
 
         }
         if ( g_flags & GPST_CANCEL ) 
         {
-            log_e("positiion cancel.");
             ret = positioning_cancel_on();
             if(-1 == ret) break;
             ret = positioning_cancel_off();
             if(-1 == ret) break;
+            g_flags = 0;
             
         }
         if ( g_flags & GPAUSE ) 
         {
-            log_e("pause on.");
             ret = pause_on();
             if (-1 == ret) break;
 
@@ -186,12 +183,6 @@ int main(int argc, char** argv)
             if (1 == ret) {
                 uint32_t temp = read_gflags();
                 temp = temp & (~GRIGHT) | GLEFT;
-
-                char str[1024];
-                sprintf(str,"%.8x",temp);
-                log_e(str);
-                log_e("right cruise.");
-                
                 write_gflags(temp);
             }
             else if(-1 == ret) break;
@@ -204,19 +195,12 @@ int main(int argc, char** argv)
             if (1 == ret) {
                 uint32_t temp = read_gflags();
                 temp = temp & (~GLEFT) | GRIGHT;
-
-                char str[1024];
-                sprintf(str,"%.8x",temp);
-                log_e(str);
-                log_e("left cruise.");
-
                 write_gflags(temp);
             }
             else if(-1 == ret) break;
 
         }else if ( g_flags & GRIGHT ) 
         {
-            log_e("right direct.");
             ret = set_inc_control_mode();
             if(-1 == ret) break;
             ret = right_direction_run();
@@ -224,7 +208,6 @@ int main(int argc, char** argv)
 
         }else if ( g_flags & GLEFT ) 
         {
-            log_e("left direct.");
             ret = set_inc_control_mode();
             if(-1 == ret) break;
             ret = left_direction_run();
@@ -265,11 +248,11 @@ void create_example_ini_file(void)
     "ControlIP = \n"
     "\n"
     "[Motion Control]\n"
-    "cruise_speed = 1000\n"
-    "cruise_left_position = -1000\n"
-    "cruise_right_position = 1000\n"
-    "imme_acceleration_time = 5000\n"
-    "imme_deceleration_time = 5000\n"
+    "cruise_speed = 50000\n"
+    "cruise_left_position = -200000\n"
+    "cruise_right_position = 200000\n"
+    "imme_acceleration_time = 1000000\n"
+    "imme_deceleration_time = 1000000\n"
     "\n"
     "max_left_position = -65536\n"
     "max_right_position = 65536\n"
@@ -315,13 +298,13 @@ int parse_ini_file(char * ini_name)
     set_cruise_speed(cruise_speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);
-    // send setting to motor
-    ret = send_cruise_speed();
-    if (-1 == ret) return -1;
-    ret = send_imme_acceleration_time();
-    if (-1 == ret) return -1;
-    ret = send_imme_deceleration_time();
-    if (-1 == ret) return -1;
+    // // send setting to motor
+    // ret = send_cruise_speed();
+    // if (-1 == ret) return -1;
+    // ret = send_imme_acceleration_time();
+    // if (-1 == ret) return -1;
+    // ret = send_imme_deceleration_time();
+    // if (-1 == ret) return -1;
 
     //printf("%.1d\n",cruise_speed);
     //printf("%.1d\n",cruise_left_position);

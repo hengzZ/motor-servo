@@ -17,7 +17,8 @@
 
 // assume that every stride is less than half cycle(65536/2).
 // if absolute stride large than 32768, it means stride over zero.
-#define MAX_STRIDE	32768
+#define MAX_STRIDE	32767
+char sorted_buff[2];
 unsigned short  cur_v;
 unsigned short  pre_v;
 int stride;
@@ -172,7 +173,10 @@ void receivethread(void)
 	    //for(int i = 0; i < nread; i++){
 	    //	fprintf(stderr,"%.2x ",buff[i]);
 	    //}
-	    memcpy(&cur_v,buff+3,2);
+	    memcpy(&sorted_buff[1],buff+3,1);
+	    memcpy(&sorted_buff[0],buff+4,1);
+	    memcpy(&cur_v,sorted_buff,2);
+	    //printf("\n%.4x\n",cur_v);
 	    //printf("%d\n",cur_v);
 
 	    // calculate the stride 
@@ -185,11 +189,7 @@ void receivethread(void)
 	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    // printf("INF: cur_v: %.10d	",cur_v);
-	    // printf("pre_v: %.10d    ",pre_v);
-	    // printf("stride: %.10d\n",stride);
-	    // printf("INF: Current Position: %.10d\n",encoder_position);
-	    //log_e("listening.");
+	    printf("INF: current position: %.10d\n",encoder_position);
 
 	    // update pre_v
 	    pre_v = cur_v;

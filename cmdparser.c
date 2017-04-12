@@ -26,7 +26,7 @@ void parsethread(void)
 	char cmdstr[1024];
 	char* ptr;
 	fprintf(stderr,"Please Enter a command.\n");
-	fprintf(stderr,"[stop] [pause] [cruise] [ldirect] [rdirect]\n");
+	fprintf(stderr,"[stop] [pause] [cruise] [ldirect] [rdirect] [cancel]\n");
 	while(1)
 	{
 		if(NULL == gets(cmdstr)) continue;
@@ -69,6 +69,13 @@ void parsethread(void)
 			temp = temp | GRIGHT;
 			printf("temp: %.8d\n",temp);
 			write_gflags(temp);
+			printf("%.8d\n",read_gflags());
+		}
+		if(0 == strcmp(cmdstr,"cancel"))
+		{
+			int temp = GPST_CANCEL;
+			printf("temp: %.8d\n",temp);
+			write_gflags(GPST_CANCEL);
 			printf("%.8d\n",read_gflags());
 		}
 
