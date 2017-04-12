@@ -80,7 +80,7 @@ void parsethread(void)
 		}
 
 		fprintf(stderr,"Please Enter a command.\n");
-		fprintf(stderr,"[stop] [pause] [cruise] [ldirect] [rdirect]\n");
+	fprintf(stderr,"[stop] [pause] [cruise] [ldirect] [rdirect] [cancel]\n");
 	}
 }
 

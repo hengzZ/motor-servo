@@ -123,7 +123,7 @@ int main(int argc, char** argv)
     	return -1;
     }
 
-    //listening_console();
+    listening_console();
     g_flags = GCRUISE | GLEFT;
     printf("%.8d\n",read_gflags());
     // TODO
@@ -251,8 +251,8 @@ void create_example_ini_file(void)
     "cruise_speed = 5000\n"
     "cruise_left_position = -200000\n"
     "cruise_right_position = 200000\n"
-    "imme_acceleration_time = 1000000\n"
-    "imme_deceleration_time = 1000000\n"
+    "imme_acceleration_time = 100000\n"
+    "imme_deceleration_time = 100000\n"
     "\n"
     "max_left_position = -65536\n"
     "max_right_position = 65536\n"

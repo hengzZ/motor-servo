@@ -189,7 +189,7 @@ void receivethread(void)
 	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    printf("INF: current position: %.10d\n",encoder_position);
+	    //printf("INF: current position: %.10d\n",encoder_position);
 
 	    // update pre_v
 	    pre_v = cur_v;

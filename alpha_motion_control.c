@@ -189,7 +189,7 @@ int send_cruise_speed()
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, cruise_speed); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("send_cruise_speed: communication failed.");
 			return -1;
 		}
 	}		
@@ -208,7 +208,7 @@ int send_imme_acceleration_time()
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, imme_acceleration_time); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("send_imme_acceleration_time: communication failed.");
 			return -1;
 		}
 	}		
@@ -226,7 +226,7 @@ int send_imme_deceleration_time()
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, imme_deceleration_time); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("send_imme_deceleration_time: communication failed.");
 			return -1;
 		}
 	}		
