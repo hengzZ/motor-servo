@@ -248,7 +248,7 @@ void create_example_ini_file(void)
     "ControlIP = \n"
     "\n"
     "[Motion Control]\n"
-    "cruise_speed = 50000\n"
+    "cruise_speed = 5000\n"
     "cruise_left_position = -200000\n"
     "cruise_right_position = 200000\n"
     "imme_acceleration_time = 1000000\n"
@@ -298,13 +298,13 @@ int parse_ini_file(char * ini_name)
     set_cruise_speed(cruise_speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);
-    // // send setting to motor
-    // ret = send_cruise_speed();
-    // if (-1 == ret) return -1;
-    // ret = send_imme_acceleration_time();
-    // if (-1 == ret) return -1;
-    // ret = send_imme_deceleration_time();
-    // if (-1 == ret) return -1;
+    // send setting to motor
+    ret = send_cruise_speed();
+    if (-1 == ret) return -1;
+    ret = send_imme_acceleration_time();
+    if (-1 == ret) return -1;
+    ret = send_imme_deceleration_time();
+    if (-1 == ret) return -1;
 
     //printf("%.1d\n",cruise_speed);
     //printf("%.1d\n",cruise_left_position);
