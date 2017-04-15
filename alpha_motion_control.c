@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include "alpha_motion_control.h"
+#include <pthread.h>
 
+#include "alpha_motion_control.h"
 #include "elog.h"
 
 // mode: 0-ABS	1-INC
@@ -12,6 +13,9 @@ uint16_t cruise_left_position[2];
 uint16_t cruise_right_position[2];
 uint16_t imme_acceleration_time[2];
 uint16_t imme_deceleration_time[2];
+int32_t max_left_position;
+int32_t max_right_position;
+//pthread_mutex_t mutex_ctrl = PTHREAD_MUTEX_INITIALIZER;
 
 
 // left direction movement
@@ -23,7 +27,7 @@ int left_direction_run()
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_left_position); i++){
 			if(i==OPLOOPS-1)
 			{
-				log_e("communication failed.");
+				log_e("left_direction_run: communication failed.");
 				return -1;
 			}
 		}
@@ -41,7 +45,7 @@ int right_direction_run()
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_right_position); i++){
 			if(i==OPLOOPS-1)
 			{
-				log_e("communication failed.");
+				log_e("right_direction_run: communication failed.");
 				return -1;
 			}
 		}
@@ -60,7 +64,7 @@ int	left_cruise()
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_left_position); i++){
 			if(i==OPLOOPS-1)
 			{
-				log_e("communication failed.");
+				log_e("left_cruise: communication failed.");
 				return -1;
 			}
 		}
@@ -80,7 +84,7 @@ int right_cruise()
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_right_position); i++){
 			if(i==OPLOOPS-1)
 			{
-				log_e("communication failed.");
+				log_e("right_cruise: communication failed.");
 				return -1;
 			}
 		}
@@ -98,8 +102,9 @@ void cruise()
 	{
 		int ret;
 		ret = left_cruise();
+		if(-1 == ret) break;
 		ret = right_cruise();
-		log_e("Being in Cruise.");
+		if(-1 == ret) break;
 	}
 }
 
@@ -123,7 +128,7 @@ int set_abs_control_mode()
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("set_abs_control_mode: communication failed.");
 			return -1;
 		}
 	}		
@@ -136,7 +141,7 @@ int set_inc_control_mode()
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("set_inc_control_mode: communication failed.");
 			return -1;
 		}
 	}
@@ -149,14 +154,14 @@ int immediate_value_operation_run()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, START_ad, 1); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("set start_on: communication failed.");
 			return -1;
 		}
 	}
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, START_ad, 0); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("set start_off: communication failed.");
 			return -1;
 		}
 	}
@@ -174,6 +179,16 @@ int set_cruise_right_position(const int32_t position)
 {
 	cruise_right_position[1] = position;
 	cruise_right_position[0] = position >> 16;
+	return 0;
+}
+int set_max_left_position(const int32_t position)
+{
+	max_left_position = position;
+	return 0;
+}
+int set_max_right_position(const int32_t position)
+{
+	max_right_position = position;
 	return 0;
 }
 
@@ -239,7 +254,7 @@ int is_INP()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx, INP_ad,1,tab_rp_bits); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("is_INP: communication failed.");
 			return 0;
 		} 
 	}
@@ -255,7 +270,7 @@ int serve_on()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx,S_RDY_ad,1,tab_rp_bits); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("require S_RDY: communication failed.");
 			return -1; 
 		}
 	}
@@ -263,7 +278,7 @@ int serve_on()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,SERVO_ON_ad,1); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("serve_on: communication failed.");
 			return -1;
 		}
 	}
@@ -275,7 +290,7 @@ int serve_off()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,SERVO_ON_ad,0); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("serve_off: communication failed.");
 			return -1;
 		}
 	}
@@ -287,7 +302,7 @@ int is_ready()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx,RDY_ad,1,tab_rp_bits); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("is_ready: communication failed.");
 			return 0;
 		}
 	}
@@ -302,7 +317,7 @@ int forced_stop_on()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, EMG_ad, 1); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("forced_stop_on: communication failed.");
 			return -1;
 		}
 	}
@@ -313,7 +328,7 @@ int forced_stop_off()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, EMG_ad, 0); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("forced_stop_off: communication failed.");
 			return -1;
 		}
 	}
@@ -325,7 +340,7 @@ int pause_on()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PAUSE_ad, 1); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("pause_on: communication failed.");
 			return -1;
 		}
 	}
@@ -336,7 +351,7 @@ int pause_off()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PAUSE_ad, 0); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("pause_off: communication failed.");
 			return -1;
 		}
 	}
@@ -348,7 +363,7 @@ int positioning_cancel_on()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PST_CANCEL_ad, 1); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("positioning_cancel_on: communication failed.");
 			return -1;
 		}
 	}
@@ -359,7 +374,7 @@ int positioning_cancel_off()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, PST_CANCEL_ad, 0); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("positioning_cancel_off: communication failed.");
 			return -1;
 		}
 	}
@@ -372,7 +387,7 @@ int free_run_on()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, FREE_RUN_ad, 1); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("free_run_on: communication failed.");
 			return -1;
 		}
 	}
@@ -383,7 +398,7 @@ int free_run_off()
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, FREE_RUN_ad, 0); i++){
 		if(i==OPLOOPS-1)
 		{
-			log_e("communication failed.");
+			log_e("free_run_off: communication failed.");
 			return -1;
 		}
 	}

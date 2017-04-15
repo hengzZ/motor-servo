@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+
 #include "modbus.h"
 
 typedef enum{
@@ -16,7 +17,8 @@ typedef enum{
     GACCE_TIME=256,
     GDECE_TIME=512,
     GRIGHT_PST=1024,
-    GLEFT_PST=2048
+    GLEFT_PST=2048,
+    GPAUSE_OFF=4096
 } GFLAGS;
 extern void write_gflags(uint32_t flags);
 extern uint32_t read_gflags();
@@ -24,31 +26,48 @@ extern uint32_t read_gflags();
 void parsethread(void)
 {
 	char cmdstr[1024];
-	char* ptr;
 	fprintf(stderr,"Please Enter a command.\n");
-	fprintf(stderr,"[stop] [pause] [cruise] [ldirect] [rdirect] [cancel]\n");
+	fprintf(stderr,"[stop] [pause_on] [pause_off] [lcruise] [rcruise] [ldirect] [rdirect] [cancel]\n");
 	while(1)
 	{
 		if(NULL == gets(cmdstr)) continue;
 		if(0 == strcmp(cmdstr,"stop"))
 		{
-			int temp = GEMG;
+			uint32_t temp = GEMG;
 			printf("temp: %.8d\n",temp);
 			write_gflags(GEMG);
 			printf("%.8d\n",read_gflags());
 		}
-		if(0 == strcmp(cmdstr,"pause"))
+		if(0 == strcmp(cmdstr,"pause_on"))
 		{
-			int temp = GPAUSE;
+			uint32_t temp = read_gflags();
+			temp = temp & (~GPAUSE_OFF) | GPAUSE;
 			printf("temp: %.8d\n",temp);
-			write_gflags(GPAUSE);
+			write_gflags(temp);
 			printf("%.8d\n",read_gflags());
 		}
-		if(0 == strcmp(cmdstr,"cruise"))
+		if(0 == strcmp(cmdstr, "pause_off"))
+		{
+			uint32_t temp = read_gflags();
+			temp = temp & (~GPAUSE) | GPAUSE_OFF;
+			printf("temp: %.8d\n",temp);
+			write_gflags(temp);
+			printf("%.8d\n",read_gflags());
+		}
+		if(0 == strcmp(cmdstr,"lcruise"))
 		{
 			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GRIGHT);
+			temp = temp & (~GPAUSE) & (~GRIGHT) | GPAUSE_OFF;
 			temp = temp | GCRUISE | GLEFT;
+			printf("temp: %.8d\n",temp);
+			write_gflags(temp);
+			printf("%.8d\n",read_gflags());
+		}
+		if(0 == strcmp(cmdstr,"rcruise"))
+		{
+			int temp = read_gflags();
+			temp = temp & (~GPAUSE) & (~GLEFT) | GPAUSE_OFF;
+			temp = temp | GCRUISE | GRIGHT;
 			printf("temp: %.8d\n",temp);
 			write_gflags(temp);
 			printf("%.8d\n",read_gflags());
@@ -56,7 +75,7 @@ void parsethread(void)
 		if(0 == strcmp(cmdstr,"ldirect"))
 		{
 			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GCRUISE) & (~GRIGHT);
+			temp = temp & (~GPAUSE) & (~GCRUISE) & (~GRIGHT) | GPAUSE_OFF;
 			temp = temp | GLEFT;
 			printf("temp: %.8d\n",temp);
 			write_gflags(temp);
@@ -65,7 +84,7 @@ void parsethread(void)
 		if(0 == strcmp(cmdstr,"rdirect"))
 		{
 			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GCRUISE) & (~GLEFT);
+			temp = temp & (~GPAUSE) & (~GCRUISE) & (~GLEFT) | GPAUSE_OFF;
 			temp = temp | GRIGHT;
 			printf("temp: %.8d\n",temp);
 			write_gflags(temp);
@@ -80,7 +99,7 @@ void parsethread(void)
 		}
 
 		fprintf(stderr,"Please Enter a command.\n");
-	fprintf(stderr,"[stop] [pause] [cruise] [ldirect] [rdirect] [cancel]\n");
+		fprintf(stderr,"[stop] [pause_on] [pause_off] [lcruise] [rcruise] [ldirect] [rdirect] [cancel]\n");
 	}
 }
 
