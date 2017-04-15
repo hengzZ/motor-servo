@@ -1,6 +1,6 @@
 TARGET=client-test
-CC=arm-linux-gnueabihf-gcc
-#CC=gcc
+#CC=arm-linux-gnueabihf-gcc
+CC=gcc
 CFLAGS=-I./
 LIBS=-lpthread
 
