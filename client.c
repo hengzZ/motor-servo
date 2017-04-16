@@ -1,6 +1,6 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <pthread.h>
 
 #include "elog.h"
@@ -9,6 +9,7 @@
 #include "am335x_setting.h"
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
+
 
 typedef enum{
     GRIGHT=1,
@@ -43,6 +44,7 @@ uint32_t read_gflags()
     return ret;
 }
 
+
 // RTU MASTER
 char rtu_device[1024];
 int rtu_baud;
@@ -63,6 +65,7 @@ int  parse_ini_file(char* ini_name);
 void save_ini_file(char* ini_name);
 
 extern int listening_console(); 
+extern int listening_socket(int _server_port, int _queue_size);
 
 
 int main(int argc, char** argv)
@@ -95,181 +98,182 @@ int main(int argc, char** argv)
     }
     log_i("Configure Success.");
 
-    // // init buffers for modbus communication
-    // ret = init_buffers_for_modbus();
-    // if(-1 == ret){
-    //     log_e("init buffers for modbus failed.");
-    //     return -1;
-    // }
-    // ret = open_modbus_rtu_master("/dev/ttyO1", 38400, 'E', 8, 1, 1);
-    // //ret = open_modbus_rtu_master(_rtu_device, rtu_baud, _rtu_parity[0], rtu_data_bit, rtu_stop_bit, rtu_slave);
-    // if(-1 == ret){
-    // 	log_e("open modbus_rtu_master failed.");
-    // 	free_buffers_for_modbus();
-    // 	return -1;
-    // }
-    // // Init Parameter (Warning: remerber just do it one time.)
-    // if(1 == rtu_reset){
-    //     init_parameters();
-    //     log_i("Init Parameter Done (Reset Done).");
-    // }
+    // init buffers for modbus communication
+    ret = init_buffers_for_modbus();
+    if(-1 == ret){
+        log_e("init buffers for modbus failed.");
+        return -1;
+    }
+    //ret = open_modbus_rtu_master("/dev/ttyO1", 38400, 'E', 8, 1, 1);
+    ret = open_modbus_rtu_master(rtu_device, rtu_baud, rtu_parity, rtu_data_bit, rtu_stop_bit, rtu_slave);
+    if(-1 == ret){
+    	log_e("open modbus_rtu_master failed.");
+    	free_buffers_for_modbus();
+    	return -1;
+    }
+    // Init Parameter (Warning: remerber just do it one time.)
+    if(1 == rtu_reset){
+        init_parameters();
+        log_i("Init Parameter Done (Reset Done).");
+    }
 
-    // // TODO listening am335x UART
-    // ret = listening_uart("/dev/ttyO2", 9600, 'N', 8, 1);
-    // //ret = listening_uart(_uart_device, uart_baud, _uart_parity[0], uart_data_bit, uart_stop_bit);
-    // if(-1 == ret){
-    // 	log_e("open am335x uart failed.");
-    // 	close_modbus_rtu_master();
-    // 	free_buffers_for_modbus();
-    // 	return -1;
-    // }
-    // // TODO listening console
-    // ret = listening_console();
-    // if(-1 == ret){
-    //     log_e("open am335x ethernet port failed.");
-    //     close_modbus_rtu_master();
-    //     free_buffers_for_modbus();
-    //     return -1;
-    // }
+    // TODO listening am335x UART
+    //ret = listening_uart("/dev/ttyO2", 9600, 'N', 8, 1);
+    ret = listening_uart(uart_device, uart_baud, uart_parity, uart_data_bit, uart_stop_bit);
+    if(-1 == ret){
+    	log_e("open am335x uart failed.");
+    	close_modbus_rtu_master();
+    	free_buffers_for_modbus();
+    	return -1;
+    }
+    // TODO listening console
+    //ret = listening_console();
+    ret = listening_socket(12345, 10);
+    if(-1 == ret){
+        log_e("open am335x ethernet port failed.");
+        close_modbus_rtu_master();
+        free_buffers_for_modbus();
+        return -1;
+    }
 
-    // // serve on
-    // ret = serve_on();
-    // if(-1 == ret){
-    //     log_e("servo on failed.");
-    // 	close_modbus_rtu_master();
-    // 	free_buffers_for_modbus();
-    // 	return -1;
-    // }
-    // ret = is_ready();
-    // if(ret != 1){
-    // 	log_e("servo_on is ON, but is_ready OFF.");
-    // 	serve_off();
-    // 	close_modbus_rtu_master();
-    // 	free_buffers_for_modbus();
-    // 	return -1;
-    // }
-    // log_i("Init Success.");
+    // serve on
+    ret = serve_on();
+    if(-1 == ret){
+        log_e("servo on failed.");
+    	close_modbus_rtu_master();
+    	free_buffers_for_modbus();
+    	return -1;
+    }
+    ret = is_ready();
+    if(ret != 1){
+    	log_e("servo_on is ON, but is_ready OFF.");
+    	serve_off();
+    	close_modbus_rtu_master();
+    	free_buffers_for_modbus();
+    	return -1;
+    }
+    log_i("Init Success.");
 
 
-    // // TODO loop check
-    // while(TRUE)
-    // {
-    //     // Stop
-    //     if ( g_flags & GEMG ) 
-    //     {
-    //         ret = forced_stop_on();
-    //         if(-1 == ret) break;
-    //         ret = forced_stop_off();
-    //         if(-1 == ret) break;
-    //         break;
-    //     }
-    //     if ( g_flags & GFREE_ON ) 
-    //     {
-    //         ret = free_run_on();
-    //         if(-1 == ret) break;
-    //         ret = free_run_off();
-    //         if(-1 == ret) break;
-    //         uint32_t temp_gflags = 0;
-    //         write_gflags(temp_gflags);
-    //     }
-    //     if ( g_flags & GPST_CANCEL ) 
-    //     {
-    //         ret = positioning_cancel_on();
-    //         if(-1 == ret) break;
-    //         ret = positioning_cancel_off();
-    //         if(-1 == ret) break;
-    //         uint32_t temp_gflags = 0;
-    //         write_gflags(temp_gflags);
-    //     }
-    //     // Pause
-    //     if ( g_flags & GPAUSE ) 
-    //     {
-    //         ret = pause_on();
-    //         if (-1 == ret) break;
-    //         uint32_t temp_gflags = read_gflags();
-    //         temp_gflags &= (~GPAUSE);
-    //         write_gflags(temp_gflags);
+    // TODO loop check
+    while(TRUE)
+    {
+        // Stop
+        if ( g_flags & GEMG ) 
+        {
+            ret = forced_stop_on();
+            if(-1 == ret) break;
+            ret = forced_stop_off();
+            if(-1 == ret) break;
+            break;
+        }
+        if ( g_flags & GFREE_ON ) 
+        {
+            ret = free_run_on();
+            if(-1 == ret) break;
+            ret = free_run_off();
+            if(-1 == ret) break;
+            uint32_t temp_gflags = 0;
+            write_gflags(temp_gflags);
+        }
+        if ( g_flags & GPST_CANCEL ) 
+        {
+            ret = positioning_cancel_on();
+            if(-1 == ret) break;
+            ret = positioning_cancel_off();
+            if(-1 == ret) break;
+            uint32_t temp_gflags = 0;
+            write_gflags(temp_gflags);
+        }
+        // Pause
+        if ( g_flags & GPAUSE ) 
+        {
+            ret = pause_on();
+            if (-1 == ret) break;
+            uint32_t temp_gflags = read_gflags();
+            temp_gflags &= (~GPAUSE);
+            write_gflags(temp_gflags);
 
-    //     }else if( g_flags & GPAUSE_OFF ) {
-    //         ret = pause_off();
-    //         if(-1 == ret) break;
-    //         uint32_t temp_gflags = read_gflags();
-    //         temp_gflags &= (~GPAUSE_OFF);
-    //         write_gflags(temp_gflags);
-    //     }
-    //     // Speed setting
-    //     if ( g_flags & GSPEED ) 
-    //     {
-    //         ret = send_cruise_speed();
-    //         if (-1 == ret) break;
-    //         uint32_t temp_gflags = read_gflags();
-    //         temp_gflags &= (~GSPEED);
-    //         write_gflags(temp_gflags);
-    //     }
-    //     if ( g_flags & GACCE_TIME ) 
-    //     {
-    //         ret = send_imme_acceleration_time();
-    //         if (-1 == ret) break;
-    //         uint32_t temp_gflags = read_gflags();
-    //         temp_gflags &= (~GACCE_TIME);
-    //         write_gflags(temp_gflags);
-    //     }
-    //     if ( g_flags & GDECE_TIME ) 
-    //     {
-    //         ret = send_imme_deceleration_time();
-    //         if (-1 == ret) break;
-    //         uint32_t temp_gflags = read_gflags();
-    //         temp_gflags &= (~GDECE_TIME);
-    //         write_gflags(temp_gflags);
-    //     }
-    //     // Motion Control
-    //     if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
-    //     {
-    //         ret = set_abs_control_mode();
-    //         if(-1 == ret) break;
-    //         ret = right_cruise();
-    //         if (1 == ret) {
-    //             uint32_t temp = read_gflags();
-    //             temp = temp & (~GRIGHT) | GLEFT;
-    //             write_gflags(temp);
-    //         }
-    //         else if(-1 == ret) break;
+        }else if( g_flags & GPAUSE_OFF ) {
+            ret = pause_off();
+            if(-1 == ret) break;
+            uint32_t temp_gflags = read_gflags();
+            temp_gflags &= (~GPAUSE_OFF);
+            write_gflags(temp_gflags);
+        }
+        // Speed setting
+        if ( g_flags & GSPEED ) 
+        {
+            ret = send_cruise_speed();
+            if (-1 == ret) break;
+            uint32_t temp_gflags = read_gflags();
+            temp_gflags &= (~GSPEED);
+            write_gflags(temp_gflags);
+        }
+        if ( g_flags & GACCE_TIME ) 
+        {
+            ret = send_imme_acceleration_time();
+            if (-1 == ret) break;
+            uint32_t temp_gflags = read_gflags();
+            temp_gflags &= (~GACCE_TIME);
+            write_gflags(temp_gflags);
+        }
+        if ( g_flags & GDECE_TIME ) 
+        {
+            ret = send_imme_deceleration_time();
+            if (-1 == ret) break;
+            uint32_t temp_gflags = read_gflags();
+            temp_gflags &= (~GDECE_TIME);
+            write_gflags(temp_gflags);
+        }
+        // Motion Control
+        if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
+        {
+            ret = set_abs_control_mode();
+            if(-1 == ret) break;
+            ret = right_cruise();
+            if (1 == ret) {
+                uint32_t temp = read_gflags();
+                temp = temp & (~GRIGHT) | GLEFT;
+                write_gflags(temp);
+            }
+            else if(-1 == ret) break;
 
-    //     }else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) {
-    //         ret = set_abs_control_mode();
-    //         if(-1 == ret) break;
-    //         ret = left_cruise();
-    //         if (1 == ret) {
-    //             uint32_t temp = read_gflags();
-    //             temp = temp & (~GLEFT) | GRIGHT;
-    //             write_gflags(temp);
-    //         }
-    //         else if(-1 == ret) break;
+        }else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) {
+            ret = set_abs_control_mode();
+            if(-1 == ret) break;
+            ret = left_cruise();
+            if (1 == ret) {
+                uint32_t temp = read_gflags();
+                temp = temp & (~GLEFT) | GRIGHT;
+                write_gflags(temp);
+            }
+            else if(-1 == ret) break;
 
-    //     }else if ( g_flags & GRIGHT ) {
-    //         ret = set_inc_control_mode();
-    //         if(-1 == ret) break;
-    //         ret = right_direction_run();
-    //         if(-1 == ret) break;
+        }else if ( g_flags & GRIGHT ) {
+            ret = set_inc_control_mode();
+            if(-1 == ret) break;
+            ret = right_direction_run();
+            if(-1 == ret) break;
 
-    //     }else if ( g_flags & GLEFT ) {
-    //         ret = set_inc_control_mode();
-    //         if(-1 == ret) break;
-    //         ret = left_direction_run();
-    //         if(-1 == ret) break;
-    //     }
-    // }
+        }else if ( g_flags & GLEFT ) {
+            ret = set_inc_control_mode();
+            if(-1 == ret) break;
+            ret = left_direction_run();
+            if(-1 == ret) break;
+        }
+    }
 
-    // // // test alpha
-    // // fprintf(stderr,"INF:test immediate value data control.\n");
-    // // immediate_value_data_op_test();
-    // // getchar();
+    // // test alpha
+    // fprintf(stderr,"INF:test immediate value data control.\n");
+    // immediate_value_data_op_test();
+    // getchar();
 
-    // // close
-    // serve_off();
-    // close_modbus_rtu_master();
-    // free_buffers_for_modbus();
-    // close_uart();
+    // close
+    serve_off();
+    close_modbus_rtu_master();
+    free_buffers_for_modbus();
+    close_uart();
     elog_close();
 
     return 0;

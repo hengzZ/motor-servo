@@ -158,7 +158,9 @@ void receivethread(void)
         if((nread = read(fd,buff,100))>0) 
         {
             buff[nread]='\0';
-            memcpy(&cur_v,buff+3,2);
+	    memcpy(&sorted_buff[1],buff+3,1);
+	    memcpy(&sorted_buff[0],buff+4,1);
+	    memcpy(&cur_v,sorted_buff,2);
             pre_v = cur_v;
             break;
         }
@@ -169,15 +171,15 @@ void receivethread(void)
 	if((nread = read(fd,buff,100))>0) 
 	{
 	    buff[nread]='\0';
-	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
-	    //for(int i = 0; i < nread; i++){
-	    //	fprintf(stderr,"%.2x ",buff[i]);
-	    //}
+	    printf("[RECEIVE] Len is %d,content is :\n",nread);
+	    for(int i = 0; i < nread; i++){
+	    	fprintf(stderr,"%.2x ",buff[i]);
+	    }
 	    memcpy(&sorted_buff[1],buff+3,1);
 	    memcpy(&sorted_buff[0],buff+4,1);
 	    memcpy(&cur_v,sorted_buff,2);
-	    //printf("\n%.4x\n",cur_v);
-	    //printf("%d\n",cur_v);
+	    printf("\n%.4x\n",cur_v);
+	    printf("%d\n",cur_v);
 
 	    // calculate the stride 
 	    int temp_stride = cur_v - pre_v;
@@ -189,7 +191,7 @@ void receivethread(void)
 	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    //printf("INF: current position: %.10d\n",encoder_position);
+	    fprintf(stderr, "INF: current position: %.10d\n",encoder_position);
 
 	    // update pre_v
 	    pre_v = cur_v;
