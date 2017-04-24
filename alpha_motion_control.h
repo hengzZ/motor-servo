@@ -31,6 +31,8 @@ int set_inc_control_mode();
 int immediate_value_operation_run();
 int set_cruise_left_position(const int32_t position);
 int set_cruise_right_position(const int32_t position);
+int set_direct_left_position(const int32_t position);
+int set_direct_right_position(const int32_t position);
 int set_max_left_position(const int32_t position);
 int set_max_right_position(const int32_t position);
 int set_cruise_speed(const uint32_t speed);

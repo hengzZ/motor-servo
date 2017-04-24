@@ -142,34 +142,45 @@ void parsesocket(void)
 	if(s < 0) { 
 		log_e("socket failed.");
 		assert(0);
+		exit(-1);
 	}
 	setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on));
 	b = bind(s, (struct sockaddr*)&channel, sizeof(channel));
 	if(b < 0) {
 		log_e("bind failed.");
 		assert(0);
+		exit(-1);
 	}
 	l = listen(s, queue_size);
 	if(l < 0) {
 		log_e("listen failed.");
 		assert(0);
+		exit(-1);
 	}
 	// Well Done
 	
-	while(1)
+	int listen_loop =1;
+	int connect_loop = 1;
+	while(listen_loop)
 	{
 		sa = accept(s, 0, 0);
 		if(sa < 0) {
 			log_e("accept failed.");
 			assert(0);
+			exit(-1);
 		}
 
 		int bytes = 0;
 		char buf[1024];
 
-		while(1) {
+		connect_loop = 1;
+		while(connect_loop) {
 			bytes = read(sa, buf, 1024);
-			if(bytes <= 0 ) continue;
+			fprintf(stderr, "INF: bytes = %d\n",bytes);
+			if(bytes <= 0 ) {
+			    connect_loop = 0;
+			    break;
+			}
 			fprintf(stderr,"%s\n",buf);
 
 			if(0 == strcmp(buf,"stop"))
@@ -179,7 +190,7 @@ void parsesocket(void)
 			    write_gflags(GEMG);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf,"pause_on"))
+			else if(0 == strcmp(buf,"pause_on"))
 			{
 			    uint32_t temp = read_gflags();
 			    temp = temp & (~GPAUSE_OFF) | GPAUSE;
@@ -187,7 +198,7 @@ void parsesocket(void)
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf, "pause_off"))
+			else if(0 == strcmp(buf, "pause_off"))
 			{
 			    uint32_t temp = read_gflags();
 			    temp = temp & (~GPAUSE) | GPAUSE_OFF;
@@ -195,7 +206,7 @@ void parsesocket(void)
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf,"lcruise"))
+			else if(0 == strcmp(buf,"lcruise"))
 			{
 			    int temp = read_gflags();
 			    temp = temp & (~GPAUSE) & (~GRIGHT) | GPAUSE_OFF;
@@ -204,7 +215,7 @@ void parsesocket(void)
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf,"rcruise"))
+			else if(0 == strcmp(buf,"rcruise"))
 			{
 			    int temp = read_gflags();
 			    temp = temp & (~GPAUSE) & (~GLEFT) | GPAUSE_OFF;
@@ -213,7 +224,7 @@ void parsesocket(void)
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf,"ldirect"))
+			else if(0 == strcmp(buf,"ldirect"))
 			{
 			    int temp = read_gflags();
 			    temp = temp & (~GPAUSE) & (~GCRUISE) & (~GRIGHT) | GPAUSE_OFF;
@@ -222,7 +233,7 @@ void parsesocket(void)
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf,"rdirect"))
+			else if(0 == strcmp(buf,"rdirect"))
 			{
 			    int temp = read_gflags();
 			    temp = temp & (~GPAUSE) & (~GCRUISE) & (~GLEFT) | GPAUSE_OFF;
@@ -231,7 +242,7 @@ void parsesocket(void)
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			if(0 == strcmp(buf,"cancel"))
+			else if(0 == strcmp(buf,"cancel"))
 			{
 			    int temp = GPST_CANCEL;
 			    printf("temp: %.8d\n",temp);
@@ -248,6 +259,7 @@ int listening_socket(int _server_port, int _queue_size)
 	server_port = _server_port;
 	queue_size = _queue_size;
 	pthread_t parsesocketid;
+
 	pthread_create(&parsesocketid,NULL,(void*)parsesocket,NULL);
 	pthread_detach(parsesocketid);
 	return 0;

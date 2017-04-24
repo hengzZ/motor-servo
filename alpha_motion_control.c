@@ -13,6 +13,9 @@ uint16_t cruise_left_position[2];
 uint16_t cruise_right_position[2];
 uint16_t imme_acceleration_time[2];
 uint16_t imme_deceleration_time[2];
+uint16_t direct_left_position[2];
+uint16_t direct_right_position[2];
+
 int32_t max_left_position;
 int32_t max_right_position;
 //pthread_mutex_t mutex_ctrl = PTHREAD_MUTEX_INITIALIZER;
@@ -24,8 +27,13 @@ int left_direction_run()
 	if(is_INP())
 	{
 		int ret;
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_left_position); i++){
-			if(i==OPLOOPS-1)
+		ret = set_inc_control_mode();
+		if(-1 == ret) {
+			log_e("left_direction_run: set inc control mode failed.");
+			return -1;
+		}
+		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_left_position); i++){
+			if(OPLOOPS-1==i)
 			{
 				log_e("left_direction_run: communication failed.");
 				return -1;
@@ -42,8 +50,13 @@ int right_direction_run()
 	if(is_INP())
 	{
 		int ret;
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_right_position); i++){
-			if(i==OPLOOPS-1)
+		ret = set_inc_control_mode();
+		if(-1 == ret) {
+			log_e("right_direction_run: set inc control mode failed.");
+			return -1;
+		}
+		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_right_position); i++){
+			if(OPLOOPS-1==i)
 			{
 				log_e("right_direction_run: communication failed.");
 				return -1;
@@ -61,8 +74,13 @@ int	left_cruise()
 	if(is_INP())
 	{
 		int ret;
+		ret = set_abs_control_mode();
+		if(-1 == ret) {
+			log_e("left_cruise: set abs control mode failed.");
+			return -1;
+		}
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_left_position); i++){
-			if(i==OPLOOPS-1)
+			if(OPLOOPS-1==i)
 			{
 				log_e("left_cruise: communication failed.");
 				return -1;
@@ -81,8 +99,13 @@ int right_cruise()
 	if(is_INP())
 	{
 		int ret;
+		ret = set_abs_control_mode();
+		if(-1 == ret) {
+			log_e("right_cruise: set abs control mode failed.");
+			return -1;
+		}
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_right_position); i++){
-			if(i==OPLOOPS-1)
+			if(OPLOOPS-1==i)
 			{
 				log_e("right_cruise: communication failed.");
 				return -1;
@@ -95,16 +118,21 @@ int right_cruise()
 	}
 	return 0;
 }
-// Cruise Control (巡航控制)
+// Cruise Control (无限巡航)
 void cruise()
 {
 	while(TRUE)
 	{
-		int ret;
-		ret = left_cruise();
-		if(-1 == ret) break;
-		ret = right_cruise();
-		if(-1 == ret) break;
+		int ret, drct = 0;
+		if(0 == drct) {
+			ret = left_cruise();
+			if(-1 == ret) break;
+			else if(1 == ret) drct = 1;
+		} else if(1 == drct) {
+			ret = right_cruise();
+			if(-1 == ret) break;
+			else if(1 == ret) drct = 0;
+		}
 	}
 }
 
@@ -126,7 +154,7 @@ int set_abs_control_mode()
 	tab_rq_registers[0] = ABS_POSITION_MODE << 8;
 	tab_rq_registers[1] = 0x0000;
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("set_abs_control_mode: communication failed.");
 			return -1;
@@ -139,7 +167,7 @@ int set_inc_control_mode()
 	tab_rq_registers[0] = INC_POSITION_MODE << 8;
 	tab_rq_registers[1] = 0x0000;
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("set_inc_control_mode: communication failed.");
 			return -1;
@@ -152,14 +180,14 @@ int set_inc_control_mode()
 int immediate_value_operation_run()
 {
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, START_ad, 1); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("set start_on: communication failed.");
 			return -1;
 		}
 	}
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, START_ad, 0); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("set start_off: communication failed.");
 			return -1;
@@ -179,6 +207,18 @@ int set_cruise_right_position(const int32_t position)
 {
 	cruise_right_position[1] = position;
 	cruise_right_position[0] = position >> 16;
+	return 0;
+}
+int set_direct_left_position(const int32_t position)
+{
+	direct_left_position[1] = position;
+	direct_left_position[0] = position >> 16;
+	return 0;
+}
+int set_direct_right_position(const int32_t position)
+{
+	direct_right_position[1] = position;
+	direct_right_position[0] = position >> 16;
 	return 0;
 }
 int set_max_left_position(const int32_t position)
@@ -202,7 +242,7 @@ int set_cruise_speed(const uint32_t speed)
 int send_cruise_speed()
 {
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, cruise_speed); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("send_cruise_speed: communication failed.");
 			return -1;
@@ -210,7 +250,6 @@ int send_cruise_speed()
 	}		
 	return 0;
 }
-
 // acc/dec time: 0.1ms
 int set_imme_acceleration_time(const uint32_t time)
 {
@@ -221,7 +260,7 @@ int set_imme_acceleration_time(const uint32_t time)
 int send_imme_acceleration_time()
 {
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, imme_acceleration_time); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("send_imme_acceleration_time: communication failed.");
 			return -1;
@@ -239,7 +278,7 @@ int set_imme_deceleration_time(const uint32_t time)
 int send_imme_deceleration_time()
 {
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, imme_deceleration_time); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("send_imme_deceleration_time: communication failed.");
 			return -1;
@@ -252,7 +291,7 @@ int send_imme_deceleration_time()
 int is_INP()
 {
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx, INP_ad,1,tab_rp_bits); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("is_INP: communication failed.");
 			return 0;
@@ -268,15 +307,18 @@ int serve_on()
 	int rc;
 
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx,S_RDY_ad,1,tab_rp_bits); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
-			log_e("require S_RDY: communication failed.");
+			log_e("serve_on: require S_RDY, communication failed.");
 			return -1; 
 		}
 	}
-	if(1 != tab_rp_bits[0]) return -1;
+	if(1 != tab_rp_bits[0]) { 
+		log_e("serve_on: S_RDY is not ON.");
+		return -1;
+	}
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,SERVO_ON_ad,1); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("serve_on: communication failed.");
 			return -1;
@@ -288,7 +330,7 @@ int serve_on()
 int serve_off()
 {
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx,SERVO_ON_ad,0); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("serve_off: communication failed.");
 			return -1;
@@ -300,7 +342,7 @@ int serve_off()
 int is_ready()
 {
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx,RDY_ad,1,tab_rp_bits); i++){
-		if(i==OPLOOPS-1)
+		if(OPLOOPS-1==i)
 		{
 			log_e("is_ready: communication failed.");
 			return 0;

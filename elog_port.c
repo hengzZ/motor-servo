@@ -27,6 +27,7 @@
  */
 
 #include <elog.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -50,7 +51,8 @@ ElogErrCode elog_port_init(void) {
     logfile=fopen("./log.txt","a+");
     if(NULL==logfile)
     {
-        return -1;
+        assert(0);
+        exit(-1);
     }
     // set buffer
     setbuf(logfile,NULL);

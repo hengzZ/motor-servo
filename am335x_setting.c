@@ -15,7 +15,7 @@
 #define FALSE 1
 #define TRUE 0
 
-// assume that every stride is less than half cycle(65536/2).
+// assume that every stride is less than half cycle(65535/2).
 // if absolute stride large than 32768, it means stride over zero.
 #define MAX_STRIDE	32767
 char sorted_buff[2];
@@ -23,14 +23,13 @@ unsigned short  cur_v;
 unsigned short  pre_v;
 int stride;
 int encoder_position;
-int max_left_position;
-int max_right_position;
+int limit_left_position;
+int limit_right_position;
 
 
 int fd=-1;
 char buff[512];
-int speed_arr[] = {  B115200, B57600, B38400, B19200, B9600, B4800,
-		    B2400, B1200};
+int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200};
 int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400, 1200};
 
 #define debugnum(data,len,prefix)  \
@@ -171,15 +170,15 @@ void receivethread(void)
 	if((nread = read(fd,buff,100))>0) 
 	{
 	    buff[nread]='\0';
-	    printf("[RECEIVE] Len is %d,content is :\n",nread);
-	    for(int i = 0; i < nread; i++){
-	    	fprintf(stderr,"%.2x ",buff[i]);
-	    }
+	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
+	    //for(int i = 0; i < nread; i++){
+	    //	fprintf(stderr,"%.2x ",buff[i]);
+	    //}
 	    memcpy(&sorted_buff[1],buff+3,1);
 	    memcpy(&sorted_buff[0],buff+4,1);
 	    memcpy(&cur_v,sorted_buff,2);
-	    printf("\n%.4x\n",cur_v);
-	    printf("%d\n",cur_v);
+	    //printf("\n%.4x\n",cur_v);
+	    //printf("%d\n",cur_v);
 
 	    // calculate the stride 
 	    int temp_stride = cur_v - pre_v;
@@ -191,13 +190,13 @@ void receivethread(void)
 	        stride = temp_stride;
 	    // update current position
 	    encoder_position += stride;
-	    fprintf(stderr, "INF: current position: %.10d\n",encoder_position);
+	    //fprintf(stderr, "INF: current position: %.10d\n",encoder_position);
 
 	    // update pre_v
 	    pre_v = cur_v;
 	}
 	
-	usleep(1000/**1000*/);
+	usleep(1000/**1000*/); // uint: 1us
     } 
  
     return;
@@ -211,6 +210,7 @@ int listening_uart(const char* device, int baud, char parity, int data_bit, int 
     pthread_t receiveid;
     fd = open(device, O_RDWR);
     if (fd < 0){
+	log_e("listening_uart: open device failed.");
 	return -1;
     }
     set_speed(fd,baud);

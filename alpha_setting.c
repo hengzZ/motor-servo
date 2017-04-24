@@ -4,6 +4,7 @@
 
 #include "alpha_setting.h"
 
+
 modbus_t *ctx = NULL;
 
 // receive buffers for reply/query.
@@ -16,6 +17,32 @@ uint8_t	 *tab_rp_bits;
 void io_signals_mapping();
 void positioning_data_operation_485_setting();
 void immediate_value_date_operation_485_setting();
+
+// init/free buffers for query/reply.
+int init_buffers_for_modbus()
+{
+	tab_rq_registers = (uint16_t *) malloc(REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
+	memset(tab_rq_registers, 0, REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
+	tab_rp_registers = (uint16_t *) malloc(REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
+	memset(tab_rp_registers, 0, REGISTERS_BUFFER_SIZE  * sizeof(uint16_t));
+	tab_rq_bits = (uint8_t *)malloc(BITS_BUFFER_SIZE * sizeof(uint8_t));
+	memset(tab_rq_bits, 0, BITS_BUFFER_SIZE * sizeof(uint8_t));
+	tab_rp_bits = (uint8_t *)malloc(BITS_BUFFER_SIZE * sizeof(uint8_t));
+	memset(tab_rp_bits, 0, BITS_BUFFER_SIZE * sizeof(uint8_t));
+	if(tab_rq_registers == NULL || tab_rp_registers == NULL || tab_rq_bits == NULL || tab_rp_bits == NULL) return -1;
+	return 0;
+}
+void free_buffers_for_modbus()
+{
+	free(tab_rq_registers);
+	free(tab_rp_registers);
+	free(tab_rq_bits);
+	free(tab_rp_bits);
+	tab_rq_registers = NULL;
+	tab_rp_registers = NULL;
+	tab_rq_bits = NULL;
+	tab_rp_bits = NULL;
+}
 
 // open/close modbus master
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave)
@@ -43,28 +70,6 @@ void  close_modbus_rtu_master()
 {
 	modbus_close(ctx);
 	modbus_free(ctx);
-}
-
-// init/free buffers for query/reply.
-int init_buffers_for_modbus()
-{
-	tab_rq_registers = (uint16_t *) malloc(REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
-	memset(tab_rq_registers, 0, REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
-	tab_rp_registers = (uint16_t *) malloc(REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
-	memset(tab_rp_registers, 0, REGISTERS_BUFFER_SIZE  * sizeof(uint16_t));
-	tab_rq_bits = (uint8_t *)malloc(BITS_BUFFER_SIZE * sizeof(uint8_t));
-	memset(tab_rq_bits, 0, BITS_BUFFER_SIZE * sizeof(uint8_t));
-	tab_rp_bits = (uint8_t *)malloc(BITS_BUFFER_SIZE * sizeof(uint8_t));
-	memset(tab_rp_bits, 0, BITS_BUFFER_SIZE * sizeof(uint8_t));
-	if(tab_rq_registers == NULL || tab_rp_registers == NULL || tab_rq_bits == NULL || tab_rp_bits == NULL) return -1;
-	return 0;
-}
-void free_buffers_for_modbus()
-{
-	free(tab_rq_registers);
-	free(tab_rp_registers);
-	free(tab_rq_bits);
-	free(tab_rp_bits);
 }
 
 // parameter settings for reset.

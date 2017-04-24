@@ -1,12 +1,17 @@
 #ifndef AM335X_SETTING_H
 #define AM335X_SETTING_H
 
-// Hypothetical Premise for location protection algorithm.
-// 1. 65536 for one cycle.
-// 2. Define: max position stride < 65536/36 = 1820 (10 degrees)
-#define MAX_STRIDE		1820
+struct uart_t;
+typedef struct uart_t uart_t;
 
-extern char* buff;
+struct uart_t {
+    char device[1024];
+    int baud;
+    char parity;
+    int data_bit;
+    int stop_bit;
+};
+
 
 int listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit);
 void close_uart();

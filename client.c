@@ -6,6 +6,7 @@
 #include "elog.h"
 #include "iniparser.h"
 
+#include "cmdparser.h"
 #include "am335x_setting.h"
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
@@ -44,28 +45,16 @@ uint32_t read_gflags()
     return ret;
 }
 
-
-// RTU MASTER
-char rtu_device[1024];
-int rtu_baud;
-char rtu_parity;
-int rtu_data_bit;
-int rtu_stop_bit;
-int rtu_slave;
-int rtu_reset;
-// UART
-char uart_device[1024];
-int uart_baud;
-char uart_parity;
-int uart_data_bit;
-int uart_stop_bit;
+// Socket attributes
+am335x_socket_t g_am335x_socket;
+//  RTU master attributes
+rtu_master_t g_rtu_master;
+// UART attributes
+uart_t g_am335x_uart;
 
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
 void save_ini_file(char* ini_name);
-
-extern int listening_console(); 
-extern int listening_socket(int _server_port, int _queue_size);
 
 
 int main(int argc, char** argv)
@@ -105,21 +94,21 @@ int main(int argc, char** argv)
         return -1;
     }
     //ret = open_modbus_rtu_master("/dev/ttyO1", 38400, 'E', 8, 1, 1);
-    ret = open_modbus_rtu_master(rtu_device, rtu_baud, rtu_parity, rtu_data_bit, rtu_stop_bit, rtu_slave);
+    ret = open_modbus_rtu_master(g_rtu_master.device, g_rtu_master.baud, g_rtu_master.parity, g_rtu_master.data_bit, g_rtu_master.stop_bit, g_rtu_master.slave);
     if(-1 == ret){
     	log_e("open modbus_rtu_master failed.");
     	free_buffers_for_modbus();
     	return -1;
     }
     // Init Parameter (Warning: remerber just do it one time.)
-    if(1 == rtu_reset){
+    if(1 == g_rtu_master.reset_parameter){
         init_parameters();
-        log_i("Init Parameter Done (Reset Done).");
+        log_i("WARNNING: Init Parameter Done (Reset Parameters Setting).");
     }
 
     // TODO listening am335x UART
     //ret = listening_uart("/dev/ttyO2", 9600, 'N', 8, 1);
-    ret = listening_uart(uart_device, uart_baud, uart_parity, uart_data_bit, uart_stop_bit);
+    ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
     if(-1 == ret){
     	log_e("open am335x uart failed.");
     	close_modbus_rtu_master();
@@ -128,11 +117,12 @@ int main(int argc, char** argv)
     }
     // TODO listening console
     //ret = listening_console();
-    ret = listening_socket(12345, 10);
+    ret = listening_socket(g_am335x_socket.server_port, g_am335x_socket.queue_size);
     if(-1 == ret){
         log_e("open am335x ethernet port failed.");
         close_modbus_rtu_master();
         free_buffers_for_modbus();
+        close_uart();
         return -1;
     }
 
@@ -142,6 +132,7 @@ int main(int argc, char** argv)
         log_e("servo on failed.");
     	close_modbus_rtu_master();
     	free_buffers_for_modbus();
+        close_uart();
     	return -1;
     }
     ret = is_ready();
@@ -150,6 +141,7 @@ int main(int argc, char** argv)
     	serve_off();
     	close_modbus_rtu_master();
     	free_buffers_for_modbus();
+        close_uart();
     	return -1;
     }
     log_i("Init Success.");
@@ -229,8 +221,6 @@ int main(int argc, char** argv)
         // Motion Control
         if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
         {
-            ret = set_abs_control_mode();
-            if(-1 == ret) break;
             ret = right_cruise();
             if (1 == ret) {
                 uint32_t temp = read_gflags();
@@ -240,8 +230,6 @@ int main(int argc, char** argv)
             else if(-1 == ret) break;
 
         }else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) {
-            ret = set_abs_control_mode();
-            if(-1 == ret) break;
             ret = left_cruise();
             if (1 == ret) {
                 uint32_t temp = read_gflags();
@@ -251,14 +239,10 @@ int main(int argc, char** argv)
             else if(-1 == ret) break;
 
         }else if ( g_flags & GRIGHT ) {
-            ret = set_inc_control_mode();
-            if(-1 == ret) break;
             ret = right_direction_run();
             if(-1 == ret) break;
 
         }else if ( g_flags & GLEFT ) {
-            ret = set_inc_control_mode();
-            if(-1 == ret) break;
             ret = left_direction_run();
             if(-1 == ret) break;
         }
@@ -299,9 +283,10 @@ void create_example_ini_file(void)
     "cruise_speed = 5000\n"
     "cruise_left_position = -200000\n"
     "cruise_right_position = 200000\n"
+    "direct_left_position = -1000000\n"
+    "direct_right_position = 1000000\n"
     "imme_acceleration_time = 100000\n"
     "imme_deceleration_time = 100000\n"
-    "\n"
     "max_left_position = -1000000\n"
     "max_right_position = 1000000\n"
     "\n"
@@ -324,7 +309,10 @@ void create_example_ini_file(void)
     "stop_bit = 1\n"
     "\n"
 
-    "[CONSOLE]\n"
+    "[SOCKET]\n"
+    "server_port = 12345\n"
+    "queue_size = 10\n"
+    "mode = TCP\n"
     "\n"
     
     );
@@ -340,6 +328,8 @@ int parse_ini_file(char * ini_name)
     // temporary variables
     int32_t cruise_left_position;
     int32_t cruise_right_position;
+    int32_t direct_left_position;
+    int32_t direct_right_position;
     int32_t max_left_position;
     int32_t max_right_position;
     uint32_t cruise_speed;
@@ -356,6 +346,8 @@ int parse_ini_file(char * ini_name)
     // parse
     cruise_left_position = iniparser_getint(ini, "Motion Control:cruise_left_position", 0);
     cruise_right_position = iniparser_getint(ini, "Motion Control:cruise_right_position", 0);
+    direct_left_position = iniparser_getint(ini, "Motion Control:direct_left_position", 0);
+    direct_right_position = iniparser_getint(ini, "Motion Control:direct_right_position", 0);
     max_left_position = iniparser_getint(ini, "Motion Control:max_left_position", 0);
     max_right_position = iniparser_getint(ini, "Motion Control:max_right_position", 0);
     cruise_speed = iniparser_getint(ini, "Motion Control:cruise_speed", 0);
@@ -364,30 +356,35 @@ int parse_ini_file(char * ini_name)
 
     const char* ptr;
     ptr = iniparser_getstring(ini, "RTU MASTER:device", "/dev/ttyO1");
-    memcpy(rtu_device, ptr, strlen(ptr));
-    rtu_device[strlen(ptr)] = '\0';
+    memcpy(g_rtu_master.device, ptr, strlen(ptr));
+    g_rtu_master.device[strlen(ptr)] = '\0';
 
     ptr = iniparser_getstring(ini, "RTU MASTER:parity", "E");
-    memcpy(&rtu_parity, ptr, 1);
-    rtu_baud = iniparser_getint(ini, "RTU MASTER:baud", 38400);
-    rtu_data_bit = iniparser_getint(ini, "RTU MASTER:data_bit", 8);
-    rtu_stop_bit = iniparser_getint(ini, "RTU MASTER:stop_bit", 1);
-    rtu_slave = iniparser_getint(ini, "RTU MASTER:slave", 1);
-    rtu_reset = iniparser_getint(ini, "RTU MASTER:RESET", 0);
+    memcpy(&g_rtu_master.parity, ptr, 1);
+    g_rtu_master.baud = iniparser_getint(ini, "RTU MASTER:baud", 38400);
+    g_rtu_master.data_bit = iniparser_getint(ini, "RTU MASTER:data_bit", 8);
+    g_rtu_master.stop_bit = iniparser_getint(ini, "RTU MASTER:stop_bit", 1);
+    g_rtu_master.slave = iniparser_getint(ini, "RTU MASTER:slave", 1);
+    g_rtu_master.reset_parameter = iniparser_getint(ini, "RTU MASTER:RESET", 0);
 
     ptr = iniparser_getstring(ini, "UART:device", "/dev/ttyO2");
-    memcpy(uart_device, ptr, strlen(ptr));
-    uart_device[strlen(ptr)] = '\0';
+    memcpy(g_am335x_uart.device, ptr, strlen(ptr));
+    g_am335x_uart.device[strlen(ptr)] = '\0';
 
     ptr = iniparser_getstring(ini, "UART:parity", "N");
-    memcpy(&uart_parity, ptr, 1);
-    uart_baud = iniparser_getint(ini, "UART:baud", 9600);
-    uart_data_bit = iniparser_getint(ini, "UART:data_bit", 8);
-    uart_stop_bit = iniparser_getint(ini, "UART:stop_bit", 1);
+    memcpy(&g_am335x_uart.parity, ptr, 1);
+    g_am335x_uart.baud = iniparser_getint(ini, "UART:baud", 9600);
+    g_am335x_uart.data_bit = iniparser_getint(ini, "UART:data_bit", 8);
+    g_am335x_uart.stop_bit = iniparser_getint(ini, "UART:stop_bit", 1);
+
+    g_am335x_socket.server_port = iniparser_getint(ini, "SOCKET:server_port", 12345);
+    g_am335x_socket.queue_size = iniparser_getint(ini, "SOCKET:queue_size", 10);
 
     // set control parameter
     set_cruise_left_position(cruise_left_position);
     set_cruise_right_position(cruise_right_position);
+    set_direct_left_position(direct_left_position);
+    set_direct_right_position(direct_right_position);
     set_max_left_position(max_left_position);
     set_max_right_position(max_right_position);
     set_cruise_speed(cruise_speed);
