@@ -15,6 +15,7 @@ uint16_t imme_acceleration_time[2];
 uint16_t imme_deceleration_time[2];
 uint16_t direct_left_position[2];
 uint16_t direct_right_position[2];
+uint16_t point_position[2];
 
 int32_t max_left_position;
 int32_t max_right_position;
@@ -27,7 +28,7 @@ int left_direction_run()
 	if(is_INP())
 	{
 		int ret;
-		ret = set_inc_control_mode();
+		ret = set_abs_control_mode();
 		if(-1 == ret) {
 			log_e("left_direction_run: set inc control mode failed.");
 			return -1;
@@ -50,12 +51,36 @@ int right_direction_run()
 	if(is_INP())
 	{
 		int ret;
-		ret = set_inc_control_mode();
+		ret = set_abs_control_mode();
 		if(-1 == ret) {
 			log_e("right_direction_run: set inc control mode failed.");
 			return -1;
 		}
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_right_position); i++){
+			if(OPLOOPS-1==i)
+			{
+				log_e("right_direction_run: communication failed.");
+				return -1;
+			}
+		}
+		ret = immediate_value_operation_run();
+		return ret;
+	}
+	return 0;
+}
+
+// run to point 
+int run_to_point()
+{
+	if(is_INP())
+	{
+		int ret;
+		ret = set_abs_control_mode();
+		if(-1 == ret) {
+			log_e("right_direction_run: set inc control mode failed.");
+			return -1;
+		}
+		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, point_position); i++){
 			if(OPLOOPS-1==i)
 			{
 				log_e("right_direction_run: communication failed.");
@@ -207,6 +232,12 @@ int set_cruise_right_position(const int32_t position)
 {
 	cruise_right_position[1] = position;
 	cruise_right_position[0] = position >> 16;
+	return 0;
+}
+int set_point_position(const int32_t position)
+{
+	point_position[1] = position;
+	point_position[0] = position >> 16;
 	return 0;
 }
 int set_direct_left_position(const int32_t position)

@@ -1,4 +1,4 @@
-TARGET=client-test
+TARGET=motor-sero
 CC=arm-linux-gnueabihf-gcc
 #CC=gcc
 CFLAGS=-I./

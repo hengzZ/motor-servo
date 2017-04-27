@@ -13,6 +13,8 @@
 #include "modbus.h"
 #include "elog.h"
 
+#include "alpha_motion_control.h"
+
 // Socket
 int server_port, queue_size;
 int s, b, l, sa;
@@ -32,7 +34,8 @@ typedef enum{
     GDECE_TIME=512,
     GRIGHT_PST=1024,
     GLEFT_PST=2048,
-    GPAUSE_OFF=4096
+    GPAUSE_OFF=4096,
+    GPOINT=8192
 } GFLAGS;
 extern void write_gflags(uint32_t flags);
 extern uint32_t read_gflags();
@@ -158,6 +161,8 @@ void parsesocket(void)
 		exit(-1);
 	}
 	// Well Done
+	int bytes = 0;
+	char buf[1024];
 	
 	int listen_loop =1;
 	int connect_loop = 1;
@@ -170,84 +175,86 @@ void parsesocket(void)
 			exit(-1);
 		}
 
-		int bytes = 0;
-		char buf[1024];
-
 		connect_loop = 1;
 		while(connect_loop) {
 			bytes = read(sa, buf, 1024);
-			fprintf(stderr, "INF: bytes = %d\n",bytes);
 			if(bytes <= 0 ) {
 			    connect_loop = 0;
 			    break;
 			}
-			fprintf(stderr,"%s\n",buf);
 
-			if(0 == strcmp(buf,"stop"))
+			if(buf == strstr(buf,"cancel"))
+			{
+			    uint32_t temp = GPST_CANCEL;
+			    printf("temp: %.8d\n",temp);
+			    write_gflags(temp);
+			    printf("%.8d\n",read_gflags());
+			}
+			else if(buf == strstr(buf,"stop"))
 			{
 			    uint32_t temp = GEMG;
 			    printf("temp: %.8d\n",temp);
-			    write_gflags(GEMG);
+			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			else if(0 == strcmp(buf,"pause_on"))
+			else if(buf == strstr(buf, "point"))
 			{
+			    int32_t position;
+			    sscanf(buf,"point %d",&position);
+			    fprintf(stderr,"INF:point_position: %d",position);
+			    set_point_position(position);
 			    uint32_t temp = read_gflags();
-			    temp = temp & (~GPAUSE_OFF) | GPAUSE;
+			    temp = temp & (~GRIGHT) & (~GLEFT) | GPOINT;
 			    printf("temp: %.8d\n",temp);
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			else if(0 == strcmp(buf, "pause_off"))
-			{
-			    uint32_t temp = read_gflags();
-			    temp = temp & (~GPAUSE) | GPAUSE_OFF;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
-			}
-			else if(0 == strcmp(buf,"lcruise"))
+			else if(buf == strstr(buf,"runleft"))
 			{
 			    int temp = read_gflags();
-			    temp = temp & (~GPAUSE) & (~GRIGHT) | GPAUSE_OFF;
-			    temp = temp | GCRUISE | GLEFT;
+			    temp = temp & (~GPOINT) & (~GRIGHT) | GLEFT;
 			    printf("temp: %.8d\n",temp);
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			else if(0 == strcmp(buf,"rcruise"))
+			else if(buf == strstr(buf,"runright"))
 			{
 			    int temp = read_gflags();
-			    temp = temp & (~GPAUSE) & (~GLEFT) | GPAUSE_OFF;
-			    temp = temp | GCRUISE | GRIGHT;
+			    temp = temp & (~GPOINT) & (~GLEFT) | GRIGHT;
 			    printf("temp: %.8d\n",temp);
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			else if(0 == strcmp(buf,"ldirect"))
+			else if(buf == strstr(buf,"speed"))
 			{
 			    int temp = read_gflags();
-			    temp = temp & (~GPAUSE) & (~GCRUISE) & (~GRIGHT) | GPAUSE_OFF;
-			    temp = temp | GLEFT;
+			    temp = temp | GPST_CANCEL;
 			    printf("temp: %.8d\n",temp);
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			else if(0 == strcmp(buf,"rdirect"))
+			else if(buf == strstr(buf,"acce"))
 			{
 			    int temp = read_gflags();
-			    temp = temp & (~GPAUSE) & (~GCRUISE) & (~GLEFT) | GPAUSE_OFF;
-			    temp = temp | GRIGHT;
+			    temp = temp | GPST_CANCEL;
 			    printf("temp: %.8d\n",temp);
 			    write_gflags(temp);
 			    printf("%.8d\n",read_gflags());
 			}
-			else if(0 == strcmp(buf,"cancel"))
+			else if(buf == strstr(buf,"dece"))
 			{
 			    int temp = GPST_CANCEL;
 			    printf("temp: %.8d\n",temp);
 			    write_gflags(GPST_CANCEL);
 			    printf("%.8d\n",read_gflags());
+			}
+			else if(buf == strstr(buf,"maxpoint"))
+			{
+
+			}
+			else if(buf == strstr(buf,"status"))
+			{
+
 			}
 		}
 		close(sa);

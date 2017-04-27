@@ -25,7 +25,8 @@ typedef enum{
     GDECE_TIME=512,
     GRIGHT_PST=1024,
     GLEFT_PST=2048,
-    GPAUSE_OFF=4096
+    GPAUSE_OFF=4096,
+    GPOINT=8192
 } GFLAGS;
 volatile uint32_t g_flags;
 
@@ -54,7 +55,6 @@ uart_t g_am335x_uart;
 
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
-void save_ini_file(char* ini_name);
 
 
 int main(int argc, char** argv)
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
     	free_buffers_for_modbus();
     	return -1;
     }
-    // TODO listening console
+    // TODO listening command
     //ret = listening_console();
     ret = listening_socket(g_am335x_socket.server_port, g_am335x_socket.queue_size);
     if(-1 == ret){
@@ -150,8 +150,16 @@ int main(int argc, char** argv)
     // TODO loop check
     while(TRUE)
     {
-        // Stop
-        if ( g_flags & GEMG ) 
+        if ( g_flags & GPST_CANCEL )    // cancel
+        {
+            ret = positioning_cancel_on();
+            if(-1 == ret) break;
+            ret = positioning_cancel_off();
+            if(-1 == ret) break;
+            uint32_t temp_gflags = 0;
+            write_gflags(temp_gflags);
+        }
+        else if ( g_flags & GEMG )      // stop
         {
             ret = forced_stop_on();
             if(-1 == ret) break;
@@ -159,20 +167,11 @@ int main(int argc, char** argv)
             if(-1 == ret) break;
             break;
         }
-        if ( g_flags & GFREE_ON ) 
+        else if ( g_flags & GFREE_ON ) 
         {
             ret = free_run_on();
             if(-1 == ret) break;
             ret = free_run_off();
-            if(-1 == ret) break;
-            uint32_t temp_gflags = 0;
-            write_gflags(temp_gflags);
-        }
-        if ( g_flags & GPST_CANCEL ) 
-        {
-            ret = positioning_cancel_on();
-            if(-1 == ret) break;
-            ret = positioning_cancel_off();
             if(-1 == ret) break;
             uint32_t temp_gflags = 0;
             write_gflags(temp_gflags);
@@ -219,24 +218,10 @@ int main(int argc, char** argv)
             write_gflags(temp_gflags);
         }
         // Motion Control
-        if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
+        if ( g_flags & GPOINT )
         {
-            ret = right_cruise();
-            if (1 == ret) {
-                uint32_t temp = read_gflags();
-                temp = temp & (~GRIGHT) | GLEFT;
-                write_gflags(temp);
-            }
-            else if(-1 == ret) break;
-
-        }else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) {
-            ret = left_cruise();
-            if (1 == ret) {
-                uint32_t temp = read_gflags();
-                temp = temp & (~GLEFT) | GRIGHT;
-                write_gflags(temp);
-            }
-            else if(-1 == ret) break;
+            ret = run_to_point();
+            if(-1 == ret) break;
 
         }else if ( g_flags & GRIGHT ) {
             ret = right_direction_run();
@@ -246,6 +231,33 @@ int main(int argc, char** argv)
             ret = left_direction_run();
             if(-1 == ret) break;
         }
+        //if ( ( g_flags & GCRUISE ) && ( g_flags & GRIGHT ) ) 
+        //{
+        //    ret = right_cruise();
+        //    if (1 == ret) {
+        //        uint32_t temp = read_gflags();
+        //        temp = temp & (~GRIGHT) | GLEFT;
+        //        write_gflags(temp);
+        //    }
+        //    else if(-1 == ret) break;
+
+        //}else if ( ( g_flags & GCRUISE ) && ( g_flags & GLEFT) ) {
+        //    ret = left_cruise();
+        //    if (1 == ret) {
+        //        uint32_t temp = read_gflags();
+        //        temp = temp & (~GLEFT) | GRIGHT;
+        //        write_gflags(temp);
+        //    }
+        //    else if(-1 == ret) break;
+
+        //}else if ( g_flags & GRIGHT ) {
+        //    ret = right_direction_run();
+        //    if(-1 == ret) break;
+
+        //}else if ( g_flags & GLEFT ) {
+        //    ret = left_direction_run();
+        //    if(-1 == ret) break;
+        //}
     }
 
     // // test alpha
@@ -390,6 +402,8 @@ int parse_ini_file(char * ini_name)
     set_cruise_speed(cruise_speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);
+
+    set_point_position(0);
 
     uint32_t temp_flags = read_gflags();
     temp_flags |= GSPEED | GACCE_TIME | GDECE_TIME;
