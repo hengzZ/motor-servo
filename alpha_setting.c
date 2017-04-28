@@ -2,23 +2,24 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "elog.h"
 #include "alpha_setting.h"
 
 
 modbus_t *ctx = NULL;
 
-// receive buffers for reply/query.
-uint16_t *tab_rq_registers;
-uint8_t  *tab_rq_bits;
-uint16_t *tab_rp_registers; 
-uint8_t	 *tab_rp_bits;
+// Buffers for modbus-RTU reply/query
+uint16_t *tab_rq_registers = NULL;
+uint8_t  *tab_rq_bits = NULL;
+uint16_t *tab_rp_registers = NULL; 
+uint8_t	 *tab_rp_bits = NULL;
 
-
+// Parameter setting related
 void io_signals_mapping();
 void positioning_data_operation_485_setting();
 void immediate_value_date_operation_485_setting();
 
-// init/free buffers for query/reply.
+// Init/Free bufffers for modbus-TRU
 int init_buffers_for_modbus()
 {
 	tab_rq_registers = (uint16_t *) malloc(REGISTERS_BUFFER_SIZE * sizeof(uint16_t));
@@ -44,7 +45,7 @@ void free_buffers_for_modbus()
 	tab_rp_bits = NULL;
 }
 
-// open/close modbus master
+// Open/Close modbus-RTU master
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave)
 {
 	int rc;
@@ -52,30 +53,30 @@ int open_modbus_rtu_master(const char *device, int baud, char parity, int data_b
 	if(ctx == NULL){
 		return -1;
 	}
-	// SERVER_ID
+	// SLAVE_ID
 	rc = modbus_set_slave(ctx,slave);
 	if(-1 == rc){
 		modbus_free(ctx);
 		return -1;
 	}
-	// DEBUD mode
-	// modbus_set_debug(ctx, TRUE);
+	// Debug mode
+	modbus_set_debug(ctx, TRUE);
 	if (modbus_connect(ctx) == -1) {
 		modbus_free(ctx);
 		return -1;
 	}
 	return 0;
 }
-void  close_modbus_rtu_master()
+void close_modbus_rtu_master()
 {
 	modbus_close(ctx);
 	modbus_free(ctx);
 }
 
-// parameter settings for reset.
+// Parameter setting related
 void io_signals_mapping()
 {
-	// [CONT] assign
+	// [CONT] mapping
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = SERVO_ON_fc;
 	modbus_write_registers(ctx, PA3_9_ad,  2,  tab_rq_registers);
@@ -102,7 +103,6 @@ void io_signals_mapping()
 	tab_rq_registers[1] = FREE_RUN_fc;
 	modbus_write_registers(ctx, PA3_16_ad, 2, tab_rq_registers);
 
-
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = CTRL_MOD_SLCT_fc;
 	modbus_write_registers(ctx, PA3_21_ad, 2, tab_rq_registers);
@@ -116,21 +116,21 @@ void io_signals_mapping()
 	tab_rq_registers[1] = X3_fc;
 	modbus_write_registers(ctx, PA3_24_ad, 2, tab_rq_registers);
 
-	// [OUT] assign
+	// [OUT] mapping
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = S_RDY_fc;
 	modbus_write_registers(ctx, PA3_56_ad, 2, tab_rq_registers);
 }
-//NOTES;
+// NOTES:
 // The W type servo amplifier is capable of :
 //		1. speed control and torque control with analog voltages.
 //		2. position control with pulse.
-//		3. positioning data operation with Di/Do signals or RS-485.(Selected)
+//		3. positioning data operation with Di/Do signals or RS-485.
 //		4. immediate value data operation with RS-485.(Selected)
 void positioning_data_operation_485_setting()
 {
-	// Positioning control with speed control, torque control, or pulse is used.
-	// Enter "1" to "5" to PA1_01 for control mode selection.
+	//  Positioning control with speed control, torque control, or pulse is used.
+	//  Enter "1" to "5" to PA1_01 for control mode selection.
 	//	[Setting value]									[Control mode]
 	//	    ×									    [Set OFF]	  |	   [Set ON]
 	//		0											Position control
@@ -145,18 +145,55 @@ void positioning_data_operation_485_setting()
 }
 void immediate_value_date_operation_485_setting()
 {
-	// if Positioning operation, Enter 7 to PA1_01.
-	// if use immediate value positioning operation, Enter 0 to PA2_40, means unusing internal positioning data.
+	//  Positioning operation, Enter 7 to PA1_01.
+	//  immediate value positioning operation, Enter 0 to PA2_40, means unusing internal positioning data.
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = 0x0007;
 	modbus_write_registers(ctx, PA1_01_ad,  2,  tab_rq_registers);
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = 0x0000;
 	modbus_write_registers(ctx, PA2_40_ad,  2,  tab_rq_registers);
+	// Pulse size per circle
+	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[1] = 40000;
+	modbus_write_registers(ctx, PA1_05_ad,  2,  tab_rq_registers);
+	tab_rq_registers[0] = 0x0000;
+	// PA1_06,07 default value 16,1
+	tab_rq_registers[1] = 16;
+	modbus_write_registers(ctx, PA1_06_ad,  2,  tab_rq_registers);
+	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[1] = 1;
+	modbus_write_registers(ctx, PA1_07_ad,  2,  tab_rq_registers);
+	// OT check
+	const int32_t plus_position = 10100000;			// actual transmission ratio 252.5, for Pulse size 40000
+	const int32_t minus_position = -10100000;
+	// PA1_01=7, PA2_25=0 for PTP mode, PA2_25=1 for INC mode and OT invalid
+	tab_rq_registers[1] = 0x0000;
+	tab_rq_registers[0] = 0x0000;
+	modbus_write_registers(ctx, PA2_25_ad,  2,  tab_rq_registers);
+	// +OT position > -OT position
+	tab_rq_registers[1] = plus_position;
+	tab_rq_registers[0] = plus_position >> 16;
+	modbus_write_registers(ctx, PA2_26_ad,  2,  tab_rq_registers);
+	tab_rq_registers[1] = minus_position;
+	tab_rq_registers[0] = minus_position >> 16;
+	modbus_write_registers(ctx, PA2_27_ad,  2,  tab_rq_registers);
+	tab_rq_registers[1] = plus_position;
+	tab_rq_registers[0] = plus_position >> 16;
+	modbus_write_registers(ctx, PA2_28_ad,  2,  tab_rq_registers);
+	tab_rq_registers[1] = minus_position;
+	tab_rq_registers[0] = minus_position >> 16;
+	modbus_write_registers(ctx, PA2_29_ad,  2,  tab_rq_registers);
 }
 void init_parameters()
 {
-	// positioning_data_operation_485_setting();
+	//positioning_data_operation_485_setting();
 	immediate_value_date_operation_485_setting();
 	io_signals_mapping();
+}
+int check_parameters()
+{
+	// Return -1 for error
+	
+	return 0;
 }

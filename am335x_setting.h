@@ -5,13 +5,16 @@ struct uart_t;
 typedef struct uart_t uart_t;
 
 struct uart_t {
-    char device[1024];
+    char device[32];
     int baud;
     char parity;
     int data_bit;
     int stop_bit;
 };
 
+int get_encoder_position();
+void set_limit_left_position(int position);
+void set_limit_right_position(int position);
 
 int listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit);
 void close_uart();

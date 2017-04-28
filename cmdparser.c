@@ -20,114 +20,29 @@ int server_port, queue_size;
 int s, b, l, sa;
 int on = 1;
 
-// Contrl flags
+// DataType for control and data transmission
 typedef enum{
     GRIGHT=1,
     GLEFT=2,
-    GCRUISE=4,
-    GPAUSE=8,
-    GPST_CANCEL=16,
-    GFREE_ON=32,
-    GEMG=64,
-    GSPEED=128,
-    GACCE_TIME=256,
-    GDECE_TIME=512,
-    GRIGHT_PST=1024,
-    GLEFT_PST=2048,
-    GPAUSE_OFF=4096,
-    GPOINT=8192
+    GPOINT=4,
+    GPST_CANCEL=8,
+    GEMG=16,
+    GSPEED=32,
+    GACCE_TIME=64,
+    GDECE_TIME=128,
+    GMAX_POINT=256,
+    GSTATUS=512,
+    GUNKNOWN=1024
 } GFLAGS;
-extern void write_gflags(uint32_t flags);
-extern uint32_t read_gflags();
 
-void parsethread(void)
-{
-	char cmdstr[1024];
-	fprintf(stderr,"Please Enter a command.\n");
-	fprintf(stderr,"[stop] [pause_on] [pause_off] [lcruise] [rcruise] [ldirect] [rdirect] [cancel]\n");
-	while(1)
-	{
-		if(!gets(cmdstr)) continue;
-		if(0 == strcmp(cmdstr,"stop"))
-		{
-			uint32_t temp = GEMG;
-			printf("temp: %.8d\n",temp);
-			write_gflags(GEMG);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr,"pause_on"))
-		{
-			uint32_t temp = read_gflags();
-			temp = temp & (~GPAUSE_OFF) | GPAUSE;
-			printf("temp: %.8d\n",temp);
-			write_gflags(temp);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr, "pause_off"))
-		{
-			uint32_t temp = read_gflags();
-			temp = temp & (~GPAUSE) | GPAUSE_OFF;
-			printf("temp: %.8d\n",temp);
-			write_gflags(temp);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr,"lcruise"))
-		{
-			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GRIGHT) | GPAUSE_OFF;
-			temp = temp | GCRUISE | GLEFT;
-			printf("temp: %.8d\n",temp);
-			write_gflags(temp);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr,"rcruise"))
-		{
-			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GLEFT) | GPAUSE_OFF;
-			temp = temp | GCRUISE | GRIGHT;
-			printf("temp: %.8d\n",temp);
-			write_gflags(temp);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr,"ldirect"))
-		{
-			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GCRUISE) & (~GRIGHT) | GPAUSE_OFF;
-			temp = temp | GLEFT;
-			printf("temp: %.8d\n",temp);
-			write_gflags(temp);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr,"rdirect"))
-		{
-			int temp = read_gflags();
-			temp = temp & (~GPAUSE) & (~GCRUISE) & (~GLEFT) | GPAUSE_OFF;
-			temp = temp | GRIGHT;
-			printf("temp: %.8d\n",temp);
-			write_gflags(temp);
-			printf("%.8d\n",read_gflags());
-		}
-		if(0 == strcmp(cmdstr,"cancel"))
-		{
-			int temp = GPST_CANCEL;
-			printf("temp: %.8d\n",temp);
-			write_gflags(GPST_CANCEL);
-			printf("%.8d\n",read_gflags());
-		}
+typedef struct {
+    GFLAGS cmd;
+    int32_t v[2];
+}param;
 
-		fprintf(stderr,"Please Enter a command.\n");
-		fprintf(stderr,"[stop] [pause_on] [pause_off] [lcruise] [rcruise] [ldirect] [rdirect] [cancel]\n");
-	}
-}
-
-int listening_console()
-{
-	int ret;
-	pthread_t parserid;
-	pthread_create(&parserid,NULL,(void*)parsethread,NULL);
-	pthread_detach(parserid);
-	return 0;
-}
+// Extern function for updating DataObject
+extern void update_g_x(param x);
+extern param get_g_x();
 
 
 void parsesocket(void)
@@ -160,104 +75,109 @@ void parsesocket(void)
 		assert(0);
 		exit(-1);
 	}
-	// Well Done
+	// Init Done
 	int bytes = 0;
-	char buf[1024];
+	char buf[128];
 	
-	int listen_loop =1;
 	int connect_loop = 1;
-	while(listen_loop)
+	while(1)
 	{
 		sa = accept(s, 0, 0);
 		if(sa < 0) {
-			log_e("accept failed.");
-			assert(0);
-			exit(-1);
+			log_e("listening_socket: socket accept failed.");
 		}
 
 		connect_loop = 1;
 		while(connect_loop) {
-			bytes = read(sa, buf, 1024);
+			bytes = read(sa, buf, 127);
 			if(bytes <= 0 ) {
 			    connect_loop = 0;
 			    break;
 			}
-
+			
+			//fflush(sa);
+			param temp_x = get_g_x();
 			if(buf == strstr(buf,"cancel"))
 			{
-			    uint32_t temp = GPST_CANCEL;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    temp_x.cmd = GPST_CANCEL;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"stop"))
 			{
-			    uint32_t temp = GEMG;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    temp_x.cmd = GEMG;
+			    update_g_x(temp_x);
+			    printf("cmdparse: stop\n");
 			}
 			else if(buf == strstr(buf, "point"))
 			{
 			    int32_t position;
 			    sscanf(buf,"point %d",&position);
-			    fprintf(stderr,"INF:point_position: %d",position);
-			    set_point_position(position);
-			    uint32_t temp = read_gflags();
-			    temp = temp & (~GRIGHT) & (~GLEFT) | GPOINT;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    char tmp_buf[1024];
+			    sprintf(tmp_buf, buf);
+			    log_e(tmp_buf);
+			    printf("cmdparse: %s\n",tmp_buf);
+			    sprintf(tmp_buf, "INF:point cmd position: %d",position);
+			    log_e(tmp_buf);
+			    printf("cmdparse: %s\n",tmp_buf);
+			    temp_x.v[0] = position;
+			    temp_x.cmd = GPOINT;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runleft"))
 			{
-			    int temp = read_gflags();
-			    temp = temp & (~GPOINT) & (~GRIGHT) | GLEFT;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    temp_x.cmd = GLEFT;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runright"))
 			{
-			    int temp = read_gflags();
-			    temp = temp & (~GPOINT) & (~GLEFT) | GRIGHT;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    temp_x.cmd = GRIGHT;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"speed"))
 			{
-			    int temp = read_gflags();
-			    temp = temp | GPST_CANCEL;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    int32_t speed;
+			    sscanf(buf,"speed %d",&speed);
+			    temp_x.v[0] = speed;
+			    temp_x.cmd = GSPEED;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"acce"))
 			{
-			    int temp = read_gflags();
-			    temp = temp | GPST_CANCEL;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(temp);
-			    printf("%.8d\n",read_gflags());
+			    int32_t acce;
+			    sscanf(buf, "acce %d",&acce);
+			    temp_x.v[0] = acce;
+			    temp_x.cmd = GACCE_TIME;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"dece"))
 			{
-			    int temp = GPST_CANCEL;
-			    printf("temp: %.8d\n",temp);
-			    write_gflags(GPST_CANCEL);
-			    printf("%.8d\n",read_gflags());
+			    int32_t dece;
+			    sscanf(buf, "dece %d",&dece);
+			    temp_x.v[0] = dece;
+			    temp_x.cmd = GDECE_TIME;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"maxpoint"))
 			{
-
+			    int32_t max_left, max_right;
+			    sscanf(buf, "maxpoint %d %d",&max_left, &max_right);
+			    temp_x.v[0] = max_left;
+			    temp_x.v[1] = max_right;
+			    temp_x.cmd = GMAX_POINT;
+			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"status"))
 			{
-
+			    int32_t status;
+			    sscanf(buf, "status %d",&status);
+			    temp_x.v[0] = status;
+			    temp_x.cmd = GSTATUS;
+			    update_g_x(temp_x);
 			}
+			usleep(200000);	    // 200ms
 		}
 		close(sa);
+		usleep(200000);	    // 200ms
 	}
 }
 

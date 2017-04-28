@@ -60,6 +60,7 @@ int positioning_cancel_off();
 int free_run_on();
 int free_run_off();
 
+
 // functions for test use, implementing in file alpha_test.c
 void forward_command_test();
 void immediate_value_data_op_test();

@@ -41,7 +41,8 @@ int left_direction_run()
 			}
 		}
 		ret = immediate_value_operation_run();
-		return ret;
+		if(0 == ret) return 1;
+		else return -1;
 	}
 	return 0;
 }
@@ -64,7 +65,8 @@ int right_direction_run()
 			}
 		}
 		ret = immediate_value_operation_run();
-		return ret;
+		if(0 == ret) return 1;
+		else return -1;
 	}
 	return 0;
 }
@@ -77,18 +79,19 @@ int run_to_point()
 		int ret;
 		ret = set_abs_control_mode();
 		if(-1 == ret) {
-			log_e("right_direction_run: set inc control mode failed.");
+			log_e("run_to_point: set abs control mode failed.");
 			return -1;
 		}
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, point_position); i++){
 			if(OPLOOPS-1==i)
 			{
-				log_e("right_direction_run: communication failed.");
+				log_e("run_to_point: communication failed.");
 				return -1;
 			}
 		}
 		ret = immediate_value_operation_run();
-		return ret;
+		if(0 == ret) return 1;
+		else return -1;
 	}
 	return 0;
 }
@@ -477,3 +480,4 @@ int free_run_off()
 	}
 	return 0;
 }
+

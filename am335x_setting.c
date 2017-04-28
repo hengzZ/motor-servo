@@ -15,16 +15,44 @@
 #define FALSE 1
 #define TRUE 0
 
-// assume that every stride is less than half cycle(65535/2).
-// if absolute stride large than 32768, it means stride over zero.
+// Assume that every stride is less than half cycle(65535/2).
+// Absolute stride large than 32768 means stride over zero.
 #define MAX_STRIDE	32767
 char sorted_buff[2];
 unsigned short  cur_v;
 unsigned short  pre_v;
 int stride;
-int encoder_position;
-int limit_left_position;
-int limit_right_position;
+volatile int limit_left_position;
+volatile int limit_right_position;
+volatile int encoder_position;
+pthread_mutex_t mutex_encoder = PTHREAD_MUTEX_INITIALIZER;
+
+void update_encoder_position(int position)
+{
+    pthread_mutex_lock(&mutex_encoder);
+    encoder_position = position;
+    pthread_mutex_unlock(&mutex_encoder);
+}
+int get_encoder_position()
+{
+    pthread_mutex_lock(&mutex_encoder);
+    int position = encoder_position;
+    pthread_mutex_unlock(&mutex_encoder);
+    return position;
+}
+
+void set_limit_left_position(int position)
+{
+    pthread_mutex_lock(&mutex_encoder);
+    limit_left_position = position;
+    pthread_mutex_unlock(&mutex_encoder);
+}
+void set_limit_right_position(int position)
+{
+    pthread_mutex_lock(&mutex_encoder);
+    limit_right_position = position;
+    pthread_mutex_unlock(&mutex_encoder);
+}
 
 
 int fd=-1;
@@ -133,12 +161,12 @@ int set_Parity(int fd,int databits,int stopbits,int parity)
     /* Set input parity option */
     
     if (parity != 'n')
-	options.c_iflag |= INPCK;
+    options.c_iflag |= INPCK;
     options.c_cc[VTIME] = 150; // 15 seconds
     options.c_cc[VMIN] = 0;
     
     
-		tcflush(fd,TCIFLUSH); /* Update the options and do it NOW */
+    tcflush(fd,TCIFLUSH); /* Update the options and do it NOW */
     if (tcsetattr(fd,TCSANOW,&options) != 0)
     {
 	perror("SetupSerial 3");
@@ -152,8 +180,7 @@ void receivethread(void)
 {
     int nread;
 
-    for(;;)
-    {
+    for(;;) {
         if((nread = read(fd,buff,100))>0) 
         {
             buff[nread]='\0';
@@ -163,24 +190,24 @@ void receivethread(void)
             pre_v = cur_v;
             break;
         }
+	usleep(1000);	// us
     }
-
-    while(1)    
-    {   
+    while(1) 
+    {
 	if((nread = read(fd,buff,100))>0) 
 	{
 	    buff[nread]='\0';
-	    //printf("[RECEIVE] Len is %d,content is :\n",nread);
+	    //printf("[RECEIVE LEN] is %d, content is:\n",nread);
 	    //for(int i = 0; i < nread; i++){
 	    //	fprintf(stderr,"%.2x ",buff[i]);
 	    //}
 	    memcpy(&sorted_buff[1],buff+3,1);
 	    memcpy(&sorted_buff[0],buff+4,1);
 	    memcpy(&cur_v,sorted_buff,2);
-	    //printf("\n%.4x\n",cur_v);
-	    //printf("%d\n",cur_v);
+	    //printf("\nhex: %.4x\n",cur_v);
+	    //printf("dec: %d\n",cur_v);
 
-	    // calculate the stride 
+	    // Calculate stride 
 	    int temp_stride = cur_v - pre_v;
 	    if(abs(temp_stride) > MAX_STRIDE && temp_stride > 0)
 	        stride = cur_v - 65535 - pre_v;
@@ -188,15 +215,16 @@ void receivethread(void)
 	        stride = cur_v + 65535 - pre_v;
 	    else
 	        stride = temp_stride;
-	    // update current position
-	    encoder_position += stride;
-	    //fprintf(stderr, "INF: current position: %.10d\n",encoder_position);
+	    // Update position
+	    int temp = get_encoder_position();
+	    temp += stride;
+	    update_encoder_position(temp);
+	    //fprintf(stderr, "INF: actual position: %.10d\n",temp);
 
 	    // update pre_v
 	    pre_v = cur_v;
 	}
-	
-	usleep(1000/**1000*/); // uint: 1us
+	usleep(1000); // uint: 1us
     } 
  
     return;
@@ -205,9 +233,8 @@ void receivethread(void)
 // Listening UART signal
 int listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit)
 {
-    int ret;
-
     pthread_t receiveid;
+
     fd = open(device, O_RDWR);
     if (fd < 0){
 	log_e("listening_uart: open device failed.");
@@ -220,7 +247,6 @@ int listening_uart(const char* device, int baud, char parity, int data_bit, int 
     pthread_detach(receiveid);
     return 0;
 }
-
 void close_uart()
 {
     close(fd);

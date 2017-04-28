@@ -1,6 +1,6 @@
-# motor-servo
+# motor-servo #
 
-## module
+## module ##
 
 - alpha parameter configure
     * alpha_setting.h
@@ -13,9 +13,10 @@
     * am335x_setting.h
     * am335x_setting.c
 - console listening
+    * cmdparser.h
     * cmdparser.c
 
-## API
+## API ##
 |           API         |         note       |
 |-----------------------|--------------------|
 | open_dev()            | 读取参数，确认配置 |
@@ -32,10 +33,11 @@
 | check()               |    开机检验        |
 | get_status()          |    [角度][状态]    |
 
-note: 1. 超时时间设置 <br>
-      2. 电机 - positions/circle <br>
-      3. 编码器 - positions/circle <br>
-      4. 转速比 - motor/encoder <br>
-      5. 状态: 最左、最右、In Position、运行中、停止中、故障 <br>
-                                                                                        
+note:<br>
+    1. 超时时间设置
+    2. 电机 - positions/circle
+    3. 编码器 - positions/circle
+    4. 转速比 - motor/encoder
+    5. 状态: 最左、最右、In Position、运行中、停止中、故障
+
 ## 

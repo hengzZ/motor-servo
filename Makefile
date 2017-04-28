@@ -1,4 +1,4 @@
-TARGET=motor-sero
+TARGET=motor-servo
 CC=arm-linux-gnueabihf-gcc
 #CC=gcc
 CFLAGS=-I./

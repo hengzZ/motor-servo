@@ -1,76 +1,89 @@
 /// *************************************  Read Following Notes before Coding ******************************************************
-///CONT/OUT PARAMETER SETTING (I/O SETTING)
-// [Resource]:	[I/O Signals]
-//				[input  signals] 1~78	factory default:	 1 [S-ON] assigned to PA03_01 CONT1; 11 [RST] assigned to PA03_02 CONT2;
-//				[output signals] 1~95	factory default:	 1  [RDY] assigned to PA03_51  OUT1;  2 [INP] assigned to PA03_52  OUT2;
-// 							factory default:	76 [alarm detection] assigned to PA03_53 OUT3;
-// [Resource]:	[Parameter] 
-//			Description:    Parameters of the servo amplifier are divided into the following setting items according to the function
-//			WARNING:        The write enable frequency of EEPROM is about 100,000 cycles:
-//					`Parameter editing
-//					`Position preset of absolute position system
-//					`Batch transfer of parameters
-//			[Division]:     1. [Basic Parameters]                           [PA1_01 to 50]
-//					- Be sure to check or enter these parameters before STARATING OPERATION.
-//					2. [Control gain and filter setting parameter]  [PA1_51 to 99]
-//					- Use to adjust the gain manually.
-//					3. [Automatic operation setting parameter]      [PA2_01 to 50]
-//					- Use to enter or change the positioning operation speed and homing function.
-//					4. [Extended function setting parameter]        [PA2_51 to 99]
-//					- Use to enter or change the extended functions such as the torque limit.
-//					5. [Input terminal function setting parameter]  [PA3_01 to 50]
-//					- Use to enter or change input signals of the servo amplifier.
-//					6. [Output terminal function setting parameter] [PA3_51 to 99]
-// [Resource]: [Operation]
-//			   [Priority among Input Signals]		* Please consult the manual.
-//			   [Selection of Operation Procedure]		* Please consult the manual.
-//			   [Operation Check]/[Check before Operation]	* Please consult the manual.
-//			   WARNING:	1. [Communications Timings]
-//					- set time T1 through PA2_94.
-//					- if time T1 specified longer than T0, actual response time is specified T1.
-//					2. [Communication Time Over]
-//					- communication time over is detected if any time other than 0.00s is set on PA2_95.
-//					- **Note: if a communication time over has occured, \
-//					- ** all the communication CONT signals(CONT9-24) operated by the Modbus communications are set off.
-//			   [Operation]	1. [First Test Operation at Keypad]
-//					2. [Position Control (Pulse)]
-//					3. [Speed Control]
-//					4. [Torque Control]
-//					5. [Mode Selection]
-//					6. [Extension Mode]
-//					7. [Homing]
-//					8. [Interrupt Positioning]
-//					9. [Torque Limit]
-//					10.[Positioning Data Operation]
-//					11.[Immediate Value Data Operation]
-//					12.[Interrupting/Stopping Operation]
+/// [CONT]/[OUT] PARAMETER SETTING (I/O SETTING)
+//  [Resource]:	[I/O Signals]
+//		[input  signals] 1~78	factory default: 1 [S-ON] assigned to PA03_01 CONT1; 11 [RST] assigned to PA03_02 CONT2;
+//		[output signals] 1~95	factory default: 1  [RDY] assigned to PA03_51  OUT1;  2 [INP] assigned to PA03_52  OUT2;
+// 					factory default: 76 [alarm detection] assigned to PA03_53 OUT3;
+//  [Resource]:	[Parameter] 
+//		Description:    Parameters of the servo amplifier are divided into the following setting items according to the function
+//		WARNING:        The write enable frequency of EEPROM is about 100,000 cycles:
+//				`Parameter editing
+//				`Position preset of absolute position system
+//				`Batch transfer of parameters
+//		[Division]:     1. [Basic Parameters]                           [PA1_01 to 50]
+//				- Be sure to check or enter these parameters before STARATING OPERATION.
+//				2. [Control gain and filter setting parameter]  [PA1_51 to 99]
+//				- Use to adjust the gain manually.
+//				3. [Automatic operation setting parameter]      [PA2_01 to 50]
+//				- Use to enter or change the positioning operation speed and homing function.
+//				4. [Extended function setting parameter]        [PA2_51 to 99]
+//				- Use to enter or change the extended functions such as the torque limit.
+//				5. [Input terminal function setting parameter]  [PA3_01 to 50]
+//				- Use to enter or change input signals of the servo amplifier.
+//				6. [Output terminal function setting parameter] [PA3_51 to 99]
+//  [Resource]: [Operation]
+//		[Priority among Input Signals]		        * Please consult the manual.
+//		[Selection of Operation Procedure]		* Please consult the manual.
+//		[Operation Check]/[Check before Operation]	* Please consult the manual.
+//		WARNING:    1. [Communications Timings]
+//		     	    - set time T1 through PA2_94.
+//		     	    - if time T1 specified longer than T0, actual response time is specified T1.
+//		     	    2. [Communication Time Over]
+//		     	    - communication time over is detected if any time other than 0.00s is set on PA2_95.
+//		     	    - **Note: if a communication time over has occured, \
+//		     	    - ** all the communication CONT signals(CONT9-24) operated by the Modbus communications are set off.
+//		[Operation]	1. [First Test Operation at Keypad]
+//		     	        2. [Position Control (Pulse)]
+//		     	        3. [Speed Control]
+//		     	        4. [Torque Control]
+//		     	        5. [Mode Selection]
+//		     	        6. [Extension Mode]
+//		     	        7. [Homing]
+//		     	        8. [Interrupt Positioning]
+//		     	        9. [Torque Limit]
+//		     	        10.[Positioning Data Operation]
+//		     	        11.[Immediate Value Data Operation]
+//		     	        12.[Interrupting/Stopping Operation]
 /// *****************************************  Read Above Notes before Coding ******************************************************
 /// *****************************************    [ I/O Signals Assignment ]   ******************************************************
-//  note: [Communication CONT/OUT signals (register)]		CONT - 0x0000	OUT - 0x0100
-//  	  [Parameter (register)]				PA1_1-99 - 0x4000-4062	PA2_1-99 - 0x4100-4162	PA3_1-99 - 0x4200-4262
-//	  [CONT/OUT signals (coil)]				CONT9-24 - 0x0208-0217	OUT6-21  - 0x0305-0314	
-//								CONT1-5  - 0x0400-0404	OUT1-3   - 0x0500-0502
-//	** PA3_51-71 to set OUT1-21 's signal function
-//	** PA3_01-24 to set CONT1-24 's signal function
-//	[OUT]:
-//	        `Use factory default:	PA3_51  OUT1	1	[RDY]	|	PA3_52	OUT2	2	[INP]	|	PA3_53  OUT3   76	[Alarm Detection]
-//		`Setting:				PA3_56	OUT6	28	[S-RDY]	|	
-//	[CONT]:
-//		`Not use factory default.
-//		`Setting:				PA3_09	CONT9	1	[S-ON]	|	PA3_10	CONT10	2	[FWD]	|	PA3_11	CONT11	3	[REV]
-//							PA3_12	CONT12	4	[START]	|	
-//							PA3_22	CONT22	51	[X1]	|	PA3_23	CONT23	52	[X2]	|	PA3_24	CONT24	53	[X3]
+//  NOTE: [Communication CONT/OUT signals](register)	CONT - 0x0000	OUT - 0x0100
+//  	  [Parameter](register)				PA1_1-99 - 0x4000-4062	PA2_1-99 - 0x4100-4162	PA3_1-99 - 0x4200-4262
+//	  [CONT/OUT signals](coil)			CONT9-24 - 0x0208-0217	OUT6-21  - 0x0305-0314	
+//							CONT1-5  - 0x0400-0404	OUT1-3   - 0x0500-0502
+//	** Set PA3_51~71 to map signal on OUT1~21
+//	** Set PA3_01~24 to map signal on CONT1~24
+//  [OUT]:
+//      `Use factory default:	
+//      PA3_51  OUT1	1	[RDY]	|	PA3_52	OUT2	2	[INP]	|	PA3_53  OUT3   76	[Alarm Detection]
+//	`Setting:
+//	PA3_56	OUT6	28	[S-RDY]	|	
+//  [CONT]:
+//	`Not use factory default.
+//	`Setting:
+//	PA3_09	CONT9	1	[S-ON]	|	PA3_10	CONT10	2	[FWD]	|	PA3_11	CONT11	3	[REV]
+//	PA3_12	CONT12	4	[START]	|	
+//	PA3_22	CONT22	51	[X1]	|	PA3_23	CONT23	52	[X2]	|	PA3_24	CONT24	53	[X3]
 /// ********************************************************************************************************************************
 #ifndef ALPHA_SETTING_H
 #define ALPHA_SETTING_H
 
 #include "modbus.h"
 
-// resent numbers when failed.
+// Repeat times when communication failed.
 #define OPLOOPS	2
 
-// REGISTER ADDRESS:[for parameter setting]
+// REGISTER ADDRESS:
+// [for parameter setting]
 #define     PA1_01_ad                       0x4000
+#define     PA1_05_ad                       0x4004
+#define     PA1_06_ad                       0x4005
+#define     PA1_07_ad                       0x4006
+
+#define     PA2_25_ad                       0x4118 
+#define     PA2_26_ad                       0x4119 
+#define     PA2_27_ad                       0x411A 
+#define     PA2_28_ad                       0x411B 
+#define     PA2_29_ad                       0x411C 
 #define     PA2_40_ad                       0x4127
 
 #define     PA3_9_ad                        0x4208
@@ -113,7 +126,8 @@
 #define     IMME_VLU_ACC_TIM_ad             0x5103
 #define     IMME_VLU_DEC_TIM_ad             0x5104
 
-// COIL ADDRESS:[for controlling]                                       [Setting Register]
+// COIL ADDRESS:
+// [for control]                                                        [Register]
 #define     CONT1_ad                        0x0400                      //PA3_01
 #define     CONT2_ad                        0x0401                      //PA3_02
 #define     CONT3_ad                        0x0402                      //PA3_03
@@ -160,7 +174,7 @@
 
 
 // Function Code:
-// OUT Signals:
+// CONT Signals:
 #define     SERVO_ON_fc                     1
 #define     FWD_fc                          2
 #define     REV_fc                          3
@@ -213,7 +227,7 @@
 #define     PST_DATA_SLCT_fc                77
 #define     BRDCST_CANCEL_fc                78
 
-// IN Signals:
+// OUT Signals:
 #define     RDY_fc                          1
 #define     INP_fc                          2
 #define     SPD_LMT_DETC_fc                 11
@@ -269,8 +283,8 @@
 #define     CONT_D_THROUGH_fc               94
 #define     CONT_E_THROUGH_fc               95
 
-// Signal Control Address:
-// IN Signals:
+// Coil Address:
+// CONT Signals:
 #define     SERVO_ON_ad                     CONT9_ad
 #define     FWD_ad                          CONT10_ad
 #define     REV_ad                          CONT11_ad
@@ -393,7 +407,7 @@ struct rtu_master_t;
 typedef struct rtu_master_t rtu_master_t;
 
 struct rtu_master_t{
-        char device[1024];
+        char device[32];
         int baud;
         char parity;
         int data_bit;
@@ -403,19 +417,21 @@ struct rtu_master_t{
 };
 
 // Init recv(reply)/sent(query) buffers for modbus communication
-// note: return 0 if successful, -1 for fails.
+// Note: return 0 if success, -1 for failure.
 int init_buffers_for_modbus();
-// Free(anti-init) buffers initialed buffers
+// Free(anti-init) initial buffers
 void free_buffers_for_modbus();
 
 // Open modbus
-// note: return 0 if successful, -1 for fails.
+// Note: return 0 if success, -1 for failure.
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave);
 // Close modbus
 void close_modbus_rtu_master();
 
-// Init parameters when reset the system.
-// note: it just need once.
+// Init parameters for reseting parameters
 void init_parameters();
+// Check parameters
+// Note: -1 for error
+int check_parameters();
 
 #endif	//ALPHA_GLOBAL_SETTING_H

@@ -1,0 +1,34 @@
+[ip]=UNDEF
+[ip:remoteip]=[192.168.0.15]
+[ip:remotename]=[root]
+[motion control]=UNDEF
+[motion control:cruise_speed]=[50000]
+[motion control:cruise_left_position]=[-200000]
+[motion control:cruise_right_position]=[200000]
+[motion control:direct_left_position]=[-1000000]
+[motion control:direct_right_position]=[1000000]
+[motion control:imme_acceleration_time]=[10000]
+[motion control:imme_deceleration_time]=[10000]
+[motion control:max_left_position]=[-1000000]
+[motion control:max_right_position]=[1000000]
+[rtu master]=UNDEF
+[rtu master:device]=[/dev/ttyO1]
+[rtu master:baud]=[38400]
+[rtu master:parity]=[E]
+[rtu master:data_bit]=[8]
+[rtu master:stop_bit]=[1]
+[rtu master:slave]=[1]
+[rtu master:reset]=[0]
+[uart]=UNDEF
+[uart:device]=[/dev/ttyO2]
+[uart:baud]=[9600]
+[uart:parity]=[N]
+[uart:data_bit]=[8]
+[uart:stop_bit]=[1]
+[socket]=UNDEF
+[socket:server_port]=[12345]
+[socket:queue_size]=[10]
+[socket:mode]=[TCP]
+DEB: PA1_05 0000040000
+DEB: PA1_06 0000000016
+DEB: PA1_07 0000000001
