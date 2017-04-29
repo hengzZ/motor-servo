@@ -1,6 +1,8 @@
 #ifndef AM335X_SETTING_H
 #define AM335X_SETTING_H
 
+#define E_PULSE_PER_CIRCLE      65535
+
 struct uart_t;
 typedef struct uart_t uart_t;
 

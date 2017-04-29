@@ -155,18 +155,18 @@ void immediate_value_date_operation_485_setting()
 	modbus_write_registers(ctx, PA2_40_ad,  2,  tab_rq_registers);
 	// Pulse size per circle
 	tab_rq_registers[0] = 0x0000;
-	tab_rq_registers[1] = 40000;
+	tab_rq_registers[1] = M_PULSE_PER_CIRCLE & 0xFFFF;
 	modbus_write_registers(ctx, PA1_05_ad,  2,  tab_rq_registers);
-	tab_rq_registers[0] = 0x0000;
 	// PA1_06,07 default value 16,1
+	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = 16;
 	modbus_write_registers(ctx, PA1_06_ad,  2,  tab_rq_registers);
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = 1;
 	modbus_write_registers(ctx, PA1_07_ad,  2,  tab_rq_registers);
 	// OT check
-	const int32_t plus_position = 10100000;			// actual transmission ratio 252.5, for Pulse size 40000
-	const int32_t minus_position = -10100000;
+	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;	// actual transmission ratio 252.5, for Pulse size 40000
+	const int32_t minus_position = -M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
 	// PA1_01=7, PA2_25=0 for PTP mode, PA2_25=1 for INC mode and OT invalid
 	tab_rq_registers[1] = 0x0000;
 	tab_rq_registers[0] = 0x0000;

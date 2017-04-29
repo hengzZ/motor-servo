@@ -393,6 +393,8 @@
 #define     CONT_D_THROUGH_ad               
 #define     CONT_E_THROUGH_ad               
 
+#define         M_PULSE_PER_CIRCLE      40000
+#define         TRANSMISSION_RATIO      252.5
 #define		REGISTERS_BUFFER_SIZE	12
 #define		BITS_BUFFER_SIZE	24
 
