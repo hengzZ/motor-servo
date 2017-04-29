@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,17 +9,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <unistd.h>
 
 #include "modbus.h"
 #include "elog.h"
 
 #include "alpha_motion_control.h"
 
-// Socket
-int server_port, queue_size;
-int s, b, l, sa;
-int on = 1;
 
 // DataType for control and data transmission
 typedef enum{
@@ -44,6 +40,10 @@ typedef struct {
 extern void update_g_x(param x);
 extern param get_g_x();
 
+// Socket
+int server_port, queue_size;
+int s, b, l, sa;
+int on = 1;
 
 void parsesocket(void)
 {
@@ -161,6 +161,11 @@ void parsesocket(void)
 			{
 			    int32_t max_left, max_right;
 			    sscanf(buf, "maxpoint %d %d",&max_left, &max_right);
+			    if(max_left > max_right){
+				int32_t temp = max_right;
+				max_right = max_left;
+				max_left = temp;
+			    }
 			    temp_x.v[0] = max_left;
 			    temp_x.v[1] = max_right;
 			    temp_x.cmd = GMAX_POINT;

@@ -1,25 +1,30 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <pthread.h>
 
 #include "alpha_motion_control.h"
 #include "elog.h"
 
+
+#define MAX_LEFT_POSITION	-10100000
+#define MAX_RIGHT_POSITION	 10100000
+
 // mode: 0-ABS	1-INC
 // flags: | motion  flags | 1. left 2. right 3. if cruise 4. 
 //		  | control flags | 1. direct left 2. direct right 3. cruise 4. EMG 5. Pause 6. Positioning cancel 7. Free run
 //		  |
-uint16_t cruise_speed[2];
 uint16_t cruise_left_position[2];
 uint16_t cruise_right_position[2];
+uint16_t cruise_speed[2];
 uint16_t imme_acceleration_time[2];
 uint16_t imme_deceleration_time[2];
 uint16_t direct_left_position[2];
 uint16_t direct_right_position[2];
 uint16_t point_position[2];
 
-int32_t max_left_position;
-int32_t max_right_position;
-//pthread_mutex_t mutex_ctrl = PTHREAD_MUTEX_INITIALIZER;
+int32_t limit_left_position;
+int32_t limit_right_position;
+pthread_mutex_t mutex_motion_ctrl = PTHREAD_MUTEX_INITIALIZER;
 
 
 // left direction movement
@@ -30,7 +35,7 @@ int left_direction_run()
 		int ret;
 		ret = set_abs_control_mode();
 		if(-1 == ret) {
-			log_e("left_direction_run: set inc control mode failed.");
+			log_e("left_direction_run: set abs control mode failed.");
 			return -1;
 		}
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_left_position); i++){
@@ -54,7 +59,7 @@ int right_direction_run()
 		int ret;
 		ret = set_abs_control_mode();
 		if(-1 == ret) {
-			log_e("right_direction_run: set inc control mode failed.");
+			log_e("right_direction_run: set abs control mode failed.");
 			return -1;
 		}
 		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_right_position); i++){
@@ -161,6 +166,7 @@ void cruise()
 			if(-1 == ret) break;
 			else if(1 == ret) drct = 0;
 		}
+		usleep(200000);		// 2ms
 	}
 }
 
@@ -225,52 +231,100 @@ int immediate_value_operation_run()
 }
 
 // position: +/- 2,000,000,000
-int set_cruise_left_position(const int32_t position)
+int set_cruise_left_position(int32_t position)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < limit_left_position) position = limit_left_position;
+	if(position > limit_right_position) position = limit_right_position;
 	cruise_left_position[1] = position;
 	cruise_left_position[0] = position >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
-int set_cruise_right_position(const int32_t position)
+int set_cruise_right_position(int32_t position)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < limit_left_position) position = limit_left_position;
+	if(position > limit_right_position) position = limit_right_position;
 	cruise_right_position[1] = position;
 	cruise_right_position[0] = position >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
-int set_point_position(const int32_t position)
+int set_point_position(int32_t position)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < limit_left_position) position = limit_left_position;
+	if(position > limit_right_position) position = limit_right_position;
 	point_position[1] = position;
 	point_position[0] = position >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
-int set_direct_left_position(const int32_t position)
+int set_direct_left_position(int32_t position)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < limit_left_position) position = limit_left_position;
+	if(position > limit_right_position) position = limit_right_position;
 	direct_left_position[1] = position;
 	direct_left_position[0] = position >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
-int set_direct_right_position(const int32_t position)
+int set_direct_right_position(int32_t position)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < limit_left_position) position = limit_left_position;
+	if(position > limit_right_position) position = limit_right_position;
 	direct_right_position[1] = position;
 	direct_right_position[0] = position >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
-int set_max_left_position(const int32_t position)
+int set_limit_left_position(int32_t position)
 {
-	max_left_position = position;
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < MAX_LEFT_POSITION) position = MAX_LEFT_POSITION;
+	if(position > MAX_RIGHT_POSITION) position = MAX_RIGHT_POSITION;
+	limit_left_position = position;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
-int set_max_right_position(const int32_t position)
+int set_limit_right_position(int32_t position)
 {
-	max_right_position = position;
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(position < MAX_LEFT_POSITION) position = MAX_LEFT_POSITION;
+	if(position > MAX_RIGHT_POSITION) position = MAX_RIGHT_POSITION;
+	limit_right_position = position;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
+}
+int32_t get_limit_left_position()
+{
+	int32_t position;
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	position = limit_left_position;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+	return position;
+}
+int32_t get_limit_right_position()
+{
+	int32_t position;
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	position = limit_right_position;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+	return position;
 }
 
 // speed: 0.01r/min
-int set_cruise_speed(const uint32_t speed)
+int set_cruise_speed(uint32_t speed)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(speed <= 0) speed = 0;
+	if(speed >= 200000) speed = 200000;	// 2000r/min
 	cruise_speed[1] = speed;
 	cruise_speed[0] = speed >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
 int send_cruise_speed()
@@ -285,10 +339,14 @@ int send_cruise_speed()
 	return 0;
 }
 // acc/dec time: 0.1ms
-int set_imme_acceleration_time(const uint32_t time)
+int set_imme_acceleration_time(uint32_t time)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(time <= 0) time = 0;
+	if(time >= 99999) time = 99999;	// 9.9s
 	imme_acceleration_time[1] = time;
 	imme_acceleration_time[0] = time >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
 int send_imme_acceleration_time()
@@ -303,10 +361,14 @@ int send_imme_acceleration_time()
 	return 0;
 }
 
-int set_imme_deceleration_time(const uint32_t time)
+int set_imme_deceleration_time(uint32_t time)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(time <= 0) time = 0;
+	if(time >= 99999) time = 99999;	// 9.9s
 	imme_deceleration_time[1] = time;
 	imme_deceleration_time[0] = time >> 16;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
 int send_imme_deceleration_time()
@@ -481,3 +543,148 @@ int free_run_off()
 	return 0;
 }
 
+// Check motion
+int check_motion()
+{
+	uint16_t speed[2];
+	uint16_t acce_time[2];
+	uint16_t dece_time[2];
+	uint16_t home_position[2];
+	uint16_t left_position[2];
+	uint16_t right_position[2];
+
+	int ret;
+	if(!is_INP()) {
+		ret = positioning_cancel_on();
+		if(-1 == ret) return -1;
+		ret = positioning_cancel_off();
+		if(-1 == ret) return -1;
+	}
+
+	speed[0] = 250000 >> 16;	// 2500r/min
+	speed[1] = 250000&0xFFFF;
+	acce_time[0] = 10000 >> 16;	// 1s
+	acce_time[1] = 10000;
+	dece_time[0] = 10000 >> 16;
+	dece_time[1] = 10000;
+	home_position[0] = 0;
+	home_position[1] = 0;
+	left_position[0] = limit_left_position >> 16;
+	left_position[1] = limit_left_position;
+	right_position[0] = limit_right_position >> 16;
+	right_position[1] = limit_right_position;
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, speed); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("check_motion: communication failed.");
+			return -1;
+		}
+	}		
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, acce_time); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("check_motion: communication failed.");
+			return -1;
+		}
+	}
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, dece_time); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("check_motion: communication failed.");
+			return -1;
+		}
+	}		
+	while(1){
+		if(is_INP())
+		{
+			ret = set_abs_control_mode();
+			if(-1 == ret) {
+				log_e("check_motion: set abs control mode failed.");
+				return -1;
+			}
+			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, home_position); i++){
+				if(OPLOOPS-1==i)
+				{
+					log_e("check_motion: communication failed.");
+					return -1;
+				}
+			}
+			ret = immediate_value_operation_run();
+			if(0 == ret) break;
+			else return -1;
+		}
+		usleep(200000);
+	}
+	while(1){
+		if(is_INP())
+		{
+			ret = set_abs_control_mode();
+			if(-1 == ret) {
+				log_e("check_motion: set abs control mode failed.");
+				return -1;
+			}
+			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, left_position); i++){
+				if(OPLOOPS-1==i)
+				{
+					log_e("check_motion: communication failed.");
+					return -1;
+				}
+			}
+			ret = immediate_value_operation_run();
+			if(0 == ret) break;
+			else return -1;
+		}
+		usleep(200000);
+	}
+	while(1){
+		if(is_INP())
+		{
+			ret = set_abs_control_mode();
+			if(-1 == ret) {
+				log_e("check_motion: set abs control mode failed.");
+				return -1;
+			}
+			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, right_position); i++){
+				if(OPLOOPS-1==i)
+				{
+					log_e("check_motion: communication failed.");
+					return -1;
+				}
+			}
+			ret = immediate_value_operation_run();
+			if(0 == ret) break;
+			else return -1;
+		}
+		usleep(200000);
+	}
+	while(1){
+		if(is_INP())
+		{
+			ret = set_abs_control_mode();
+			if(-1 == ret) {
+				log_e("check_motion: set abs control mode failed.");
+				return -1;
+			}
+			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, home_position); i++){
+				if(OPLOOPS-1==i)
+				{
+					log_e("check_motion: communication failed.");
+					return -1;
+				}
+			}
+			ret = immediate_value_operation_run();
+			if(0 == ret) break;
+			else return -1;
+		}
+		usleep(200000);
+	}
+
+	ret = send_cruise_speed();
+	if(-1 == ret) return -1;
+	ret = send_imme_acceleration_time();
+	if(-1 == ret) return -1;
+	ret = send_imme_deceleration_time();
+	if(-1 == ret) return -1;
+
+	return 0;
+}

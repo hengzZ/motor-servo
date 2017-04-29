@@ -30,18 +30,20 @@ void cruise();
 int set_abs_control_mode();
 int set_inc_control_mode();
 int immediate_value_operation_run();
-int set_cruise_left_position(const int32_t position);
-int set_cruise_right_position(const int32_t position);
-int set_point_position(const int32_t position);
-int set_direct_left_position(const int32_t position);
-int set_direct_right_position(const int32_t position);
-int set_max_left_position(const int32_t position);
-int set_max_right_position(const int32_t position);
-int set_cruise_speed(const uint32_t speed);
+int set_cruise_left_position(int32_t position);
+int set_cruise_right_position(int32_t position);
+int set_point_position(int32_t position);
+int set_direct_left_position(int32_t position);
+int set_direct_right_position(int32_t position);
+int set_limit_left_position(int32_t position);
+int set_limit_right_position(int32_t position);
+int32_t get_limit_left_position();
+int32_t get_limit_right_position();
+int set_cruise_speed(uint32_t speed);
 int send_cruise_speed();
-int set_imme_acceleration_time(const uint32_t time);
+int set_imme_acceleration_time(uint32_t time);
 int send_imme_acceleration_time();
-int set_imme_deceleration_time(const uint32_t time);
+int set_imme_deceleration_time(uint32_t time);
 int send_imme_deceleration_time();
 int is_INP();
 
@@ -60,6 +62,8 @@ int positioning_cancel_off();
 int free_run_on();
 int free_run_off();
 
+// Check motion
+int check_motion();
 
 // functions for test use, implementing in file alpha_test.c
 void forward_command_test();

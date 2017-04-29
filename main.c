@@ -2,17 +2,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <time.h>
-#include <sys/time.h>
-#include <signal.h>
 
 #include "elog.h"
 #include "iniparser.h"
 
-#include "cmdparser.h"
-#include "am335x_setting.h"
 #include "alpha_setting.h"
 #include "alpha_motion_control.h"
+#include "am335x_setting.h"
+#include "cmdparser.h"
 
 
 // DataType for control and data transmission
@@ -37,6 +34,8 @@ typedef struct {
 
 // DataObject for control and data transmission
 volatile param g_x;
+volatile bool g_get_status = false;
+volatile bool g_stop_flag = false;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void update_g_x(param x)
@@ -53,11 +52,6 @@ param get_g_x()
     return temp_x;
 }
 
-// Linux Timer for control query
-static struct itimerval oldtv;
-void set_timer();
-void signal_handler(int m);
-
 // DataObject for SOCKET listening
 am335x_socket_t g_am335x_socket;
 // DataObject for am335x's modbus-TRU listening
@@ -69,7 +63,6 @@ uart_t g_am335x_uart;
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
 
-int stop_flag;
 
 int main(int argc, char** argv)
 {
@@ -108,7 +101,8 @@ int main(int argc, char** argv)
         return -1;
     }
     // open_modbus_rtu_master("/dev/ttyO1", 38400, 'E', 8, 1, 1);
-    ret = open_modbus_rtu_master(g_rtu_master.device, g_rtu_master.baud, g_rtu_master.parity, g_rtu_master.data_bit, g_rtu_master.stop_bit, g_rtu_master.slave);
+    ret = open_modbus_rtu_master(g_rtu_master.device, g_rtu_master.baud, \
+            g_rtu_master.parity, g_rtu_master.data_bit, g_rtu_master.stop_bit, g_rtu_master.slave);
     if(-1 == ret){
     	log_e("Open modbus_rtu_master failed.");
     	free_buffers_for_modbus();
@@ -117,10 +111,11 @@ int main(int argc, char** argv)
     // Init Parameter (Warn: parameter setting.)
     if(1 == g_rtu_master.reset_parameter){
         init_parameters();
-        log_i("Warn: parameter setting. Dangerous!!!");
+        log_w("Warn: parameter setting. Dangerous!!!");
     }
     // listening_uart("/dev/ttyO2", 9600, 'N', 8, 1);
-    ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
+    ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, \
+            g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
     if(-1 == ret){
     	log_e("Open am335x uart failed.");
     	close_modbus_rtu_master();
@@ -158,32 +153,32 @@ int main(int argc, char** argv)
     // Init Done
     log_i("Init Success.");
 
-    ///
-    send_cruise_speed();
-    send_imme_acceleration_time();
-    send_imme_deceleration_time();
+    // Check motion
+    ret = check_motion();
+    if(-1 == ret){
+    	log_e("check motion failed.");
+    	serve_off();
+    	close_modbus_rtu_master();
+    	free_buffers_for_modbus();
+        close_uart();
+    	return -1;
+    }
+    /// Set Speed, Acceleration time, Deceleration time
+    //ret = send_cruise_speed();
+    //if(-1 == ret) g_stop_flag = true;
+    //ret = send_imme_acceleration_time();
+    //if(-1 == ret) g_stop_flag = true;
+    //ret = send_imme_deceleration_time();
+    //if(-1 == ret) g_stop_flag = true;
     //set_point_position(10100000);
     //run_to_point();
 
-    //// Init timer for control query
-    //signal(SIGALRM, signal_handler);
-    //set_timer();
-
-    // // Debug - zhihengw
-    // modbus_read_registers(ctx, PA1_05_ad,  2,  tab_rp_registers);
-    // fprintf(stderr,"DEB: PA1_05 %.10d\n",tab_rp_registers[1]);
-    // modbus_read_registers(ctx, PA1_06_ad,  2,  tab_rp_registers);
-    // fprintf(stderr,"DEB: PA1_06 %.10d\n",tab_rp_registers[1]);
-    // modbus_read_registers(ctx, PA1_07_ad,  2,  tab_rp_registers);
-    // fprintf(stderr,"DEB: PA1_07 %.10d\n",tab_rp_registers[1]);
-
     // TODO loop for getting degree
-    stop_flag = 0;
-    while(!stop_flag) {
-            //int temp = get_encoder_position();
+    while(!g_stop_flag) {
+            int temp = get_encoder_position();
 	    //fprintf(stderr, "INF: actual position: %.10d\n",temp);
-            signal_handler(0);
-            usleep(100000);
+            //signal_handler();
+            usleep(1000); // 1ms
     }
 
     // close
@@ -197,20 +192,14 @@ int main(int argc, char** argv)
 }
 
 
-void set_timer()
+void signal_handler(void)
 {
-    struct itimerval itv;
-    itv.it_value.tv_sec = 0;
-    itv.it_value.tv_usec = 500000;        // 500ms start time
-    itv.it_interval.tv_sec = 0;
-    itv.it_interval.tv_usec = 200000;     // 200ms inter time
-    setitimer(ITIMER_REAL, &itv, &oldtv);
-}
-void signal_handler(int m)
-{
-        int ret;
+    int ret;
+
+    while(1){
 
         param temp = get_g_x();
+        // Inf - zhihengw
         ret = temp.cmd;
         printf("signal handler:");
         printf("    cmd: %d\n",ret);
@@ -232,7 +221,7 @@ void signal_handler(int m)
             if(-1 == ret) exit(-1);
             temp.cmd = 0;
             update_g_x(temp);
-            stop_flag = 1;
+            g_stop_flag = true;
         }
         else if ( temp.cmd & GPOINT )    // run to point 
         {
@@ -243,7 +232,7 @@ void signal_handler(int m)
             else if(1 == ret){
                 temp.cmd &= ~GPOINT;
                 update_g_x(temp);
-	    }
+            }
         }
         else if ( temp.cmd & GLEFT )     // run to left
         {
@@ -281,7 +270,7 @@ void signal_handler(int m)
                 if (-1 == ret) exit(-1);
                 temp.cmd &= ~GACCE_TIME;
                 update_g_x(temp);
-	    }
+            }
         }
         else if ( temp.cmd & GDECE_TIME ) 
         {
@@ -302,19 +291,24 @@ void signal_handler(int m)
         }
         else if ( temp.cmd & GSTATUS )
         {
-
+            g_get_status = temp.v[0] ? true : false;
             temp.cmd &= ~GSTATUS;
             update_g_x(temp);
         }
 
-        //
-        int position = get_encoder_position();
-        printf("actual encoder position: %.10d\n", position);
-
-        // Get constrol status
-        if(0) {
-
+        // Get status
+        if(g_get_status) {
+            // Get control status 
+            if(is_INP()){
+                printf("In Position\n");
+            }
+            // Check max position ON
+            int position = get_encoder_position();
+            printf("actual encoder position: %.10d\n", position);
         }
+
+        usleep(200000);     // 200ms
+	}
 }
 
 void create_example_ini_file(void)
@@ -434,8 +428,8 @@ int parse_ini_file(char * ini_name)
     set_cruise_right_position(cruise_right_position);
     set_direct_left_position(direct_left_position);
     set_direct_right_position(direct_right_position);
-    set_max_left_position(max_left_position);
-    set_max_right_position(max_right_position);
+    set_limit_left_position(max_left_position);
+    set_limit_right_position(max_right_position);
     set_cruise_speed(cruise_speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);

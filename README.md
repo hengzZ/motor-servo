@@ -34,10 +34,11 @@
 | get_status()          |    [角度][状态]    |
 
 note:<br>
-    1. 超时时间设置
-    2. 电机 - positions/circle
-    3. 编码器 - positions/circle
-    4. 转速比 - motor/encoder
-    5. 状态: 最左、最右、In Position、运行中、停止中、故障
+    1. 超时时间设置<br>
+    2. 电机 - positions/circle<br>
+    3. 编码器 - positions/circle<br>
+    4. 转速比 - motor/encoder<br>
+    5. 状态: 最左、最右、In Position、运行中、停止中、故障<br>
 
-## 
+## motor-client ##
+the client for control the server

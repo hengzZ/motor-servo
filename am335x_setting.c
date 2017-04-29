@@ -15,6 +15,30 @@
 #define FALSE 1
 #define TRUE 0
 
+// DataType for control and data transmission
+typedef enum{
+    GRIGHT=1,
+    GLEFT=2,
+    GPOINT=4,
+    GPST_CANCEL=8,
+    GEMG=16,
+    GSPEED=32,
+    GACCE_TIME=64,
+    GDECE_TIME=128,
+    GMAX_POINT=256,
+    GSTATUS=512,
+    GUNKNOWN=1024
+} GFLAGS;
+
+typedef struct {
+    GFLAGS cmd;
+    int32_t v[2];
+}param;
+
+// Extern function for updating DataObject
+extern void update_g_x(param x);
+extern param get_g_x();
+
 // Assume that every stride is less than half cycle(65535/2).
 // Absolute stride large than 32768 means stride over zero.
 #define MAX_STRIDE	32767
@@ -22,8 +46,8 @@ char sorted_buff[2];
 unsigned short  cur_v;
 unsigned short  pre_v;
 int stride;
-volatile int limit_left_position;
-volatile int limit_right_position;
+volatile int max_left_position;
+volatile int max_right_position;
 volatile int encoder_position;
 pthread_mutex_t mutex_encoder = PTHREAD_MUTEX_INITIALIZER;
 
@@ -41,17 +65,33 @@ int get_encoder_position()
     return position;
 }
 
-void set_limit_left_position(int position)
+void set_max_left_position(int position)
 {
     pthread_mutex_lock(&mutex_encoder);
-    limit_left_position = position;
+    max_left_position = position;
     pthread_mutex_unlock(&mutex_encoder);
 }
-void set_limit_right_position(int position)
+void set_max_right_position(int position)
 {
     pthread_mutex_lock(&mutex_encoder);
-    limit_right_position = position;
+    max_right_position = position;
     pthread_mutex_unlock(&mutex_encoder);
+}
+int get_max_left_position()
+{
+    int position;
+    pthread_mutex_lock(&mutex_encoder);
+    position = max_left_position;
+    pthread_mutex_unlock(&mutex_encoder);
+    return position;
+}
+int get_max_right_position()
+{
+    int position;
+    pthread_mutex_lock(&mutex_encoder);
+    position = max_right_position;
+    pthread_mutex_unlock(&mutex_encoder);
+    return position;
 }
 
 
@@ -190,7 +230,7 @@ void receivethread(void)
             pre_v = cur_v;
             break;
         }
-	usleep(1000);	// us
+	usleep(1000);	// 1ms
     }
     while(1) 
     {
@@ -220,6 +260,17 @@ void receivethread(void)
 	    temp += stride;
 	    update_encoder_position(temp);
 	    //fprintf(stderr, "INF: actual position: %.10d\n",temp);
+
+	    if(get_max_left_position() >= temp) {
+		param temp_x = get_g_x();
+		temp_x.cmd = GPST_CANCEL;
+		update_g_x(temp_x);
+	    }
+	    if(get_max_right_position() <= temp) {
+		param temp_x = get_g_x();
+		temp_x.cmd = GPST_CANCEL;
+		update_g_x(temp_x);
+	    }
 
 	    // update pre_v
 	    pre_v = cur_v;
