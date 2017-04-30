@@ -10,8 +10,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#include "modbus.h"
 #include "elog.h"
+#include "modbus.h"
 
 #include "alpha_motion_control.h"
 
@@ -90,7 +90,7 @@ void parsesocket(void)
 		connect_loop = 1;
 		while(connect_loop) {
 			bytes = read(sa, buf, 127);
-			if(bytes <= 0 ) {
+			if(bytes <= 0) {
 			    connect_loop = 0;
 			    break;
 			}
@@ -110,16 +110,16 @@ void parsesocket(void)
 			}
 			else if(buf == strstr(buf, "point"))
 			{
-			    int32_t position;
-			    sscanf(buf,"point %d",&position);
-			    char tmp_buf[1024];
-			    sprintf(tmp_buf, buf);
-			    log_e(tmp_buf);
-			    printf("cmdparse: %s\n",tmp_buf);
-			    sprintf(tmp_buf, "INF:point cmd position: %d",position);
-			    log_e(tmp_buf);
-			    printf("cmdparse: %s\n",tmp_buf);
-			    temp_x.v[0] = position;
+			    double position;
+			    sscanf(buf,"point %.3f",&position);
+			    //char tmp_buf[1024];
+			    //sprintf(tmp_buf, buf);
+			    //log_e(tmp_buf);
+			    //printf("cmdparse: %s\n",tmp_buf);
+			    //sprintf(tmp_buf, "INF:point cmd position: %f",position);
+			    //log_e(tmp_buf);
+			    //printf("cmdparse: %s\n",tmp_buf);
+			    temp_x.v[0] = position * 1000;
 			    temp_x.cmd = GPOINT;
 			    update_g_x(temp_x);
 			}
@@ -135,9 +135,9 @@ void parsesocket(void)
 			}
 			else if(buf == strstr(buf,"speed"))
 			{
-			    int32_t speed;
-			    sscanf(buf,"speed %d",&speed);
-			    temp_x.v[0] = speed;
+			    double speed;
+			    sscanf(buf,"speed %.3f",&speed);
+			    temp_x.v[0] = speed * 1000;
 			    temp_x.cmd = GSPEED;
 			    update_g_x(temp_x);
 			}
@@ -159,15 +159,15 @@ void parsesocket(void)
 			}
 			else if(buf == strstr(buf,"maxpoint"))
 			{
-			    int32_t max_left, max_right;
-			    sscanf(buf, "maxpoint %d %d",&max_left, &max_right);
+			    double max_left, max_right;
+			    sscanf(buf, "maxpoint %.3f %.3f",&max_left, &max_right);
 			    if(max_left > max_right){
-				int32_t temp = max_right;
+				double temp = max_right;
 				max_right = max_left;
 				max_left = temp;
 			    }
-			    temp_x.v[0] = max_left;
-			    temp_x.v[1] = max_right;
+			    temp_x.v[0] = max_left * 1000;
+			    temp_x.v[1] = max_right * 1000;
 			    temp_x.cmd = GMAX_POINT;
 			    update_g_x(temp_x);
 			}

@@ -63,6 +63,9 @@ uart_t g_am335x_uart;
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
 
+// Deal with control signal
+void signal_handler(void);
+
 
 int main(int argc, char** argv)
 {
@@ -173,6 +176,11 @@ int main(int argc, char** argv)
     //set_point_position(10100000);
     //run_to_point();
 
+    // Create thread for control signal dealing
+    pthread_t signalthreadid;
+    pthread_create(&signalthreadid,NULL,(void*)signal_handler,NULL);
+    pthread_detach(signalthreadid);
+
     // TODO loop for getting degree
     while(!g_stop_flag) {
             int temp = get_encoder_position();
@@ -225,8 +233,11 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GPOINT )    // run to point 
         {
-            printf("run to point %d\n",temp.v[0]);
-            set_point_position(temp.v[0]);
+            printf("point %d\n",temp.v[0]);
+            // 360,000 means 360 degree
+            int32_t m_position = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+            printf("run to point %d\n",m_position);
+            set_point_position(m_position);
             ret = run_to_point();
             if(-1 == ret) exit(-1);
             else if(1 == ret){
@@ -254,6 +265,10 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GSPEED ) 
         {
+            printf("speed %d\n",temp.v[0]);
+            // 360,000 means 360 degree/s
+            uint32_t speed = (double)temp.v[0] / 360000 * 60 * 100;
+            printf("set speed %d\n", speed);
             set_cruise_speed(temp.v[0]);
             if(is_INP()){
                 ret = send_cruise_speed();
@@ -264,6 +279,7 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GACCE_TIME ) 
         {
+            // 1 means 0.1ms
             set_imme_acceleration_time(temp.v[0]);
             if(is_INP()){
                 ret = send_imme_acceleration_time();
@@ -284,8 +300,18 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GMAX_POINT )
         {
-            set_max_left_position(temp.v[0]);
-            set_max_right_position(temp.v[1]);
+            printf("maxpoint %.10d  %.10d\n",temp.v[0],temp.v[1]);
+            // 360,000 means 360 degree
+            int32_t m_position_left = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+            int32_t m_position_right = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+            int32_t e_position_left = (double)temp.v[1] / 360000 * E_PULSE_PER_CIRCLE;
+            int32_t e_position_right = (double)temp.v[1] / 360000 * E_PULSE_PER_CIRCLE;
+            printf("set motor maxpoint %.10d  %.10d\n",m_position_left,m_position_right);
+            printf("set encoder maxpoint %.10d  %.10d\n",e_position_left,e_position_right);
+            set_limit_left_position(m_position_left);
+            set_limit_right_position(m_position_right);
+            set_max_left_position(e_position_left);
+            set_max_right_position(e_position_right);
             temp.cmd &= ~GMAX_POINT;
             update_g_x(temp);
         }
@@ -327,15 +353,15 @@ void create_example_ini_file(void)
     "RemoteName = root"                     "\n\n"
 
     "[Motion Control]"                      "\n"
-    "cruise_speed = 50000"                  "\n"
-    "cruise_left_position = -5050000"       "\n"
-    "cruise_right_position = 5050000"       "\n"
-    "direct_left_position = -10100000"      "\n"
-    "direct_right_position = 10100000"      "\n"
-    "imme_acceleration_time = 10000"        "\n"
+    "speed = 3600"                          "\n"    // 3600 degree/s 600r/min
+    "cruise_left_position = -360"           "\n"    // -360 degree
+    "cruise_right_position = 360"           "\n"
+    "direct_left_position = -360"           "\n"
+    "direct_right_position = 360"           "\n"
+    "imme_acceleration_time = 10000"        "\n"    // 10000 0.1ms
     "imme_deceleration_time = 10000"        "\n"
-    "max_left_position = -10100000"         "\n"
-    "max_right_position = 10100000"         "\n\n"
+    "max_left_position = -360"              "\n"
+    "max_right_position = 360"              "\n\n"
 
     "[RTU MASTER]"                          "\n"
     "device = /dev/ttyO1"                   "\n"
@@ -375,7 +401,9 @@ int parse_ini_file(char * ini_name)
     int32_t direct_right_position;
     int32_t max_left_position;
     int32_t max_right_position;
-    uint32_t cruise_speed;
+    int32_t limit_left_position;
+    int32_t limit_right_position;
+    uint32_t speed;
     uint32_t imme_acceleration_time;
     uint32_t imme_deceleration_time;
 
@@ -387,13 +415,29 @@ int parse_ini_file(char * ini_name)
     iniparser_dump(ini, stderr);
 
     // Get configure
-    cruise_left_position = iniparser_getint(ini, "Motion Control:cruise_left_position", 0);
-    cruise_right_position = iniparser_getint(ini, "Motion Control:cruise_right_position", 0);
-    direct_left_position = iniparser_getint(ini, "Motion Control:direct_left_position", 0);
-    direct_right_position = iniparser_getint(ini, "Motion Control:direct_right_position", 0);
-    max_left_position = iniparser_getint(ini, "Motion Control:max_left_position", 0);
-    max_right_position = iniparser_getint(ini, "Motion Control:max_right_position", 0);
-    cruise_speed = iniparser_getint(ini, "Motion Control:cruise_speed", 0);
+    double temp_position = iniparser_getdouble(ini, "Motion Control:cruise_left_position", 0);
+    cruise_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+
+    temp_position = iniparser_getdouble(ini, "Motion Control:cruise_right_position", 0);
+    cruise_right_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+
+    temp_position = iniparser_getdouble(ini, "Motion Control:direct_left_position", 0);
+    direct_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+
+    temp_position = iniparser_getdouble(ini, "Motion Control:direct_right_position", 0);
+    direct_right_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+
+    temp_position = iniparser_getdouble(ini, "Motion Control:max_left_position", 0);
+    limit_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+    max_left_position = temp_position / 360 * E_PULSE_PER_CIRCLE;
+
+    temp_position = iniparser_getdouble(ini, "Motion Control:max_right_position", 0);
+    limit_right_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+    max_right_position = temp_position / 360 * E_PULSE_PER_CIRCLE;
+
+    double temp_speed = iniparser_getint(ini, "Motion Control:speed", 0);
+    speed = temp_speed / 360 * 60 * 100;
+
     imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 0);
     imme_deceleration_time = iniparser_getint(ini, "Motion Control:imme_deceleration_time", 0);
 
@@ -428,9 +472,11 @@ int parse_ini_file(char * ini_name)
     set_cruise_right_position(cruise_right_position);
     set_direct_left_position(direct_left_position);
     set_direct_right_position(direct_right_position);
-    set_limit_left_position(max_left_position);
-    set_limit_right_position(max_right_position);
-    set_cruise_speed(cruise_speed);
+    set_max_left_position(max_left_position);
+    set_max_right_position(max_right_position);
+    set_limit_left_position(limit_left_position);
+    set_limit_right_position(limit_right_position);
+    set_cruise_speed(speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);
     set_point_position(0);
