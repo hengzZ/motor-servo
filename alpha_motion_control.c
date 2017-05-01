@@ -2,24 +2,24 @@
 #include <stdio.h>
 #include <pthread.h>
 
-#include "alpha_motion_control.h"
 #include "elog.h"
+#include "alpha_motion_control.h"
 
 
 #define MAX_LEFT_POSITION	-10100000
 #define MAX_RIGHT_POSITION	 10100000
 
 // mode: 0-ABS	1-INC
-// flags: | motion  flags | 1. left 2. right 3. if cruise 4. 
+// flags: | motion  flags | 1. left 2. right 3. point 
 //		  | control flags | 1. direct left 2. direct right 3. cruise 4. EMG 5. Pause 6. Positioning cancel 7. Free run
 //		  |
+uint16_t direct_left_position[2];
+uint16_t direct_right_position[2];
 uint16_t cruise_left_position[2];
 uint16_t cruise_right_position[2];
 uint16_t cruise_speed[2];
 uint16_t imme_acceleration_time[2];
 uint16_t imme_deceleration_time[2];
-uint16_t direct_left_position[2];
-uint16_t direct_right_position[2];
 uint16_t point_position[2];
 
 int32_t limit_left_position;
@@ -120,7 +120,6 @@ int	left_cruise()
 			}
 		}
 		ret = immediate_value_operation_run();
-		//return ret;
 		if(0 == ret) return 1;
 		else return -1;
 	}
@@ -145,7 +144,6 @@ int right_cruise()
 			}
 		}
 		ret = immediate_value_operation_run();
-		//return ret;
 		if(0 == ret) return 1;
 		else return -1;
 	}
@@ -183,6 +181,7 @@ void cruise()
 // for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_STATUS_ad, 2, tab_rq_registers); i++){
 // 	if(i==OPLOOPS-1) fprintf(stderr,"ERR:connection is not stable.\n");
 // }
+//***********************************************************************************************************************
 int set_abs_control_mode()
 {
 	tab_rq_registers[0] = ABS_POSITION_MODE << 8;
@@ -338,12 +337,12 @@ int send_cruise_speed()
 	}		
 	return 0;
 }
-// acc/dec time: 0.1ms
+// acce time: 0.1ms
 int set_imme_acceleration_time(uint32_t time)
 {
 	pthread_mutex_lock(&mutex_motion_ctrl);
 	if(time <= 0) time = 0;
-	if(time >= 99999) time = 99999;	// 9.9s
+	if(time >= 99999) time = 99999;	// 9.9999s
 	imme_acceleration_time[1] = time;
 	imme_acceleration_time[0] = time >> 16;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
@@ -360,12 +359,12 @@ int send_imme_acceleration_time()
 	}		
 	return 0;
 }
-
+// dece time: 0.1ms
 int set_imme_deceleration_time(uint32_t time)
 {
 	pthread_mutex_lock(&mutex_motion_ctrl);
 	if(time <= 0) time = 0;
-	if(time >= 99999) time = 99999;	// 9.9s
+	if(time >= 99999) time = 99999;	// 9.9999s
 	imme_deceleration_time[1] = time;
 	imme_deceleration_time[0] = time >> 16;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
@@ -519,7 +518,7 @@ int positioning_cancel_off()
 	return 0;
 }
 // free run
-// if free-run is turned on, operation is stoped and the motor keeps rotating due to the inertia of the load.
+// warn: if free-run is turned on, operation is stoped and the motor keeps rotating due to the inertia of the load.
 int free_run_on()
 {
 	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, FREE_RUN_ad, 1); i++){
@@ -554,6 +553,7 @@ int check_motion()
 	uint16_t right_position[2];
 
 	int ret;
+	// Cancel old task
 	if(!is_INP()) {
 		ret = positioning_cancel_on();
 		if(-1 == ret) return -1;
@@ -565,7 +565,7 @@ int check_motion()
 	speed[1] = 250000&0xFFFF;
 	acce_time[0] = 10000 >> 16;	// 1s
 	acce_time[1] = 10000;
-	dece_time[0] = 10000 >> 16;
+	dece_time[0] = 10000 >> 16;	// 1s
 	dece_time[1] = 10000;
 	home_position[0] = 0;
 	home_position[1] = 0;
@@ -573,6 +573,8 @@ int check_motion()
 	left_position[1] = limit_left_position;
 	right_position[0] = limit_right_position >> 16;
 	right_position[1] = limit_right_position;
+
+	// Set ckeck_motion speed, acce time, dece time
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, speed); i++){
 		if(OPLOOPS-1==i)
 		{
@@ -594,6 +596,7 @@ int check_motion()
 			return -1;
 		}
 	}		
+	// Point home
 	while(1){
 		if(is_INP())
 		{
@@ -613,8 +616,9 @@ int check_motion()
 			if(0 == ret) break;
 			else return -1;
 		}
-		usleep(200000);
+		usleep(200000);		// 200ms
 	}
+	// Point limit_left_position
 	while(1){
 		if(is_INP())
 		{
@@ -634,8 +638,9 @@ int check_motion()
 			if(0 == ret) break;
 			else return -1;
 		}
-		usleep(200000);
+		usleep(200000);		// 200ms
 	}
+	// Point limit_right_position
 	while(1){
 		if(is_INP())
 		{
@@ -655,8 +660,9 @@ int check_motion()
 			if(0 == ret) break;
 			else return -1;
 		}
-		usleep(200000);
+		usleep(200000);		// 200ms
 	}
+	// Point home
 	while(1){
 		if(is_INP())
 		{
@@ -676,9 +682,10 @@ int check_motion()
 			if(0 == ret) break;
 			else return -1;
 		}
-		usleep(200000);
+		usleep(200000);		// 200ms
 	}
 
+	// Set default speed, acce time, dece time
 	ret = send_cruise_speed();
 	if(-1 == ret) return -1;
 	ret = send_imme_acceleration_time();

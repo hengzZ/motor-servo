@@ -116,6 +116,7 @@ int main(int argc, char** argv)
         init_parameters();
         log_w("Warn: parameter setting. Dangerous!!!");
     }
+
     // listening_uart("/dev/ttyO2", 9600, 'N', 8, 1);
     ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, \
             g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
         close_uart();
     	return -1;
     }
-    /// Set Speed, Acceleration time, Deceleration time
+    /// Set default Speed, Acceleration time, Deceleration time
     //ret = send_cruise_speed();
     //if(-1 == ret) g_stop_flag = true;
     //ret = send_imme_acceleration_time();
@@ -178,14 +179,19 @@ int main(int argc, char** argv)
 
     // Create thread for control signal dealing
     pthread_t signalthreadid;
-    pthread_create(&signalthreadid,NULL,(void*)signal_handler,NULL);
-    pthread_detach(signalthreadid);
+    if(pthread_create(&signalthreadid,NULL,(void*)signal_handler,NULL) != 0) {
+        log_e("create signal handle thread failed.");
+        g_stop_flag = true;
+    }
+    if(pthread_detach(signalthreadid) != 0) {
+        log_e("detach signal handle thread failed.");
+        g_stop_flag = true;
+    }
 
     // TODO loop for getting degree
     while(!g_stop_flag) {
             int temp = get_encoder_position();
 	    //fprintf(stderr, "INF: actual position: %.10d\n",temp);
-            //signal_handler();
             usleep(1000); // 1ms
     }
 
@@ -208,9 +214,9 @@ void signal_handler(void)
 
         param temp = get_g_x();
         // Inf - zhihengw
-        ret = temp.cmd;
+        int cmd = temp.cmd;
         printf("signal handler:");
-        printf("    cmd: %d\n",ret);
+        printf("    cmd - %.6d val0 - %.10d val1 - %.10d\n", cmd, temp.v[0], temp.v[1]);
 
         if ( temp.cmd & GPST_CANCEL )    // cancel
         {
@@ -233,7 +239,6 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GPOINT )    // run to point 
         {
-            printf("point %d\n",temp.v[0]);
             // 360,000 means 360 degree
             int32_t m_position = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
             printf("run to point %d\n",m_position);
@@ -265,7 +270,6 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GSPEED ) 
         {
-            printf("speed %d\n",temp.v[0]);
             // 360,000 means 360 degree/s
             uint32_t speed = (double)temp.v[0] / 360000 * 60 * 100;
             printf("set speed %d\n", speed);
@@ -300,11 +304,10 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GMAX_POINT )
         {
-            printf("maxpoint %.10d  %.10d\n",temp.v[0],temp.v[1]);
             // 360,000 means 360 degree
             int32_t m_position_left = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
-            int32_t m_position_right = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
-            int32_t e_position_left = (double)temp.v[1] / 360000 * E_PULSE_PER_CIRCLE;
+            int32_t m_position_right = (double)temp.v[1] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+            int32_t e_position_left = (double)temp.v[0] / 360000 * E_PULSE_PER_CIRCLE;
             int32_t e_position_right = (double)temp.v[1] / 360000 * E_PULSE_PER_CIRCLE;
             printf("set motor maxpoint %.10d  %.10d\n",m_position_left,m_position_right);
             printf("set encoder maxpoint %.10d  %.10d\n",e_position_left,e_position_right);
@@ -331,10 +334,11 @@ void signal_handler(void)
             // Check max position ON
             int position = get_encoder_position();
             printf("actual encoder position: %.10d\n", position);
+            // Write into socket
         }
 
         usleep(200000);     // 200ms
-	}
+    }
 }
 
 void create_example_ini_file(void)
@@ -353,15 +357,15 @@ void create_example_ini_file(void)
     "RemoteName = root"                     "\n\n"
 
     "[Motion Control]"                      "\n"
-    "speed = 3600"                          "\n"    // 3600 degree/s 600r/min
-    "cruise_left_position = -360"           "\n"    // -360 degree
-    "cruise_right_position = 360"           "\n"
-    "direct_left_position = -360"           "\n"
-    "direct_right_position = 360"           "\n"
-    "imme_acceleration_time = 10000"        "\n"    // 10000 0.1ms
-    "imme_deceleration_time = 10000"        "\n"
-    "max_left_position = -360"              "\n"
-    "max_right_position = 360"              "\n\n"
+    "speed = 3600"                          "\n"    // degree/s : 3600 means 600r/min
+    "cruise_left_position = -360"           "\n"    // degree
+    "cruise_right_position = 360"           "\n"    // degree
+    "direct_left_position = -360"           "\n"    // degree
+    "direct_right_position = 360"           "\n"    // degree
+    "imme_acceleration_time = 10000"        "\n"    // 0.1ms    : 10000 means 1s
+    "imme_deceleration_time = 10000"        "\n"    // 0.1ms
+    "max_left_position = -360"              "\n"    // degree
+    "max_right_position = 360"              "\n\n"  // degree
 
     "[RTU MASTER]"                          "\n"
     "device = /dev/ttyO1"                   "\n"
@@ -381,7 +385,7 @@ void create_example_ini_file(void)
 
     "[SOCKET]"                              "\n"
     "server_port = 12345"                   "\n"
-    "queue_size = 10"                       "\n"
+    "queue_size = 1"                       "\n"
     "mode = TCP"                            "\n\n"
     
     );
@@ -417,13 +421,10 @@ int parse_ini_file(char * ini_name)
     // Get configure
     double temp_position = iniparser_getdouble(ini, "Motion Control:cruise_left_position", 0);
     cruise_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
-
     temp_position = iniparser_getdouble(ini, "Motion Control:cruise_right_position", 0);
     cruise_right_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
-
     temp_position = iniparser_getdouble(ini, "Motion Control:direct_left_position", 0);
     direct_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
-
     temp_position = iniparser_getdouble(ini, "Motion Control:direct_right_position", 0);
     direct_right_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
 
@@ -435,7 +436,7 @@ int parse_ini_file(char * ini_name)
     limit_right_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
     max_right_position = temp_position / 360 * E_PULSE_PER_CIRCLE;
 
-    double temp_speed = iniparser_getint(ini, "Motion Control:speed", 0);
+    double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 0);
     speed = temp_speed / 360 * 60 * 100;
 
     imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 0);

@@ -18,6 +18,8 @@ struct uart_t {
 int get_encoder_position();
 void set_max_left_position(int position);
 void set_max_right_position(int position);
+int get_max_left_position();
+int get_max_right_position();
 
 int listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit);
 void close_uart();

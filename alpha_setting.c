@@ -14,9 +14,11 @@ uint8_t  *tab_rq_bits = NULL;
 uint16_t *tab_rp_registers = NULL; 
 uint8_t	 *tab_rp_bits = NULL;
 
-// Parameter setting related
+// Parameter setting for io mapping
 void io_signals_mapping();
+// Set PA01_01=1	(speed mode with RS485 for speed selection)
 void positioning_data_operation_485_setting();
+// Set PA01_01=7, PA02_40=0 (immediate value operation mode)
 void immediate_value_date_operation_485_setting();
 
 // Init/Free bufffers for modbus-TRU
@@ -60,7 +62,7 @@ int open_modbus_rtu_master(const char *device, int baud, char parity, int data_b
 		return -1;
 	}
 	// Debug mode
-	modbus_set_debug(ctx, TRUE);
+	//modbus_set_debug(ctx, TRUE);
 	if (modbus_connect(ctx) == -1) {
 		modbus_free(ctx);
 		return -1;
@@ -73,7 +75,7 @@ void close_modbus_rtu_master()
 	modbus_free(ctx);
 }
 
-// Parameter setting related
+// Parameter setting for io mapping
 void io_signals_mapping()
 {
 	// [CONT] mapping
@@ -121,12 +123,15 @@ void io_signals_mapping()
 	tab_rq_registers[1] = S_RDY_fc;
 	modbus_write_registers(ctx, PA3_56_ad, 2, tab_rq_registers);
 }
+//*********************************************************************
 // NOTES:
 // The W type servo amplifier is capable of :
 //		1. speed control and torque control with analog voltages.
 //		2. position control with pulse.
 //		3. positioning data operation with Di/Do signals or RS-485.
 //		4. immediate value data operation with RS-485.(Selected)
+//*********************************************************************
+// Set PA01_01=1	(speed mode with RS485 for speed selection)
 void positioning_data_operation_485_setting()
 {
 	//  Positioning control with speed control, torque control, or pulse is used.
@@ -143,6 +148,7 @@ void positioning_data_operation_485_setting()
 	tab_rq_registers[1] = 0x0001;
 	modbus_write_registers(ctx, PA1_01_ad,  2,  tab_rq_registers);
 }
+// Set PA01_01=7, PA02_40=0 (immediate value operation mode)
 void immediate_value_date_operation_485_setting()
 {
 	//  Positioning operation, Enter 7 to PA1_01.
@@ -169,7 +175,7 @@ void immediate_value_date_operation_485_setting()
 	const int32_t minus_position = -M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
 	// PA1_01=7, PA2_25=0 for PTP mode, PA2_25=1 for INC mode and OT invalid
 	tab_rq_registers[1] = 0x0000;
-	tab_rq_registers[0] = 0x0000;
+	tab_rq_registers[0] = 0x0000;											// PTP mode	
 	modbus_write_registers(ctx, PA2_25_ad,  2,  tab_rq_registers);
 	// +OT position > -OT position
 	tab_rq_registers[1] = plus_position;

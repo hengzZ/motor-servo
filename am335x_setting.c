@@ -94,6 +94,12 @@ int get_max_right_position()
     return position;
 }
 
+// Check and parse the encoder data frame
+// -1 for not received position data
+int recv_pst_data()
+{
+
+}
 
 int fd=-1;
 char buff[512];

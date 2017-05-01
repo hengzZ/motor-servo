@@ -7,7 +7,7 @@
 void forward_command_test()
 {
 	// Control Mode selection ON
-	// **NoTE: PA1_01 must be set 3
+	// **NoTE: PA1_01 must be set 1
 	while(1 != modbus_write_bit(ctx,CTRL_MOD_SLCT_ad,1)){ }
 	// Set [FWD] mode through [X3] [X2] [X1]
 	while(1 != modbus_write_bit(ctx,X3_ad,0)){ }

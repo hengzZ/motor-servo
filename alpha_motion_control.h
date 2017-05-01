@@ -66,7 +66,9 @@ int free_run_off();
 int check_motion();
 
 // functions for test use, implementing in file alpha_test.c
+// **NoTE: PA1_01 must be set 1
 void forward_command_test();
+// **NoTE: PA1_01 must be set 7
 void immediate_value_data_op_test();
 
 #endif	//ALPHA_MOTION_CONTROL_H

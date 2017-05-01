@@ -106,7 +106,7 @@ void parsesocket(void)
 			{
 			    temp_x.cmd = GEMG;
 			    update_g_x(temp_x);
-			    printf("cmdparse: stop\n");
+			    //printf("cmdparse: stop\n");
 			}
 			else if(buf == strstr(buf, "point"))
 			{
@@ -143,16 +143,16 @@ void parsesocket(void)
 			}
 			else if(buf == strstr(buf,"acce"))
 			{
-			    int32_t acce;
-			    sscanf(buf, "acce %d",&acce);
+			    double acce;
+			    sscanf(buf, "acce %.3f",&acce);
 			    temp_x.v[0] = acce;
 			    temp_x.cmd = GACCE_TIME;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"dece"))
 			{
-			    int32_t dece;
-			    sscanf(buf, "dece %d",&dece);
+			    double dece;
+			    sscanf(buf, "dece %.3f",&dece);
 			    temp_x.v[0] = dece;
 			    temp_x.cmd = GDECE_TIME;
 			    update_g_x(temp_x);
