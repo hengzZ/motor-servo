@@ -40,6 +40,9 @@ typedef struct {
 extern void update_g_x(param x);
 extern param get_g_x();
 
+// Flag for direction
+volatile int anticlockwise;
+
 // Socket
 int server_port, queue_size;
 int s, b, l, sa;
@@ -119,18 +122,21 @@ void parsesocket(void)
 			    //sprintf(tmp_buf, "INF:point cmd position: %f",position);
 			    //log_e(tmp_buf);
 			    //printf("cmdparse: %s\n",tmp_buf);
-			    temp_x.v[0] = position * 1000;
+			    if(anticlockwise) temp_x.v[0] = -position * 1000;
+			    else temp_x.v[0] = position * 1000;
 			    temp_x.cmd = GPOINT;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runleft"))
 			{
-			    temp_x.cmd = GLEFT;
+			    if(anticlockwise) temp_x.cmd = GRIGHT;
+			    else temp_x.cmd = GLEFT;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runright"))
 			{
-			    temp_x.cmd = GRIGHT;
+			    if(anticlockwise) temp_x.cmd = GLEFT;
+			    else temp_x.cmd = GRIGHT;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"speed"))
@@ -161,6 +167,7 @@ void parsesocket(void)
 			{
 			    double max_left, max_right;
 			    sscanf(buf, "maxpoint %.3f %.3f",&max_left, &max_right);
+			    if(anticlockwise) max_left = -max_left, max_right = -max_right;
 			    if(max_left > max_right){
 				double temp = max_right;
 				max_right = max_left;

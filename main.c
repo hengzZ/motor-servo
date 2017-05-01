@@ -357,6 +357,7 @@ void create_example_ini_file(void)
     "RemoteName = root"                     "\n\n"
 
     "[Motion Control]"                      "\n"
+    "anticlockwise = 0"                     "\n"
     "speed = 3600"                          "\n"    // degree/s : 3600 means 600r/min
     "cruise_left_position = -360"           "\n"    // degree
     "cruise_right_position = 360"           "\n"    // degree
@@ -419,6 +420,9 @@ int parse_ini_file(char * ini_name)
     iniparser_dump(ini, stderr);
 
     // Get configure
+    extern int anticlockwise;
+    anticlockwise = iniparser_getint(ini, "Motion Control:anticlockwise", 0);
+
     double temp_position = iniparser_getdouble(ini, "Motion Control:cruise_left_position", 0);
     cruise_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
     temp_position = iniparser_getdouble(ini, "Motion Control:cruise_right_position", 0);
