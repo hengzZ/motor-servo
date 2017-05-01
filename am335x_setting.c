@@ -300,8 +300,8 @@ int listening_uart(const char* device, int baud, char parity, int data_bit, int 
     set_speed(fd,baud);
     set_Parity(fd,data_bit,stop_bit,parity);
 
-    pthread_create(&receiveid,NULL,(void*)receivethread,NULL);
-    pthread_detach(receiveid);
+    if(0 != pthread_create(&receiveid,NULL,(void*)receivethread,NULL)) return -1;
+    if(0 != pthread_detach(receiveid)) return -1;
     return 0;
 }
 void close_uart()

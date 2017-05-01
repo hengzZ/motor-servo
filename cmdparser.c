@@ -47,6 +47,23 @@ volatile int anticlockwise;
 int server_port, queue_size;
 int s, b, l, sa;
 int on = 1;
+pthread_mutex_t mutex_cmd = PTHREAD_MUTEX_INITIALIZER;
+
+int m_socket_read(void *buf, size_t count)
+{
+    pthread_mutex_lock(&mutex_cmd);
+    int bytes = read(sa, buf, count);
+    pthread_mutex_unlock(&mutex_cmd);
+    return bytes;
+}
+int m_socket_write(void *buf, size_t count)
+{
+    pthread_mutex_lock(&mutex_cmd);
+    int bytes = write(sa, buf, count);
+    pthread_mutex_unlock(&mutex_cmd);
+    return bytes;
+}
+
 
 void parsesocket(void)
 {
@@ -92,7 +109,7 @@ void parsesocket(void)
 
 		connect_loop = 1;
 		while(connect_loop) {
-			bytes = read(sa, buf, 127);
+			bytes = m_socket_read(buf, 127);
 			if(bytes <= 0) {
 			    connect_loop = 0;
 			    break;
@@ -199,7 +216,7 @@ int listening_socket(int _server_port, int _queue_size)
 	queue_size = _queue_size;
 	pthread_t parsesocketid;
 
-	pthread_create(&parsesocketid,NULL,(void*)parsesocket,NULL);
-	pthread_detach(parsesocketid);
+	if(0 != pthread_create(&parsesocketid,NULL,(void*)parsesocket,NULL)) return -1;
+	if(0 != pthread_detach(parsesocketid)) return -1;
 	return 0;
 }

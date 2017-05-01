@@ -197,9 +197,67 @@ void init_parameters()
 	immediate_value_date_operation_485_setting();
 	io_signals_mapping();
 }
+
 int check_parameters()
 {
-	// Return -1 for error
+	if(2 != modbus_read_registers(ctx, PA1_01_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 7) return -1;
 	
+	if(2 != modbus_read_registers(ctx, PA2_40_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 0) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA1_05_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != M_PULSE_PER_CIRCLE&0xFFFF) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA1_06_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 16) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA1_07_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 1) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA2_25_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 0) return -1;
+	
+	// [CONT] mapping
+	if(2 != modbus_read_registers(ctx, PA3_9_ad,  2,  tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != SERVO_ON_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_10_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != FWD_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_11_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != REV_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_12_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != START_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_13_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != EMG_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_14_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != PAUSE_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_15_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != PST_CANCEL_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_16_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != FREE_RUN_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_21_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != CTRL_MOD_SLCT_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_22_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != X1_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_23_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != X2_fc) return -1;
+
+	if(2 != modbus_read_registers(ctx, PA3_24_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != X3_fc) return -1;
+
+	// [OUT] mapping
+	if(2 != modbus_read_registers(ctx, PA3_56_ad, 2, tab_rp_registers)) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != S_RDY_fc) return -1;
+
 	return 0;
 }
