@@ -42,10 +42,9 @@ extern param get_g_x();
 // Assume that every stride is less than half cycle(65535/2).
 // Absolute stride large than 32768 means stride over zero.
 #define MAX_STRIDE	32767
-char sorted_buff[2];
 unsigned short  cur_v;
 unsigned short  pre_v;
-int stride;
+
 volatile int max_left_position;
 volatile int max_right_position;
 volatile int encoder_position;
@@ -94,13 +93,37 @@ int get_max_right_position()
     return position;
 }
 
+unsigned char CRC_check(unsigned char *buf, int n)
+{
+    unsigned char sum = 0x80;
+    for(int i = 0; i < n; i++)
+    {
+	sum += buf[i];
+    }
+    return sum;
+}
 // Check and parse the encoder data frame
 // -1 for not received position data
-int recv_pst_data()
+int recv_pst_data(char *str)
 {
-
+    char *ptr = strstr(str,"\xff\x81\x00");
+    char *ptr_end = strchr(str,'\0');
+    if(NULL != ptr && NULL != ptr_end && (ptr_end - ptr >= 6)) {
+	unsigned char act_chk;
+	memcpy(&act_chk,ptr+5,1);
+	unsigned char chk = CRC_check(ptr+3,2);
+	if(chk == act_chk) {
+	    char sorted_buff[2];
+	    unsigned short ret;
+	    memcpy(&sorted_buff[1],ptr+3,1);
+	    memcpy(&sorted_buff[0],ptr+4,1);
+	    memcpy(&ret,sorted_buff,2);
+	    return ret;
+	}
+    }
+    return -1;
 }
-
+//*************************************************************************************************************************************
 int fd=-1;
 char buff[512];
 int speed_arr[] = {B115200, B57600, B38400, B19200, B9600, B4800, B2400, B1200};
@@ -230,16 +253,18 @@ void receivethread(void)
         if((nread = read(fd,buff,100))>0) 
         {
             buff[nread]='\0';
-	    memcpy(&sorted_buff[1],buff+3,1);
-	    memcpy(&sorted_buff[0],buff+4,1);
-	    memcpy(&cur_v,sorted_buff,2);
-            pre_v = cur_v;
-            break;
+	    int val = recv_pst_data(buff);
+	    if(-1 != val) {
+		pre_v = cur_v = val;
+		break;
+	    }
         }
 	usleep(1000);	// 1ms
     }
     while(1) 
     {
+	usleep(1000);
+
 	if((nread = read(fd,buff,100))>0) 
 	{
 	    buff[nread]='\0';
@@ -247,13 +272,14 @@ void receivethread(void)
 	    //for(int i = 0; i < nread; i++){
 	    //	fprintf(stderr,"%.2x ",buff[i]);
 	    //}
-	    memcpy(&sorted_buff[1],buff+3,1);
-	    memcpy(&sorted_buff[0],buff+4,1);
-	    memcpy(&cur_v,sorted_buff,2);
+	    int val = recv_pst_data(buff);
+	    if(-1 == val) continue;
+	    cur_v = val;
 	    //printf("\nhex: %.4x\n",cur_v);
 	    //printf("dec: %d\n",cur_v);
 
 	    // Calculate stride 
+	    int stride;
 	    int temp_stride = cur_v - pre_v;
 	    if(abs(temp_stride) > MAX_STRIDE && temp_stride > 0)
 	        stride = cur_v - 65535 - pre_v;
@@ -281,9 +307,7 @@ void receivethread(void)
 	    // update pre_v
 	    pre_v = cur_v;
 	}
-	usleep(1000); // uint: 1us
     } 
- 
     return;
 }
 
