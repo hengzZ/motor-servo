@@ -12,7 +12,8 @@ struct am335x_socket_t{
         int queue_size;
 };
 
-extern int anticlockwise;
+void set_anticlockwise(int mode);
+int get_anticlockwise();
 int m_socket_read(void *buf, size_t count);
 int m_socket_write(void *buf, size_t count);
 

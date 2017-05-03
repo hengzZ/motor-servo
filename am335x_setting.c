@@ -27,7 +27,7 @@ typedef enum{
     GDECE_TIME=128,
     GMAX_POINT=256,
     GSTATUS=512,
-    GUNKNOWN=1024
+    GCHECK=1024
 } GFLAGS;
 
 typedef struct {
@@ -42,6 +42,7 @@ extern param get_g_x();
 // Assume that every stride is less than half cycle(65535/2).
 // Absolute stride large than 32768 means stride over zero.
 #define MAX_STRIDE	32767
+#define OFFSET		182	    // 1 degree
 unsigned short  cur_v;
 unsigned short  pre_v;
 
@@ -78,17 +79,15 @@ void set_max_right_position(int position)
 }
 int get_max_left_position()
 {
-    int position;
     pthread_mutex_lock(&mutex_encoder);
-    position = max_left_position;
+    int position = max_left_position;
     pthread_mutex_unlock(&mutex_encoder);
     return position;
 }
 int get_max_right_position()
 {
-    int position;
     pthread_mutex_lock(&mutex_encoder);
-    position = max_right_position;
+    int position = max_right_position;
     pthread_mutex_unlock(&mutex_encoder);
     return position;
 }
@@ -107,7 +106,7 @@ unsigned char CRC_check(unsigned char *buf, int n)
 int recv_pst_data(char *str)
 {
     char *ptr = strstr(str,"\xff\x81\x00");
-    char *ptr_end = strchr(str,'\0');
+    char *ptr_end = strchr(str+3,'\0');
     if(NULL != ptr && NULL != ptr_end && (ptr_end - ptr >= 6)) {
 	unsigned char act_chk;
 	memcpy(&act_chk,ptr+5,1);
@@ -244,13 +243,13 @@ int set_Parity(int fd,int databits,int stopbits,int parity)
     return (TRUE);
 }
 
-
+//*************************************************************************************************************************************
 void receivethread(void)
 {
     int nread;
 
     for(;;) {
-        if((nread = read(fd,buff,100))>0) 
+        if((nread = read(fd,buff,100))>3) 
         {
             buff[nread]='\0';
 	    int val = recv_pst_data(buff);
@@ -265,7 +264,7 @@ void receivethread(void)
     {
 	usleep(1000);
 
-	if((nread = read(fd,buff,100))>0) 
+	if((nread = read(fd,buff,100))>3) 
 	{
 	    buff[nread]='\0';
 	    //printf("[RECEIVE LEN] is %d, content is:\n",nread);
@@ -275,8 +274,6 @@ void receivethread(void)
 	    int val = recv_pst_data(buff);
 	    if(-1 == val) continue;
 	    cur_v = val;
-	    //printf("\nhex: %.4x\n",cur_v);
-	    //printf("dec: %d\n",cur_v);
 
 	    // Calculate stride 
 	    int stride;
@@ -287,21 +284,28 @@ void receivethread(void)
 	        stride = cur_v + 65535 - pre_v;
 	    else
 	        stride = temp_stride;
+	    stride *= -1;
+
 	    // Update position
 	    int temp = get_encoder_position();
 	    temp += stride;
 	    update_encoder_position(temp);
-	    //fprintf(stderr, "INF: actual position: %.10d\n",temp);
 
-	    if(get_max_left_position() >= temp) {
-		param temp_x = get_g_x();
-		temp_x.cmd = GPST_CANCEL;
-		update_g_x(temp_x);
+	    ////printf("\nhex: %.4x\n",cur_v);
+	    //printf("am335x: dec %d\n",cur_v);
+	    //temp = get_encoder_position();
+	    //printf("am335x: actual position: %.10d\n",temp);
+	    //fflush(stdout);
+
+	    if(get_max_left_position()-OFFSET >= temp) {
+	        param temp_x = get_g_x();
+	        temp_x.cmd = GPST_CANCEL;
+	        update_g_x(temp_x);
 	    }
-	    if(get_max_right_position() <= temp) {
-		param temp_x = get_g_x();
-		temp_x.cmd = GPST_CANCEL;
-		update_g_x(temp_x);
+	    else if(get_max_right_position()+OFFSET <= temp) {
+	        param temp_x = get_g_x();
+	        temp_x.cmd = GPST_CANCEL;
+	        update_g_x(temp_x);
 	    }
 
 	    // update pre_v

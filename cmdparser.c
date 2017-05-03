@@ -28,7 +28,7 @@ typedef enum{
     GDECE_TIME=128,
     GMAX_POINT=256,
     GSTATUS=512,
-    GUNKNOWN=1024
+    GCHECK=1024
 } GFLAGS;
 
 typedef struct {
@@ -42,12 +42,26 @@ extern param get_g_x();
 
 // Flag for direction
 volatile int anticlockwise;
+pthread_mutex_t mutex_cmd = PTHREAD_MUTEX_INITIALIZER;
+
+void set_anticlockwise(int mode)
+{
+    pthread_mutex_lock(&mutex_cmd);
+    anticlockwise = mode;
+    pthread_mutex_unlock(&mutex_cmd);
+}
+int get_anticlockwise()
+{
+    pthread_mutex_lock(&mutex_cmd);
+    int mode = anticlockwise;
+    pthread_mutex_unlock(&mutex_cmd);
+    return mode;
+}
 
 // Socket
 int server_port, queue_size;
 int s, b, l, sa;
 int on = 1;
-pthread_mutex_t mutex_cmd = PTHREAD_MUTEX_INITIALIZER;
 
 int m_socket_read(void *buf, size_t count)
 {
@@ -63,8 +77,7 @@ int m_socket_write(void *buf, size_t count)
     pthread_mutex_unlock(&mutex_cmd);
     return bytes;
 }
-
-
+//***************************************************************
 void parsesocket(void)
 {
 	struct sockaddr_in channel;		// holds IP address
@@ -98,8 +111,8 @@ void parsesocket(void)
 	// Init Done
 	int bytes = 0;
 	char buf[128];
+	int connect_loop;
 	
-	int connect_loop = 1;
 	while(1)
 	{
 		sa = accept(s, 0, 0);
@@ -131,35 +144,35 @@ void parsesocket(void)
 			else if(buf == strstr(buf, "point"))
 			{
 			    double position;
-			    sscanf(buf,"point %.3f",&position);
+			    sscanf(buf,"point %lf",&position);
 			    //char tmp_buf[1024];
 			    //sprintf(tmp_buf, buf);
 			    //log_e(tmp_buf);
 			    //printf("cmdparse: %s\n",tmp_buf);
-			    //sprintf(tmp_buf, "INF:point cmd position: %f",position);
+			    //sprintf(tmp_buf, "cmdparse: point %lf",position);
 			    //log_e(tmp_buf);
 			    //printf("cmdparse: %s\n",tmp_buf);
-			    if(anticlockwise) temp_x.v[0] = -position * 1000;
+			    if(get_anticlockwise()) temp_x.v[0] = -position * 1000;
 			    else temp_x.v[0] = position * 1000;
 			    temp_x.cmd = GPOINT;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runleft"))
 			{
-			    if(anticlockwise) temp_x.cmd = GRIGHT;
+			    if(get_anticlockwise()) temp_x.cmd = GRIGHT;
 			    else temp_x.cmd = GLEFT;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runright"))
 			{
-			    if(anticlockwise) temp_x.cmd = GLEFT;
+			    if(get_anticlockwise()) temp_x.cmd = GLEFT;
 			    else temp_x.cmd = GRIGHT;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"speed"))
 			{
 			    double speed;
-			    sscanf(buf,"speed %.3f",&speed);
+			    sscanf(buf,"speed %lf",&speed);
 			    temp_x.v[0] = speed * 1000;
 			    temp_x.cmd = GSPEED;
 			    update_g_x(temp_x);
@@ -167,7 +180,7 @@ void parsesocket(void)
 			else if(buf == strstr(buf,"acce"))
 			{
 			    double acce;
-			    sscanf(buf, "acce %.3f",&acce);
+			    sscanf(buf, "acce %lf",&acce);
 			    temp_x.v[0] = acce;
 			    temp_x.cmd = GACCE_TIME;
 			    update_g_x(temp_x);
@@ -175,7 +188,7 @@ void parsesocket(void)
 			else if(buf == strstr(buf,"dece"))
 			{
 			    double dece;
-			    sscanf(buf, "dece %.3f",&dece);
+			    sscanf(buf, "dece %lf",&dece);
 			    temp_x.v[0] = dece;
 			    temp_x.cmd = GDECE_TIME;
 			    update_g_x(temp_x);
@@ -183,8 +196,8 @@ void parsesocket(void)
 			else if(buf == strstr(buf,"maxpoint"))
 			{
 			    double max_left, max_right;
-			    sscanf(buf, "maxpoint %.3f %.3f",&max_left, &max_right);
-			    if(anticlockwise) max_left = -max_left, max_right = -max_right;
+			    sscanf(buf, "maxpoint %lf %lf",&max_left, &max_right);
+			    if(get_anticlockwise()) max_left *= -1, max_right *= -1;
 			    if(max_left > max_right){
 				double temp = max_right;
 				max_right = max_left;
@@ -201,6 +214,11 @@ void parsesocket(void)
 			    sscanf(buf, "status %d",&status);
 			    temp_x.v[0] = status;
 			    temp_x.cmd = GSTATUS;
+			    update_g_x(temp_x);
+			}
+			else if(buf == strstr(buf,"check"))
+			{
+			    temp_x.cmd = GCHECK;
 			    update_g_x(temp_x);
 			}
 			usleep(200000);	    // 200ms

@@ -5,6 +5,7 @@
 #include "elog.h"
 #include "alpha_motion_control.h"
 
+extern void update_encoder_position(int position);
 
 #define MAX_LEFT_POSITION	-10100000
 #define MAX_RIGHT_POSITION	 10100000
@@ -21,6 +22,10 @@ uint16_t cruise_speed[2];
 uint16_t imme_acceleration_time[2];
 uint16_t imme_deceleration_time[2];
 uint16_t point_position[2];
+
+uint16_t check_speed[2];
+uint16_t check_acce_time[2];
+uint16_t check_dece_time[2];
 
 int32_t limit_left_position;
 int32_t limit_right_position;
@@ -337,6 +342,7 @@ int send_cruise_speed()
 	}		
 	return 0;
 }
+
 // acce time: 0.1ms
 int set_imme_acceleration_time(uint32_t time)
 {
@@ -379,6 +385,32 @@ int send_imme_deceleration_time()
 			return -1;
 		}
 	}		
+	return 0;
+}
+
+// check motion speed, acce time, dece time
+int set_check_speed(uint32_t speed)
+{
+	if(speed <= 0) speed = 0;
+	if(speed >= 200000) speed = 200000;	// 2000r/min
+	check_speed[1] = speed;
+	check_speed[0] = speed >> 16;
+	return 0;
+}
+int set_check_acce_time(uint32_t time)
+{
+	if(time <= 0) time = 0;
+	if(time >= 99999) time = 99999;	// 9.9999s
+	check_acce_time[1] = time;
+	check_acce_time[0] = time >> 16;
+	return 0;
+}
+int set_check_dece_time(uint32_t time)
+{
+	if(time <= 0) time = 0;
+	if(time >= 99999) time = 99999;	// 9.9999s
+	check_dece_time[1] = time;
+	check_dece_time[0] = time >> 16;
 	return 0;
 }
 
@@ -545,9 +577,6 @@ int free_run_off()
 // Check motion
 int check_motion()
 {
-	uint16_t speed[2];
-	uint16_t acce_time[2];
-	uint16_t dece_time[2];
 	uint16_t home_position[2];
 	uint16_t left_position[2];
 	uint16_t right_position[2];
@@ -561,12 +590,6 @@ int check_motion()
 		if(-1 == ret) return -1;
 	}
 
-	speed[0] = 250000 >> 16;	// 2500r/min
-	speed[1] = 250000&0xFFFF;
-	acce_time[0] = 10000 >> 16;	// 1s
-	acce_time[1] = 10000;
-	dece_time[0] = 10000 >> 16;	// 1s
-	dece_time[1] = 10000;
 	home_position[0] = 0;
 	home_position[1] = 0;
 	left_position[0] = limit_left_position >> 16;
@@ -575,21 +598,21 @@ int check_motion()
 	right_position[1] = limit_right_position;
 
 	// Set ckeck_motion speed, acce time, dece time
-	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, speed); i++){
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, check_speed); i++){
 		if(OPLOOPS-1==i)
 		{
 			log_e("check_motion: communication failed.");
 			return -1;
 		}
 	}		
-	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, acce_time); i++){
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, check_acce_time); i++){
 		if(OPLOOPS-1==i)
 		{
 			log_e("check_motion: communication failed.");
 			return -1;
 		}
 	}
-	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, dece_time); i++){
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, check_dece_time); i++){
 		if(OPLOOPS-1==i)
 		{
 			log_e("check_motion: communication failed.");
@@ -634,6 +657,10 @@ int check_motion()
 					return -1;
 				}
 			}
+
+			// TODO
+			update_encoder_position(0);
+
 			ret = immediate_value_operation_run();
 			if(0 == ret) break;
 			else return -1;

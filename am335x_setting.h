@@ -3,6 +3,7 @@
 
 
 #define E_PULSE_PER_CIRCLE      65535
+#define E_PULSE_OFFSET          20      // error offset for max location
 
 struct uart_t;
 typedef struct uart_t uart_t;

@@ -24,7 +24,7 @@ typedef enum{
     GDECE_TIME=128,
     GMAX_POINT=256,
     GSTATUS=512,
-    GUNKNOWN=1024
+    GCHECK=1024
 } GFLAGS;
 
 typedef struct {
@@ -33,9 +33,9 @@ typedef struct {
 }param;
 
 // DataObject for control and data transmission
+volatile bool g_status = false;
+volatile bool g_stop = false;
 volatile param g_x;
-volatile bool g_get_status = false;
-volatile bool g_stop_flag = false;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void update_g_x(param x)
@@ -50,6 +50,32 @@ param get_g_x()
     param temp_x = g_x;
     pthread_mutex_unlock(&mutex);
     return temp_x;
+}
+void set_status(bool mode)
+{
+    pthread_mutex_lock(&mutex);
+    g_status = mode;
+    pthread_mutex_unlock(&mutex);
+}
+bool get_status()
+{
+    pthread_mutex_lock(&mutex);
+    bool mode = g_status;
+    pthread_mutex_unlock(&mutex);
+    return mode;
+}
+void set_stop(bool mode)
+{
+    pthread_mutex_lock(&mutex);
+    g_stop = mode;
+    pthread_mutex_unlock(&mutex);
+}
+bool get_stop()
+{
+    pthread_mutex_lock(&mutex);
+    bool mode = g_stop;
+    pthread_mutex_unlock(&mutex);
+    return mode;
 }
 
 // DataObject for SOCKET listening
@@ -111,6 +137,7 @@ int main(int argc, char** argv)
     	free_buffers_for_modbus();
     	return -1;
     }
+
     // Init Parameter (Warn: parameter setting.)
     if(1 == g_rtu_master.reset_parameter){
         init_parameters();
@@ -161,48 +188,43 @@ int main(int argc, char** argv)
         close_uart();
     	return -1;
     }
-    // Init Done
-    log_i("Init Success.");
-
-    // Check motion
-    ret = check_motion();
-    if(-1 == ret){
-    	log_e("check motion failed.");
-    	serve_off();
-    	close_modbus_rtu_master();
-    	free_buffers_for_modbus();
-        close_uart();
-    	return -1;
-    }
     /// Set default Speed, Acceleration time, Deceleration time
-    //ret = send_cruise_speed();
-    //if(-1 == ret) g_stop_flag = true;
-    //ret = send_imme_acceleration_time();
-    //if(-1 == ret) g_stop_flag = true;
-    //ret = send_imme_deceleration_time();
-    //if(-1 == ret) g_stop_flag = true;
-    //set_point_position(10100000);
-    //run_to_point();
+    ret = send_cruise_speed();
+    if(-1 == ret) set_stop(true);
+    ret = send_imme_acceleration_time();
+    if(-1 == ret) set_stop(true);
+    ret = send_imme_deceleration_time();
+    if(-1 == ret) set_stop(true);
 
     // Create thread for control signal dealing
     pthread_t signalthreadid;
     if(pthread_create(&signalthreadid,NULL,(void*)signal_handler,NULL) != 0) {
         log_e("create signal handle thread failed.");
-        g_stop_flag = true;
+        set_stop(true);
     }
     if(pthread_detach(signalthreadid) != 0) {
         log_e("detach signal handle thread failed.");
-        g_stop_flag = true;
+        set_stop(true);
     }
+    // Init Done
+    log_i("Init Success.");
 
-    // TODO loop for getting degree
-    while(!g_stop_flag) {
+    // Check motion
+    param temp = get_g_x();
+    temp.cmd = GCHECK;
+    update_g_x(temp);
+
+    // Loop for getting degree
+    int anticlock = get_anticlockwise();
+    while(!get_stop()) {
             int temp = get_encoder_position();
-	    //fprintf(stderr, "INF: actual position: %.10d\n",temp);
-            
+            if(get_anticlockwise()) temp *= -1;
             char buf[64];
             memset(buf,0,64);
             sprintf(buf,"%.3f\r",360.0*temp/65535);
+	    //printf("main loop: actual position: %.10d\n",temp);
+            //printf("main loop: actual degree %s\n",buf);
+            //fflush(stdout);
             m_socket_write(buf,strlen(buf));
 
             usleep(1000); // 1ms
@@ -226,11 +248,6 @@ void signal_handler(void)
     while(1){
 
         param temp = get_g_x();
-        // Inf - zhihengw
-        int cmd = temp.cmd;
-        printf("signal handler:");
-        printf("    cmd - %.6d val0 - %.10d val1 - %.10d\n", cmd, temp.v[0], temp.v[1]);
-
         if ( temp.cmd & GPST_CANCEL )    // cancel
         {
             ret = positioning_cancel_on();
@@ -246,19 +263,20 @@ void signal_handler(void)
             if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
             ret = forced_stop_off();
             if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            set_stop(true);
             temp.cmd = 0;
             update_g_x(temp);
-            g_stop_flag = true;
         }
         else if ( temp.cmd & GPOINT )    // run to point 
         {
             // 360,000 means 360 degree
             int32_t m_position = (double)temp.v[0] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
-            printf("run to point %d\n",m_position);
+            //printf("run to position %d\n",m_position);
+            //fflush(stdout);
             set_point_position(m_position);
             ret = run_to_point();
             if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
-            else if(1 == ret){
+            else if(1 == ret) {
                 temp.cmd &= ~GPOINT;
                 update_g_x(temp);
             }
@@ -267,7 +285,7 @@ void signal_handler(void)
         {
             ret = left_direction_run();
             if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
-            else if(1 == ret){
+            else if(1 == ret) {
                 temp.cmd &= ~GLEFT;
                 update_g_x(temp);
             }
@@ -276,7 +294,7 @@ void signal_handler(void)
         {
             ret = right_direction_run();
             if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
-            else if(1 == ret){
+            else if(1 == ret) {
                 temp.cmd &= ~GRIGHT;
                 update_g_x(temp);
             }
@@ -285,7 +303,7 @@ void signal_handler(void)
         {
             // 360,000 means 360 degree/s
             uint32_t speed = (double)temp.v[0] / 360000 * 60 * 100;
-            printf("set speed %d\n", speed);
+            //printf("set speed %d\n", speed);
             set_cruise_speed(temp.v[0]);
             if(is_INP()){
                 ret = send_cruise_speed();
@@ -296,8 +314,7 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GACCE_TIME ) 
         {
-            // 1 means 0.1ms
-            set_imme_acceleration_time(temp.v[0]);
+            set_imme_acceleration_time(temp.v[0]);      // 1 means 0.1 ms
             if(is_INP()){
                 ret = send_imme_acceleration_time();
                 if (-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
@@ -307,7 +324,7 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GDECE_TIME ) 
         {
-            set_imme_deceleration_time(temp.v[0]);
+            set_imme_deceleration_time(temp.v[0]);      // 1 means 0.1 ms
             if(is_INP()){
                 ret = send_imme_deceleration_time();
                 if (-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
@@ -322,8 +339,8 @@ void signal_handler(void)
             int32_t m_position_right = (double)temp.v[1] / 360000 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
             int32_t e_position_left = (double)temp.v[0] / 360000 * E_PULSE_PER_CIRCLE;
             int32_t e_position_right = (double)temp.v[1] / 360000 * E_PULSE_PER_CIRCLE;
-            printf("set motor maxpoint %.10d  %.10d\n",m_position_left,m_position_right);
-            printf("set encoder maxpoint %.10d  %.10d\n",e_position_left,e_position_right);
+            //printf("set motor maxpoint %.10d  %.10d\n",m_position_left,m_position_right);
+            //printf("set encoder maxpoint %.10d  %.10d\n",e_position_left,e_position_right);
             set_limit_left_position(m_position_left);
             set_limit_right_position(m_position_right);
             set_max_left_position(e_position_left);
@@ -333,46 +350,48 @@ void signal_handler(void)
         }
         else if ( temp.cmd & GSTATUS )
         {
-            g_get_status = temp.v[0] ? true : false;
+            bool mode = temp.v[0] ? true : false;
+            set_status(mode);
             temp.cmd &= ~GSTATUS;
             update_g_x(temp);
         }
-
-        // Get status
-        if(g_get_status) {
-            char buf[64];
-
-            // Get control status 
-            if(is_INP()){
-                printf("In Position\n");
-                memset(buf,0,64);
-                sprintf(buf,"INP\r");
-                m_socket_write(buf,strlen(buf));
-            }
-
-            // Check max position ON
-            int position = get_encoder_position();
-            printf("actual encoder position: %.10d\n", position);
-            if(position <= get_max_left_position() && anticlockwise) {
-                memset(buf,0,64);
-                sprintf(buf,"MAXR\r");
-                m_socket_write(buf,strlen(buf));
-            }else if(position <= get_max_left_position()) {
-                memset(buf,0,64);
-                sprintf(buf,"MAXL\r");
-                m_socket_write(buf,strlen(buf));
-            }
-            else if(position >= get_max_right_position() && anticlockwise) {
-                memset(buf,0,64);
-                sprintf(buf,"MAXL\r");
-                m_socket_write(buf,strlen(buf));
-            }else if(position >= get_max_right_position()) {
-                memset(buf,0,64);
-                sprintf(buf,"MAXR\r");
-                m_socket_write(buf,strlen(buf));
-            }
+        else if ( temp.cmd & GCHECK )
+        {
+            temp.cmd &= ~GCHECK;
+            update_g_x(temp);
+            ret = check_motion();
+            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
         }
 
+        // Get status
+        if(get_status()) 
+        {
+            char buf[64];
+            int position = get_encoder_position();
+            //setbuf(stdout,NULL);
+            //printf("get status: actual encoder position: %.10d\n", position);
+            //printf("%.3f\n",360.0*position/65535);
+            //fflush(stdout);
+            int max_left = get_max_left_position() + E_PULSE_OFFSET;
+            int max_right = get_max_right_position() - E_PULSE_OFFSET;
+            if(is_INP()) 
+            {
+                if(position <= max_left) {
+                    const char *ptr = get_anticlockwise() ? "MAXR\r" : "MAXL\r";
+                    memcpy(buf,ptr,strlen(ptr)+1);
+                }
+                else if(position >= max_right) {
+                    const char *ptr = get_anticlockwise() ? "MAXL\r" : "MAXR\r";
+                    memcpy(buf,ptr,strlen(ptr)+1);
+                }else {
+                    const char *ptr = "INPO\r";
+                    memcpy(buf,ptr,strlen(ptr)+1);
+                }
+                //printf("status: %s\n",buf);
+                m_socket_write(buf,strlen(buf));
+            }
+            // Check error
+        }
         usleep(200000);     // 200ms
     }
 }
@@ -394,15 +413,18 @@ void create_example_ini_file(void)
 
     "[Motion Control]"                      "\n"
     "anticlockwise = 0"                     "\n"
-    "speed = 3600"                          "\n"    // degree/s : 3600 means 600r/min
     "cruise_left_position = -360"           "\n"    // degree
     "cruise_right_position = 360"           "\n"    // degree
     "direct_left_position = -360"           "\n"    // degree
     "direct_right_position = 360"           "\n"    // degree
+    "max_left_position = -360"              "\n"    // degree
+    "max_right_position = 360"              "\n"    // degree
+    "speed = 3600"                          "\n"    // degree/s : 3600 means 600r/min
     "imme_acceleration_time = 10000"        "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 10000"        "\n"    // 0.1ms
-    "max_left_position = -360"              "\n"    // degree
-    "max_right_position = 360"              "\n\n"  // degree
+    "check_speed = 12000"                   "\n"    // degree/s : 12000 means 2000r/min
+    "check_acce_time = 20000"               "\n"    // 0.1ms    : 20000 means 2s
+    "check_dece_time = 20000"               "\n\n"  // 0.1ms
 
     "[RTU MASTER]"                          "\n"
     "device = /dev/ttyO1"                   "\n"
@@ -422,7 +444,7 @@ void create_example_ini_file(void)
 
     "[SOCKET]"                              "\n"
     "server_port = 12345"                   "\n"
-    "queue_size = 1"                       "\n"
+    "queue_size = 1"                        "\n"
     "mode = TCP"                            "\n\n"
     
     );
@@ -447,6 +469,9 @@ int parse_ini_file(char * ini_name)
     uint32_t speed;
     uint32_t imme_acceleration_time;
     uint32_t imme_deceleration_time;
+    uint32_t check_speed;
+    uint32_t check_acce_time;
+    uint32_t check_dece_time;
 
     ini = iniparser_load(ini_name);
     if (ini==NULL) {
@@ -456,8 +481,8 @@ int parse_ini_file(char * ini_name)
     iniparser_dump(ini, stderr);
 
     // Get configure
-    extern int anticlockwise;
-    anticlockwise = iniparser_getint(ini, "Motion Control:anticlockwise", 0);
+    int anticlock = iniparser_getint(ini, "Motion Control:anticlockwise", 0);
+    set_anticlockwise(anticlock);
 
     double temp_position = iniparser_getdouble(ini, "Motion Control:cruise_left_position", 0);
     cruise_left_position = temp_position / 360 * M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
@@ -478,10 +503,15 @@ int parse_ini_file(char * ini_name)
 
     double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 0);
     speed = temp_speed / 360 * 60 * 100;
+    temp_speed = iniparser_getdouble(ini, "Motion Control:check_speed", 0);
+    check_speed = temp_speed / 360 * 60 * 100;
 
     imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 0);
     imme_deceleration_time = iniparser_getint(ini, "Motion Control:imme_deceleration_time", 0);
+    check_acce_time = iniparser_getint(ini, "Motion Control:check_acce_time", 0);
+    check_dece_time = iniparser_getint(ini, "Motion Control:check_dece_time", 0);
 
+    // Port 
     const char* ptr;
     ptr = iniparser_getstring(ini, "RTU MASTER:device", "/dev/ttyO1");
     memcpy(g_rtu_master.device, ptr, strlen(ptr));
@@ -508,19 +538,34 @@ int parse_ini_file(char * ini_name)
     g_am335x_socket.server_port = iniparser_getint(ini, "SOCKET:server_port", 12345);
     g_am335x_socket.queue_size = iniparser_getint(ini, "SOCKET:queue_size", 1);
 
-    // set control parameter
+    // Set control parameter
+    set_limit_left_position(limit_left_position);
+    set_limit_right_position(limit_right_position);
+    set_max_left_position(max_left_position);
+    set_max_right_position(max_right_position);
     set_cruise_left_position(cruise_left_position);
     set_cruise_right_position(cruise_right_position);
     set_direct_left_position(direct_left_position);
     set_direct_right_position(direct_right_position);
-    set_max_left_position(max_left_position);
-    set_max_right_position(max_right_position);
-    set_limit_left_position(limit_left_position);
-    set_limit_right_position(limit_right_position);
     set_cruise_speed(speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);
+    set_check_speed(check_speed);
+    set_check_acce_time(check_acce_time);
+    set_check_dece_time(check_dece_time);
     set_point_position(0);
+   
+    //// Inf - zhihengw
+    //printf("limit_left_position %d\n",limit_left_position);
+    //printf("limit_right_position %d\n",limit_right_position);
+    //printf("max_left_position %d\n",max_left_position);
+    //printf("max_right_position %d\n",max_right_position);
+    //printf("speed %d\n",speed);
+    //printf("check_acce_time %d\n",check_acce_time);
+    //printf("check_dece_time %d\n",check_dece_time);
+    //printf("check_speed %d\n",check_speed);
+    //printf("imme_acceleration_time %d\n",imme_acceleration_time);
+    //printf("imme_deceleration_time %d\n",imme_deceleration_time);
 
 
     iniparser_freedict(ini);

@@ -45,8 +45,12 @@ int set_imme_acceleration_time(uint32_t time);
 int send_imme_acceleration_time();
 int set_imme_deceleration_time(uint32_t time);
 int send_imme_deceleration_time();
-int is_INP();
 
+int set_check_speed(uint32_t speed);
+int set_check_acce_time(uint32_t time);
+int set_check_dece_time(uint32_t time);
+
+int is_INP();
 // Servo control
 int serve_on();
 int serve_off();
