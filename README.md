@@ -44,10 +44,6 @@ note:<br>
 the client for control the server
 
 ## References ##
-    1. [https://github.com/stephane/libmodbus] [1]
-    2. [https://github.com/armink/EasyLogger] [2]
-    3. [https://github.com/ndevilla/iniparser] [3]
-
-[1]: https://github.com/stephane/libmodbus
-[2]: https://github.com/armink/EasyLogger 
-[3]: https://github.com/ndevilla/iniparser
+<https://github.com/stephane/libmodbus> <br>
+<https://github.com/armink/EasyLogger> <br>
+<https://github.com/ndevilla/iniparser> <br>
