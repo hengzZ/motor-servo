@@ -42,3 +42,8 @@ note:<br>
 
 ## motor-client ##
 the client for control the server
+
+## References ##
+    1. https://github.com/stephane/libmodbus
+    2. https://github.com/armink/EasyLogger
+    3. https://github.com/ndevilla/iniparser

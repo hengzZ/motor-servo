@@ -222,9 +222,9 @@ int main(int argc, char** argv)
             char buf[64];
             memset(buf,0,64);
             sprintf(buf,"%.3f\r",360.0*temp/65535);
-	    //printf("main loop: actual position: %.10d\n",temp);
-            //printf("main loop: actual degree %s\n",buf);
-            //fflush(stdout);
+	    printf("main loop: actual position: %.10d\n",temp);
+            printf("main loop: actual degree %s\n",buf);
+            fflush(stdout);
             m_socket_write(buf,strlen(buf));
 
             usleep(1000); // 1ms
