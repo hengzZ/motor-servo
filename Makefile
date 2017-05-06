@@ -1,7 +1,7 @@
 TARGET=motor-servo
 CC=arm-linux-gnueabihf-gcc
 #CC=gcc
-CFLAGS=-g -Wall -std=c11 \
+CFLAGS=-g -Wall -std=gnu99 \
        -I./
 LIBS=-lpthread
 
