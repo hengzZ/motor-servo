@@ -30,7 +30,7 @@
 //		     	    - if time T1 specified longer than T0, actual response time is specified T1.
 //		     	    2. [Communication Time Over]
 //		     	    - communication time over is detected if any time other than 0.00s is set on PA2_95.
-//		     	    - **Note: if a communication time over has occured, \
+//		     	    - **Note: if a communication time over has occured, 
 //		     	    - ** all the communication CONT signals(CONT9-24) operated by the Modbus communications are set off.
 //		[Operation]	1. [First Test Operation at Keypad]
 //		     	        2. [Position Control (Pulse)]

@@ -431,8 +431,6 @@ int is_INP()
 // servo on
 int serve_on()
 {
-	int rc;
-
 	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx,S_RDY_ad,1,tab_rp_bits); i++){
 		if(OPLOOPS-1==i)
 		{

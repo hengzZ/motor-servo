@@ -207,7 +207,7 @@ int check_parameters()
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 0) return -1;
 
 	if(2 != modbus_read_registers(ctx, PA1_05_ad,  2,  tab_rp_registers)) return -1;
-	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != M_PULSE_PER_CIRCLE&0xFFFF) return -1;
+	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != (M_PULSE_PER_CIRCLE&0xFFFF)) return -1;
 
 	if(2 != modbus_read_registers(ctx, PA1_06_ad,  2,  tab_rp_registers)) return -1;
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 16) return -1;

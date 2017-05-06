@@ -304,7 +304,7 @@ void signal_handler(void)
             // 360,000 means 360 degree/s
             uint32_t speed = (double)temp.v[0] / 360000 * 60 * 100;
             //printf("set speed %d\n", speed);
-            set_cruise_speed(temp.v[0]);
+            set_cruise_speed(speed);
             if(is_INP()){
                 ret = send_cruise_speed();
                 if (-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
