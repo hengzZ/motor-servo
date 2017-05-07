@@ -292,6 +292,8 @@ int set_limit_left_position(int32_t position)
 	if(position > MAX_RIGHT_POSITION) position = MAX_RIGHT_POSITION;
 	limit_left_position = position;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
+	set_direct_left_position(position);
+	set_cruise_left_position(position);
 	return 0;
 }
 int set_limit_right_position(int32_t position)
@@ -301,6 +303,8 @@ int set_limit_right_position(int32_t position)
 	if(position > MAX_RIGHT_POSITION) position = MAX_RIGHT_POSITION;
 	limit_right_position = position;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
+	set_direct_right_position(position);
+	set_cruise_right_position(position);
 	return 0;
 }
 int32_t get_limit_left_position()
