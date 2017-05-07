@@ -40,7 +40,9 @@ note:
     2. 编码器 - positions/circle 65535  
     3. 转速比 - motor/encoder 252.5  
     4. 角度: %.3f(三位小数)
-    5. 状态: INP(or MAXL or MAXR) EOPE(operation error) LIMI(over limit)
+    5. 状态: INP(or MAXL or MAXR) EOPE(operation error) LIMI(over limit)   
+    6. 角度帧头: $  帧尾 '\r'   
+    7. 状态帧头: #  帧尾 '\r'   
 
 
 ## C99 Error ##
