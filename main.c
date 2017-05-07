@@ -221,7 +221,7 @@ int main(int argc, char** argv)
             if(get_anticlockwise()) temp *= -1;
             char buf[64];
             memset(buf,0,64);
-            sprintf(buf,"%.3f\r",360.0*temp/65535);
+            sprintf(buf,"$%.3f\r",360.0*temp/65535);
 	    //printf("main loop: actual position: %.10d\n",temp);
             //printf("main loop: actual degree %s\n",buf);
             //fflush(stdout);
@@ -251,18 +251,18 @@ void signal_handler(void)
         if ( temp.cmd & GPST_CANCEL )    // cancel
         {
             ret = positioning_cancel_on();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             ret = positioning_cancel_off();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             temp.cmd = 0;
             update_g_x(temp);
         }
         else if ( temp.cmd & GEMG )      // stop
         {
             ret = forced_stop_on();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             ret = forced_stop_off();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             set_stop(true);
             temp.cmd = 0;
             update_g_x(temp);
@@ -275,7 +275,7 @@ void signal_handler(void)
             //fflush(stdout);
             set_point_position(m_position);
             ret = run_to_point();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             else if(1 == ret) {
                 temp.cmd &= ~GPOINT;
                 update_g_x(temp);
@@ -284,7 +284,7 @@ void signal_handler(void)
         else if ( temp.cmd & GLEFT )     // run to left
         {
             ret = left_direction_run();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             else if(1 == ret) {
                 temp.cmd &= ~GLEFT;
                 update_g_x(temp);
@@ -293,7 +293,7 @@ void signal_handler(void)
         else if ( temp.cmd & GRIGHT )    // run to right 
         {
             ret = right_direction_run();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
             else if(1 == ret) {
                 temp.cmd &= ~GRIGHT;
                 update_g_x(temp);
@@ -307,7 +307,7 @@ void signal_handler(void)
             set_cruise_speed(speed);
             if(is_INP()){
                 ret = send_cruise_speed();
-                if (-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+                if (-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
                 temp.cmd &= ~GSPEED;
                 update_g_x(temp);
             }
@@ -317,7 +317,7 @@ void signal_handler(void)
             set_imme_acceleration_time(temp.v[0]);      // 1 means 0.1 ms
             if(is_INP()){
                 ret = send_imme_acceleration_time();
-                if (-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+                if (-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
                 temp.cmd &= ~GACCE_TIME;
                 update_g_x(temp);
             }
@@ -327,7 +327,7 @@ void signal_handler(void)
             set_imme_deceleration_time(temp.v[0]);      // 1 means 0.1 ms
             if(is_INP()){
                 ret = send_imme_deceleration_time();
-                if (-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+                if (-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
                 temp.cmd &= ~GDECE_TIME;
                 update_g_x(temp);
             }
@@ -360,7 +360,7 @@ void signal_handler(void)
             temp.cmd &= ~GCHECK;
             update_g_x(temp);
             ret = check_motion();
-            if(-1 == ret) m_socket_write("EOPE\r",strlen("EOPE\r"));
+            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
         }
 
         // Get status
@@ -377,14 +377,14 @@ void signal_handler(void)
             if(is_INP()) 
             {
                 if(position <= max_left) {
-                    const char *ptr = get_anticlockwise() ? "MAXR\r" : "MAXL\r";
+                    const char *ptr = get_anticlockwise() ? "#MAXR\r" : "#MAXL\r";
                     memcpy(buf,ptr,strlen(ptr)+1);
                 }
                 else if(position >= max_right) {
-                    const char *ptr = get_anticlockwise() ? "MAXL\r" : "MAXR\r";
+                    const char *ptr = get_anticlockwise() ? "#MAXL\r" : "#MAXR\r";
                     memcpy(buf,ptr,strlen(ptr)+1);
                 }else {
-                    const char *ptr = "INPO\r";
+                    const char *ptr = "#INPO\r";
                     memcpy(buf,ptr,strlen(ptr)+1);
                 }
                 //printf("status: %s\n",buf);
