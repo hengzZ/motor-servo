@@ -1,5 +1,6 @@
 # motor-servo #
 
+
 ## module ##
 
 - alpha parameter configure
@@ -16,29 +17,31 @@
     * cmdparser.h
     * cmdparser.c
 
+
 ## API ##
 |           API         |         note       |
 |-----------------------|--------------------|
 | open_dev()            | 读取参数，确认配置 |
 | close_dev()           |                    |
-| set_acce_time()       |    (ms)            |
-| set_dece_time()       |    (ms)            |
+| set_acce_time()       |    (0.1ms)         |
+| set_dece_time()       |    (0.1ms)         |
 | set_speed()           |    (degree/s)      |
 | set_max_left_point()  |    (degree)        |
 | set_max_right_point() |    (degree)        |
 | run_to_angle()        |    (degree)        |
 | run_to_direction()    |    left/right      |
-| stop_run()            |                    |
 | cancel_task()         |                    |
+| stop_run()            |                    |
 | check()               |    开机检验        |
 | get_status()          |    [角度][状态]    |
 
-note:<br>
-    1. 超时时间设置<br>
-    2. 电机 - positions/circle<br>
-    3. 编码器 - positions/circle<br>
-    4. 转速比 - motor/encoder<br>
-    5. 状态: 最左、最右、In Position、运行中、停止中、故障<br>
+note:  
+    1. 电机 - positions/circle 40000   
+    2. 编码器 - positions/circle 65535  
+    3. 转速比 - motor/encoder 252.5  
+    4. 角度: %.3f(三位小数)
+    5. 状态: INP(or MAXL or MAXR) EOPE(operation error) LIMI(over limit)
+
 
 ## C99 Error ##
 The timespec comes from POSIX, so you have to 'enable' POSIX definitions:  
@@ -55,14 +58,17 @@ The timespec comes from POSIX, so you have to 'enable' POSIX definitions:
         struct timespec asdf;
         return 0;
     }
+
 For the warning: implicit declaration of function 'usleep':
 
     gcc -std=gnu99
 
+
 ## motor-client ##
 the client for control the server
 
+
 ## References ##
-<https://github.com/stephane/libmodbus> <br>
-<https://github.com/armink/EasyLogger> <br>
-<https://github.com/ndevilla/iniparser> <br>
+<https://github.com/stephane/libmodbus>  
+<https://github.com/armink/EasyLogger>  
+<https://github.com/ndevilla/iniparser>  
