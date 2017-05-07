@@ -41,12 +41,12 @@ note:<br>
     5. 状态: 最左、最右、In Position、运行中、停止中、故障<br>
 
 ## C99 Error ##
-The timespec comes from POSIX, so you have to 'enable' POSIX definitions:
-    #if __STDC_VERSION__ >= 199901L
-    #define _XOPEN_SOURCE 600
-    #else
-    #define _XOPEN_SOURCE 500
-    #endif /* __STDC_VERSION__ */
+The timespec comes from POSIX, so you have to 'enable' POSIX definitions:  
+    #if __STDC_VERSION__ >= 199901L  
+    #define _XOPEN_SOURCE 600  
+    #else  
+    #define _XOPEN_SOURCE 500  
+    #endif /* __STDC_VERSION__ */  
     
     #include <time.h>
     int main()
