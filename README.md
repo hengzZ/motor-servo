@@ -42,20 +42,18 @@ note:<br>
 
 ## C99 Error ##
 The timespec comes from POSIX, so you have to 'enable' POSIX definitions:
-    '''
-	#if __STDC_VERSION__ >= 199901L
-	#define _XOPEN_SOURCE 600
-	#else
-	#define _XOPEN_SOURCE 500
-	#endif /* __STDC_VERSION__ */
-
-	#include <time.h>
-	int main()
+    #if __STDC_VERSION__ >= 199901L
+    #define _XOPEN_SOURCE 600
+    #else
+    #define _XOPEN_SOURCE 500
+    #endif /* __STDC_VERSION__ */
+    
+    #include <time.h>
+    int main()
     {
         struct timespec asdf;
         return 0;
     }
-    '''
 
 ## motor-client ##
 the client for control the server
