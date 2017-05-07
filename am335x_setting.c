@@ -110,7 +110,7 @@ int recv_pst_data(char *str)
     if(NULL != ptr && NULL != ptr_end && (ptr_end - ptr >= 6)) {
 	unsigned char act_chk;
 	memcpy(&act_chk,ptr+5,1);
-	unsigned char chk = CRC_check(ptr+3,2);
+	unsigned char chk = CRC_check((unsigned char*)ptr+3,2);
 	if(chk == act_chk) {
 	    char sorted_buff[2];
 	    unsigned short ret;
