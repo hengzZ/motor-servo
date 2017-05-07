@@ -55,6 +55,9 @@ The timespec comes from POSIX, so you have to 'enable' POSIX definitions:
         struct timespec asdf;
         return 0;
     }
+For the warning: implicit declaration of function 'usleep':
+
+    gcc -std=gnu99
 
 ## motor-client ##
 the client for control the server
