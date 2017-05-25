@@ -413,16 +413,16 @@ void create_example_ini_file(void)
 
     "[Motion Control]"                      "\n"
     "anticlockwise = 0"                     "\n"
-    "cruise_left_position = -360"           "\n"    // degree
-    "cruise_right_position = 360"           "\n"    // degree
-    "direct_left_position = -360"           "\n"    // degree
-    "direct_right_position = 360"           "\n"    // degree
-    "max_left_position = -360"              "\n"    // degree
-    "max_right_position = 360"              "\n"    // degree
-    "speed = 3600"                          "\n"    // degree/s : 3600 means 600r/min
+    "cruise_left_position = -90"            "\n"    // degree
+    "cruise_right_position = 90"            "\n"    // degree
+    "direct_left_position = -90"            "\n"    // degree
+    "direct_right_position = 90"            "\n"    // degree
+    "max_left_position = -90"               "\n"    // degree
+    "max_right_position = 90"               "\n"    // degree
+    "speed = 600"                           "\n"    // degree/s : 3600 means 600r/min
     "imme_acceleration_time = 10000"        "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 10000"        "\n"    // 0.1ms
-    "check_speed = 12000"                   "\n"    // degree/s : 12000 means 2000r/min
+    "check_speed = 600"                     "\n"    // degree/s : 12000 means 2000r/min
     "check_acce_time = 20000"               "\n"    // 0.1ms    : 20000 means 2s
     "check_dece_time = 20000"               "\n\n"  // 0.1ms
 

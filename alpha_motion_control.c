@@ -7,8 +7,8 @@
 
 extern void update_encoder_position(int position);
 
-#define MAX_LEFT_POSITION	-10100000
-#define MAX_RIGHT_POSITION	 10100000
+#define MAX_LEFT_POSITION	(-M_PULSE_PER_CIRCLE*TRANSMISSION_RATIO/4)
+#define MAX_RIGHT_POSITION	 (M_PULSE_PER_CIRCLE*TRANSMISSION_RATIO/4)
 
 // mode: 0-ABS	1-INC
 // flags: | motion  flags | 1. left 2. right 3. point 
