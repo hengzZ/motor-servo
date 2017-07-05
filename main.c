@@ -235,9 +235,9 @@ int main(int argc, char** argv)
     close_modbus_rtu_master();
     free_buffers_for_modbus();
     close_uart();
-    elog_close();
 
     log_i("Exit Success.");
+    elog_close();
     return 0;
 }
 
