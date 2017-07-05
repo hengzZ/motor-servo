@@ -1,79 +1,12 @@
-/// *************************************  Read Following Notes before Coding ******************************************************
-/// [CONT]/[OUT] PARAMETER SETTING (I/O SETTING)
-//  [Resource]:	[I/O Signals]
-//		[input  signals] 1~78	factory default: 1 [S-ON] assigned to PA03_01 CONT1; 11 [RST] assigned to PA03_02 CONT2;
-//		[output signals] 1~95	factory default: 1  [RDY] assigned to PA03_51  OUT1;  2 [INP] assigned to PA03_52  OUT2;
-// 					factory default: 76 [alarm detection] assigned to PA03_53 OUT3;
-//  [Resource]:	[Parameter] 
-//		Description:    Parameters of the servo amplifier are divided into the following setting items according to the function
-//		WARNING:        The write enable frequency of EEPROM is about 100,000 cycles:
-//				`Parameter editing
-//				`Position preset of absolute position system
-//				`Batch transfer of parameters
-//		[Division]:     1. [Basic Parameters]                           [PA1_01 to 50]
-//				- Be sure to check or enter these parameters before STARATING OPERATION.
-//				2. [Control gain and filter setting parameter]  [PA1_51 to 99]
-//				- Use to adjust the gain manually.
-//				3. [Automatic operation setting parameter]      [PA2_01 to 50]
-//				- Use to enter or change the positioning operation speed and homing function.
-//				4. [Extended function setting parameter]        [PA2_51 to 99]
-//				- Use to enter or change the extended functions such as the torque limit.
-//				5. [Input terminal function setting parameter]  [PA3_01 to 50]
-//				- Use to enter or change input signals of the servo amplifier.
-//				6. [Output terminal function setting parameter] [PA3_51 to 99]
-//  [Resource]: [Operation]
-//		[Priority among Input Signals]		        * Please consult the manual.
-//		[Selection of Operation Procedure]		* Please consult the manual.
-//		[Operation Check]/[Check before Operation]	* Please consult the manual.
-//		WARNING:    1. [Communications Timings]
-//		     	    - set time T1 through PA2_94.
-//		     	    - if time T1 specified longer than T0, actual response time is specified T1.
-//		     	    2. [Communication Time Over]
-//		     	    - communication time over is detected if any time other than 0.00s is set on PA2_95.
-//		     	    - **Note: if a communication time over has occured, 
-//		     	    - ** all the communication CONT signals(CONT9-24) operated by the Modbus communications are set off.
-//		[Operation]	1. [First Test Operation at Keypad]
-//		     	        2. [Position Control (Pulse)]
-//		     	        3. [Speed Control]
-//		     	        4. [Torque Control]
-//		     	        5. [Mode Selection]
-//		     	        6. [Extension Mode]
-//		     	        7. [Homing]
-//		     	        8. [Interrupt Positioning]
-//		     	        9. [Torque Limit]
-//		     	        10.[Positioning Data Operation]
-//		     	        11.[Immediate Value Data Operation]
-//		     	        12.[Interrupting/Stopping Operation]
-/// *****************************************  Read Above Notes before Coding ******************************************************
-/// *****************************************    [ I/O Signals Assignment ]   ******************************************************
-//  NOTE: [Communication CONT/OUT signals](register)	CONT - 0x0000	OUT - 0x0100
-//  	  [Parameter](register)				PA1_1-99 - 0x4000-4062	PA2_1-99 - 0x4100-4162	PA3_1-99 - 0x4200-4262
-//	  [CONT/OUT signals](coil)			CONT9-24 - 0x0208-0217	OUT6-21  - 0x0305-0314	
-//							CONT1-5  - 0x0400-0404	OUT1-3   - 0x0500-0502
-//	** Set PA3_51~71 to map signal on OUT1~21
-//	** Set PA3_01~24 to map signal on CONT1~24
-//  [OUT]:
-//      `Use factory default:	
-//      PA3_51  OUT1	1	[RDY]	|	PA3_52	OUT2	2	[INP]	|	PA3_53  OUT3   76	[Alarm Detection]
-//	`Setting:
-//	PA3_56	OUT6	28	[S-RDY]	|	
-//  [CONT]:
-//	`Not use factory default.
-//	`Setting:
-//	PA3_09	CONT9	1	[S-ON]	|	PA3_10	CONT10	2	[FWD]	|	PA3_11	CONT11	3	[REV]
-//	PA3_12	CONT12	4	[START]	|	
-//	PA3_22	CONT22	51	[X1]	|	PA3_23	CONT23	52	[X2]	|	PA3_24	CONT24	53	[X3]
-/// ********************************************************************************************************************************
 #ifndef ALPHA_SETTING_H
 #define ALPHA_SETTING_H
 
 #include "modbus.h"
 
-// Repeat times when communication failed.
+// 发送次数，用于发送失败时的重复发送
 #define OPLOOPS	2
 
-// REGISTER ADDRESS:
-// [for parameter setting]
+// 寄存器地址, 用于寄存器参数设置
 #define     PA1_01_ad                       0x4000
 #define     PA1_05_ad                       0x4004
 #define     PA1_06_ad                       0x4005
@@ -120,14 +53,15 @@
 #define     PA3_70_ad                       0x4245
 #define     PA3_71_ad                       0x4246
 
+// 用于立即值控制的寄存器
 #define     IMME_VLU_STATUS_ad              0x5100
 #define     IMME_VLU_POSITION_ad            0x5101
 #define     IMME_VLU_SPEED_ad               0x5102
 #define     IMME_VLU_ACC_TIM_ad             0x5103
 #define     IMME_VLU_DEC_TIM_ad             0x5104
 
-// COIL ADDRESS:
-// [for control]                                                        [Register]
+// 线圈地址，用于信号控制 
+// (注意: 后面的寄存器编号表示，设置指定的寄存器就可以使一种信号与线圈绑定)
 #define     CONT1_ad                        0x0400                      //PA3_01
 #define     CONT2_ad                        0x0401                      //PA3_02
 #define     CONT3_ad                        0x0402                      //PA3_03
@@ -172,9 +106,7 @@
 #define     OUT20_ad                        0x0313                      //PA3_70
 #define     OUT21_ad                        0x0314                      //PA3_71
 
-
-// Function Code:
-// CONT Signals:
+// 输入信号的功能编码，用于对参数寄存器赋值，使相应信号与线圈绑定
 #define     SERVO_ON_fc                     1
 #define     FWD_fc                          2
 #define     REV_fc                          3
@@ -227,7 +159,7 @@
 #define     PST_DATA_SLCT_fc                77
 #define     BRDCST_CANCEL_fc                78
 
-// OUT Signals:
+// 输出信号的功能编码，用于对参数寄存器赋值，使相应信号与线圈绑定
 #define     RDY_fc                          1
 #define     INP_fc                          2
 #define     SPD_LMT_DETC_fc                 11
@@ -283,8 +215,7 @@
 #define     CONT_D_THROUGH_fc               94
 #define     CONT_E_THROUGH_fc               95
 
-// Coil Address:
-// CONT Signals:
+// 对绑定后的线圈地址重命名，便于突出其信号的功能 [输入信号]
 #define     SERVO_ON_ad                     CONT9_ad
 #define     FWD_ad                          CONT10_ad
 #define     REV_ad                          CONT11_ad
@@ -337,7 +268,7 @@
 #define     PST_DATA_SLCT_ad                
 #define     BRDCST_CANCEL_ad                
 
-// OUT Signals:
+// 对绑定后的线圈地址重命名，便于突出其信号的功能 [输出信号]
 #define     RDY_ad                          OUT1_ad
 #define     INP_ad                          OUT2_ad
 #define     SPD_LMT_DETC_ad                 
@@ -393,8 +324,10 @@
 #define     CONT_D_THROUGH_ad               
 #define     CONT_E_THROUGH_ad               
 
-#define         M_PULSE_PER_CIRCLE      36000
-#define         TRANSMISSION_RATIO      202
+// 伺服电机的每圈脉冲数量、传动减速比
+#define     M_PULSE_PER_CIRCLE      36000
+#define     TRANSMISSION_RATIO      202
+// 为modbus控制准备的缓冲区内存
 #define		REGISTERS_BUFFER_SIZE	12
 #define		BITS_BUFFER_SIZE	24
 
@@ -418,22 +351,22 @@ struct rtu_master_t{
         int reset_parameter;
 };
 
-// Init recv(reply)/sent(query) buffers for modbus communication
-// Note: return 0 if success, -1 for failure.
+// 初始化modbus控制使用的内存缓冲区
+// 返回值: 0 表示初始化成功，-1 表示失败
 int init_buffers_for_modbus();
-// Free(anti-init) initial buffers
+// 释放内存空间
 void free_buffers_for_modbus();
 
-// Open modbus
-// Note: return 0 if success, -1 for failure.
+// 打开modbus控制终端
+// 返回值: 0 表示打开成功，-1 表示失败
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave);
-// Close modbus
+// 关闭终端
 void close_modbus_rtu_master();
 
-// Init parameters for reseting parameters
+// 初始化参数寄存器，用于基本配置
 void init_parameters();
-// Check parameters
-// Note: -1 for error
+// 校验寄存器的基本配置是否正确
+// 返回值: 0 表示校验通过， -1 表示配置有误
 int check_parameters();
 
 #endif	//ALPHA_GLOBAL_SETTING_H

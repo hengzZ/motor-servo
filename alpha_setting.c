@@ -8,16 +8,17 @@
 
 modbus_t *ctx = NULL;
 
-// Buffers for modbus-RTU reply/query
 uint16_t *tab_rq_registers = NULL;
 uint8_t  *tab_rq_bits = NULL;
 uint16_t *tab_rp_registers = NULL; 
 uint8_t	 *tab_rp_bits = NULL;
 
-// Parameter setting for io mapping
+// 线圈与信号的绑定
 void io_signals_mapping();
-// Set PA01_01=1	(speed mode with RS485 for speed selection)
+
+// 通过寄存器内的位置数据控制
 void positioning_data_operation_485_setting();
+// 立即数控制模式
 // Set PA01_01=7, PA02_40=0 (immediate value operation mode)
 void immediate_value_date_operation_485_setting();
 
@@ -47,7 +48,7 @@ void free_buffers_for_modbus()
 	tab_rp_bits = NULL;
 }
 
-// Open/Close modbus-RTU master
+// 打开 modbus-RTU 控制端
 int open_modbus_rtu_master(const char *device, int baud, char parity, int data_bit, int stop_bit, int slave)
 {
 	int rc;
@@ -75,10 +76,10 @@ void close_modbus_rtu_master()
 	modbus_free(ctx);
 }
 
-// Parameter setting for io mapping
+// 线圈与信号的绑定
 void io_signals_mapping()
 {
-	// [CONT] mapping
+	// 输出信号
 	tab_rq_registers[0] = 0x0000;
 	tab_rq_registers[1] = SERVO_ON_fc;
 	modbus_write_registers(ctx, PA3_9_ad,  2,  tab_rq_registers);
@@ -124,12 +125,12 @@ void io_signals_mapping()
 	modbus_write_registers(ctx, PA3_56_ad, 2, tab_rq_registers);
 }
 //*********************************************************************
-// NOTES:
-// The W type servo amplifier is capable of :
+// 注意:
+// W 型 伺服放大器的几种控制模式:
 //		1. speed control and torque control with analog voltages.
 //		2. position control with pulse.
 //		3. positioning data operation with Di/Do signals or RS-485.
-//		4. immediate value data operation with RS-485.(Selected)
+//		4. immediate value data operation with RS-485. 该系统选择的是 RS-485控制
 //*********************************************************************
 // Set PA01_01=1	(speed mode with RS485 for speed selection)
 void positioning_data_operation_485_setting()
@@ -148,6 +149,7 @@ void positioning_data_operation_485_setting()
 	tab_rq_registers[1] = 0x0001;
 	modbus_write_registers(ctx, PA1_01_ad,  2,  tab_rq_registers);
 }
+// 立即数控制模式
 // Set PA01_01=7, PA02_40=0 (immediate value operation mode)
 void immediate_value_date_operation_485_setting()
 {
@@ -200,6 +202,7 @@ void init_parameters()
 
 int check_parameters()
 {
+	// 基本参数寄存器
 	if(2 != modbus_read_registers(ctx, PA1_01_ad,  2,  tab_rp_registers)) return -1;
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 7) return -1;
 	
@@ -218,7 +221,7 @@ int check_parameters()
 	if(2 != modbus_read_registers(ctx, PA2_25_ad,  2,  tab_rp_registers)) return -1;
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != 0) return -1;
 	
-	// [CONT] mapping
+	// 输入信号与线圈的绑定
 	if(2 != modbus_read_registers(ctx, PA3_9_ad,  2,  tab_rp_registers)) return -1;
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != SERVO_ON_fc) return -1;
 
@@ -255,7 +258,7 @@ int check_parameters()
 	if(2 != modbus_read_registers(ctx, PA3_24_ad, 2, tab_rp_registers)) return -1;
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != X3_fc) return -1;
 
-	// [OUT] mapping
+	// 输出信号与线圈的绑定
 	if(2 != modbus_read_registers(ctx, PA3_56_ad, 2, tab_rp_registers)) return -1;
 	if(tab_rp_registers[0] != 0 || tab_rp_registers[1] != S_RDY_fc) return -1;
 

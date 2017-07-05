@@ -15,7 +15,7 @@
 #define FALSE 1
 #define TRUE 0
 
-// DataType for control and data transmission
+// 主函数中定义的用于控制的信号编码
 typedef enum{
     GRIGHT=1,
     GLEFT=2,
@@ -30,27 +30,34 @@ typedef enum{
     GCHECK=1024
 } GFLAGS;
 
+// 控制信号的数据对象格式
 typedef struct {
     GFLAGS cmd;
     int32_t v[2];
 }param;
 
-// Extern function for updating DataObject
+// 更新/获取全局的控制信号信息
 extern void update_g_x(param x);
 extern param get_g_x();
 
 // Assume that every stride is less than half cycle(65535/2).
 // Absolute stride large than 32768 means stride over zero.
 #define MAX_STRIDE	32767
+// 用于冲出限位后的运动限制，冲出量超出补偿量之后，运动将受限
 #define OFFSET		182	    // 1 degree
+// 用于编码器返回值保存
 unsigned short  cur_v;
 unsigned short  pre_v;
 
+// 编码器限位变量
 volatile int max_left_position;
 volatile int max_right_position;
+// 编码器的当前位置
 volatile int encoder_position;
+// 用于变量赋值的互斥
 pthread_mutex_t mutex_encoder = PTHREAD_MUTEX_INITIALIZER;
 
+// 更新/获取编码器的位置
 void update_encoder_position(int position)
 {
     pthread_mutex_lock(&mutex_encoder);
@@ -65,6 +72,7 @@ int get_encoder_position()
     return position;
 }
 
+// 设置编码器的限位值
 void set_max_left_position(int position)
 {
     pthread_mutex_lock(&mutex_encoder);
@@ -77,6 +85,7 @@ void set_max_right_position(int position)
     max_right_position = position;
     pthread_mutex_unlock(&mutex_encoder);
 }
+// 获得编码器的限位值
 int get_max_left_position()
 {
     pthread_mutex_lock(&mutex_encoder);
@@ -101,8 +110,10 @@ unsigned char CRC_check(unsigned char *buf, int n)
     }
     return sum;
 }
+
+// 用于对编码器的返回字符串解析，返回编码器的值
 // Check and parse the encoder data frame
-// -1 for not received position data
+// 返回值 -1 表示没有解析到编码器的值
 int recv_pst_data(char *str)
 {
     char *ptr = strstr(str,"\xff\x81\x00");
@@ -122,6 +133,7 @@ int recv_pst_data(char *str)
     }
     return -1;
 }
+
 //*************************************************************************************************************************************
 int fd=-1;
 char buff[512];
@@ -243,11 +255,13 @@ int set_Parity(int fd,int databits,int stopbits,int parity)
     return (TRUE);
 }
 
+// 编码器监听线程
 //*************************************************************************************************************************************
 void receivethread(void)
 {
     int nread;
 
+    // 等待第一个数据的接收
     for(;;) {
         if((nread = read(fd,buff,100))>3) 
         {
@@ -260,6 +274,8 @@ void receivethread(void)
         }
 	usleep(1000);	// 1ms
     }
+
+    // 监听
     while(1) 
     {
 	usleep(1000);
@@ -297,6 +313,7 @@ void receivethread(void)
 	    //printf("am335x: actual position: %.10d\n",temp);
 	    //fflush(stdout);
 
+	    // TODO(wangzhiheng): 限位条件判断, 超出限位将发生无线调用取消当前运动任务，即无法运动
 	    if(get_max_left_position()-OFFSET >= temp) {
 	        param temp_x = get_g_x();
 	        temp_x.cmd = GPST_CANCEL;

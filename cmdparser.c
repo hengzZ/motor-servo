@@ -16,7 +16,7 @@
 #include "alpha_motion_control.h"
 
 
-// DataType for control and data transmission
+// 主函数中定义的用于控制的信号编码
 typedef enum{
     GRIGHT=1,
     GLEFT=2,
@@ -31,19 +31,22 @@ typedef enum{
     GCHECK=1024
 } GFLAGS;
 
+// 控制信号的数据对象格式
 typedef struct {
     GFLAGS cmd;
     int32_t v[2];
 }param;
 
-// Extern function for updating DataObject
+// 更新/获取全局的控制信号信息
 extern void update_g_x(param x);
 extern param get_g_x();
 
-// Flag for direction
+// 用于运动方面的反转，安装时用于调整默认方向
 volatile int anticlockwise;
+// 用于赋值时的互斥
 pthread_mutex_t mutex_cmd = PTHREAD_MUTEX_INITIALIZER;
 
+// 获取当前的坐标方向标记
 void set_anticlockwise(int mode)
 {
     pthread_mutex_lock(&mutex_cmd);
@@ -77,6 +80,8 @@ int m_socket_write(void *buf, size_t count)
     pthread_mutex_unlock(&mutex_cmd);
     return bytes;
 }
+
+// 套接字监听
 //***************************************************************
 void parsesocket(void)
 {
@@ -139,7 +144,6 @@ void parsesocket(void)
 			{
 			    temp_x.cmd = GEMG;
 			    update_g_x(temp_x);
-			    //printf("cmdparse: stop\n");
 			}
 			else if(buf == strstr(buf, "point"))
 			{

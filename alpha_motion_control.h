@@ -1,6 +1,6 @@
 //*************************************************************************************************************************************
-//Notes:    Priority among Input Signals
-//Section            Description                                    Application signal(Function No.)
+//Notes:    Priority among Input Signals(请参照以下的输入信号优先级)
+//Section            Description                                    Application signal(信号功能码)
 //  01               (Operation) Highest Priority                   54,  1
 //  02               (Operation) Priority                           10, 34
 //  03               Controlling the torque                         19, 20 
@@ -18,7 +18,7 @@
 #define INC_POSITION_MODE   1
 
 
-// control
+// 控制指令
 int left_direction_run();
 int right_direction_run();
 int run_to_point();
@@ -26,10 +26,11 @@ int left_cruise();
 int right_cruise();
 void cruise();
 
-// Motion control setting
-int set_abs_control_mode();
+// 低层控制函数
+int set_abs_control_mode(); //绝对位置模式
 int set_inc_control_mode();
-int immediate_value_operation_run();
+int immediate_value_operation_run(); //运行，run
+// 目标位置参数设置
 int set_cruise_left_position(int32_t position);
 int set_cruise_right_position(int32_t position);
 int set_point_position(int32_t position);
@@ -50,13 +51,14 @@ int set_check_speed(uint32_t speed);
 int set_check_acce_time(uint32_t time);
 int set_check_dece_time(uint32_t time);
 
+// 立即数位置到达
 int is_INP();
-// Servo control
+// 伺服
 int serve_on();
 int serve_off();
 int is_ready();
 
-// Interrupting/Stopping Operation
+// 暂停/停止
 int forced_stop_on();
 int forced_stop_off();
 int pause_on();
@@ -66,10 +68,10 @@ int positioning_cancel_off();
 int free_run_on();
 int free_run_off();
 
-// Check motion
+// 自检，执行极限之间的一次巡航
 int check_motion();
 
-// functions for test use, implementing in file alpha_test.c
+// functions for test use, implementing in file alpha_test.c (旧的测试，没有使用)
 // **NoTE: PA1_01 must be set 1
 void forward_command_test();
 // **NoTE: PA1_01 must be set 7

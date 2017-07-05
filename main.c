@@ -12,7 +12,7 @@
 #include "cmdparser.h"
 
 
-// DataType for control and data transmission
+// 用于控制的信号编码
 typedef enum{
     GRIGHT=1,
     GLEFT=2,
@@ -27,17 +27,22 @@ typedef enum{
     GCHECK=1024
 } GFLAGS;
 
+// 控制信号的数据对象格式
 typedef struct {
     GFLAGS cmd;
     int32_t v[2];
 }param;
 
-// DataObject for control and data transmission
-volatile bool g_status = false;
+// 状态发送开/关
+volatile bool g_status = true;
+// 释放伺服开/关
 volatile bool g_stop = false;
+// 全局控制变量
 volatile param g_x;
+// 变量赋值时的互斥
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// 更新/读取控制变量
 void update_g_x(param x)
 {
     pthread_mutex_lock(&mutex);
@@ -51,6 +56,8 @@ param get_g_x()
     pthread_mutex_unlock(&mutex);
     return temp_x;
 }
+
+// 设置状态发送开关
 void set_status(bool mode)
 {
     pthread_mutex_lock(&mutex);
@@ -64,6 +71,7 @@ bool get_status()
     pthread_mutex_unlock(&mutex);
     return mode;
 }
+// 设置释放伺服开关
 void set_stop(bool mode)
 {
     pthread_mutex_lock(&mutex);
@@ -78,18 +86,18 @@ bool get_stop()
     return mode;
 }
 
-// DataObject for SOCKET listening
+// 保存Socket参数的对象
 am335x_socket_t g_am335x_socket;
-// DataObject for am335x's modbus-TRU listening
+// 保存modbus参数的对象
 rtu_master_t g_rtu_master;
-// DataObject for am335x's UART listening
+// 保存串口参数的对象
 uart_t g_am335x_uart;
 
-// *.ini file related
+// 配置表创建与解析函数
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
 
-// Deal with control signal
+// 对全局控制信号进行监听的函数
 void signal_handler(void);
 
 
@@ -97,9 +105,8 @@ int main(int argc, char** argv)
 {
     int ret;
 
-    // Init EasyLogger
+    // EasyLogger Log配置
     elog_init();
-    // Set log format
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
     elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
     elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
@@ -109,7 +116,7 @@ int main(int argc, char** argv)
     // Start EasyLogger
     elog_start();
 
-    // Read configure for *.ini file
+    // 读配置表
     ret = parse_ini_file("configure.ini");
     if(-1 == ret)
     {
@@ -123,13 +130,13 @@ int main(int argc, char** argv)
     }
     log_i("Init from configure.ini success.");
 
-    // Init buffers for modbus communication
+    // 初始化modbus通信使用的内存缓冲区
     ret = init_buffers_for_modbus();
     if(-1 == ret){
         log_e("Init buffers for modbus communication failed.");
         return -1;
     }
-    // open_modbus_rtu_master("/dev/ttyO1", 38400, 'E', 8, 1, 1);
+    // 打开modbus控制终端("/dev/ttyO1", 38400, 'E', 8, 1, 1);
     ret = open_modbus_rtu_master(g_rtu_master.device, g_rtu_master.baud, \
             g_rtu_master.parity, g_rtu_master.data_bit, g_rtu_master.stop_bit, g_rtu_master.slave);
     if(-1 == ret){
@@ -138,12 +145,12 @@ int main(int argc, char** argv)
     	return -1;
     }
 
-    // Init Parameter (Warn: parameter setting.)
+    // 初始化伺服电机控制器的寄存器配置，请慎重！(Warn: parameter setting.)
     if(1 == g_rtu_master.reset_parameter){
         init_parameters();
         log_w("Warn: parameter setting. Dangerous!!!");
     }
-    // Check parameters
+    // 检验核实伺服电机控制器的寄存器配置
     if(-1 == check_parameters()){
         log_e("check parameters failed.");
         close_modbus_rtu_master();
@@ -151,7 +158,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // listening_uart("/dev/ttyO2", 9600, 'N', 8, 1);
+    // 串口监听，监听编码器信息("/dev/ttyO2", 9600, 'N', 8, 1);
     ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, \
             g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
     if(-1 == ret){
@@ -160,7 +167,7 @@ int main(int argc, char** argv)
     	free_buffers_for_modbus();
     	return -1;
     }
-    // listening socket for control command
+    // 监听套接字，解析终端的控制命令
     ret = listening_socket(g_am335x_socket.server_port, g_am335x_socket.queue_size);
     if(-1 == ret){
         log_e("Open am335x ethernet port failed.");
@@ -170,7 +177,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // Servo on
+    // 电机进入伺服
     ret = serve_on();
     if(-1 == ret){
         log_e("servo on failed.");
@@ -179,6 +186,7 @@ int main(int argc, char** argv)
         close_uart();
     	return -1;
     }
+    // 确认进入就绪态
     ret = is_ready();
     if(ret != 1){
     	log_e("servo_on is ON, but is_ready OFF.");
@@ -188,7 +196,7 @@ int main(int argc, char** argv)
         close_uart();
     	return -1;
     }
-    /// Set default Speed, Acceleration time, Deceleration time
+    /// 发送运行速度、加速时间、减速时间到控制器
     ret = send_cruise_speed();
     if(-1 == ret) set_stop(true);
     ret = send_imme_acceleration_time();
@@ -196,7 +204,7 @@ int main(int argc, char** argv)
     ret = send_imme_deceleration_time();
     if(-1 == ret) set_stop(true);
 
-    // Create thread for control signal dealing
+    /// 添加全局控制信号检测函数到线程中去
     pthread_t signalthreadid;
     if(pthread_create(&signalthreadid,NULL,(void*)signal_handler,NULL) != 0) {
         log_e("create signal handle thread failed.");
@@ -206,15 +214,15 @@ int main(int argc, char** argv)
         log_e("detach signal handle thread failed.");
         set_stop(true);
     }
-    // Init Done
+    // 初始化完成！
     log_i("Init Success.");
 
-    // Check motion
+    //// 初始化完成后的自检操作
     param temp = get_g_x();
     temp.cmd = GCHECK;
     update_g_x(temp);
 
-    // Loop for getting degree
+    //// 循环获取编码器的位置，并发送到控制终端
     int anticlock = get_anticlockwise();
     while(!get_stop()) {
             int temp = get_encoder_position();
@@ -222,15 +230,42 @@ int main(int argc, char** argv)
             char buf[64];
             memset(buf,0,64);
             sprintf(buf,"$%.3f\r",360.0*temp/65535);
-	    //printf("main loop: actual position: %.10d\n",temp);
-            //printf("main loop: actual degree %s\n",buf);
-            //fflush(stdout);
             m_socket_write(buf,strlen(buf));
+            
+            /// 当前状态查询，并发送到控制终端
+            if(get_status()) 
+            {
+                char buf[64];
+                int position = get_encoder_position();
+                int max_left = get_max_left_position() + E_PULSE_OFFSET;
+                int max_right = get_max_right_position() - E_PULSE_OFFSET;
+                if(is_INP()) 
+                {
+                    if(position <= max_left) {
+                        const char *ptr = get_anticlockwise() ? "#MAXR\r" : "#MAXL\r";
+                        memcpy(buf,ptr,strlen(ptr)+1);
+                    }
+                    else if(position >= max_right) {
+                        const char *ptr = get_anticlockwise() ? "#MAXL\r" : "#MAXR\r";
+                        memcpy(buf,ptr,strlen(ptr)+1);
+                    }else {
+                        const char *ptr = "#INPO\r";
+                        memcpy(buf,ptr,strlen(ptr)+1);
+                    }
+                    //printf("status: %s\n",buf);
+                    m_socket_write(buf,strlen(buf));
+                } else {
+                    const char *ptr = "#RUNN\r";
+                    memcpy(buf,ptr,strlen(ptr)+1);
+                    m_socket_write(buf,strlen(buf));
+                }
+                // Check error
+            }
 
             usleep(1000); // 1ms
     }
 
-    // close
+    // 释放伺服，并退出程序
     serve_off();
     close_modbus_rtu_master();
     free_buffers_for_modbus();
@@ -249,7 +284,7 @@ void signal_handler(void)
     while(1){
 
         param temp = get_g_x();
-        if ( temp.cmd & GPST_CANCEL )    // cancel
+        if ( temp.cmd & GPST_CANCEL )    // 运动取消
         {
             ret = positioning_cancel_on();
             if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
@@ -258,7 +293,7 @@ void signal_handler(void)
             temp.cmd = 0;
             update_g_x(temp);
         }
-        else if ( temp.cmd & GEMG )      // stop
+        else if ( temp.cmd & GEMG )      // 停止，并释放伺服
         {
             ret = forced_stop_on();
             if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
@@ -364,35 +399,36 @@ void signal_handler(void)
             if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
         }
 
-        // Get status
-        if(get_status()) 
-        {
-            char buf[64];
-            int position = get_encoder_position();
-            //setbuf(stdout,NULL);
-            //printf("get status: actual encoder position: %.10d\n", position);
-            //printf("%.3f\n",360.0*position/65535);
-            //fflush(stdout);
-            int max_left = get_max_left_position() + E_PULSE_OFFSET;
-            int max_right = get_max_right_position() - E_PULSE_OFFSET;
-            if(is_INP()) 
-            {
-                if(position <= max_left) {
-                    const char *ptr = get_anticlockwise() ? "#MAXR\r" : "#MAXL\r";
-                    memcpy(buf,ptr,strlen(ptr)+1);
-                }
-                else if(position >= max_right) {
-                    const char *ptr = get_anticlockwise() ? "#MAXL\r" : "#MAXR\r";
-                    memcpy(buf,ptr,strlen(ptr)+1);
-                }else {
-                    const char *ptr = "#INPO\r";
-                    memcpy(buf,ptr,strlen(ptr)+1);
-                }
-                //printf("status: %s\n",buf);
-                m_socket_write(buf,strlen(buf));
-            }
-            // Check error
-        }
+        // /// 当前状态查询，并发送到控制终端
+        // if(get_status()) 
+        // {
+        //     char buf[64];
+        //     int position = get_encoder_position();
+        //     int max_left = get_max_left_position() + E_PULSE_OFFSET;
+        //     int max_right = get_max_right_position() - E_PULSE_OFFSET;
+        //     if(is_INP()) 
+        //     {
+        //         if(position <= max_left) {
+        //             const char *ptr = get_anticlockwise() ? "#MAXR\r" : "#MAXL\r";
+        //             memcpy(buf,ptr,strlen(ptr)+1);
+        //         }
+        //         else if(position >= max_right) {
+        //             const char *ptr = get_anticlockwise() ? "#MAXL\r" : "#MAXR\r";
+        //             memcpy(buf,ptr,strlen(ptr)+1);
+        //         }else {
+        //             const char *ptr = "#INPO\r";
+        //             memcpy(buf,ptr,strlen(ptr)+1);
+        //         }
+        //         //printf("status: %s\n",buf);
+        //         m_socket_write(buf,strlen(buf));
+        //      } else {
+        //          const char *ptr = "#RUNN\r";
+        //          memcpy(buf,ptr,strlen(ptr)+1);
+        //          m_socket_write(buf,strlen(buf));
+        //      }
+        //      // Check error
+        // }
+
         usleep(200000);     // 200ms
     }
 }
@@ -420,10 +456,10 @@ void create_example_ini_file(void)
     "direct_right_position = 90"            "\n"    // degree
     "max_left_position = -90"               "\n"    // degree
     "max_right_position = 90"               "\n"    // degree
-    "speed = 600"                           "\n"    // degree/s : 3600 means 600r/min
+    "speed = 1200"                           "\n"    // degree/s : 3600 means 600r/min
     "imme_acceleration_time = 10000"        "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 10000"        "\n"    // 0.1ms
-    "check_speed = 600"                     "\n"    // degree/s : 12000 means 2000r/min
+    "check_speed = 1200"                     "\n"    // degree/s : 12000 means 2000r/min
     "check_acce_time = 20000"               "\n"    // 0.1ms    : 20000 means 2s
     "check_dece_time = 20000"               "\n\n"  // 0.1ms
 
@@ -556,19 +592,6 @@ int parse_ini_file(char * ini_name)
     set_check_dece_time(check_dece_time);
     set_point_position(0);
    
-    //// Inf - zhihengw
-    //printf("limit_left_position %d\n",limit_left_position);
-    //printf("limit_right_position %d\n",limit_right_position);
-    //printf("max_left_position %d\n",max_left_position);
-    //printf("max_right_position %d\n",max_right_position);
-    //printf("speed %d\n",speed);
-    //printf("check_acce_time %d\n",check_acce_time);
-    //printf("check_dece_time %d\n",check_dece_time);
-    //printf("check_speed %d\n",check_speed);
-    //printf("imme_acceleration_time %d\n",imme_acceleration_time);
-    //printf("imme_deceleration_time %d\n",imme_deceleration_time);
-
-
     iniparser_freedict(ini);
     return 0 ;
 }
