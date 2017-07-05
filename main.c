@@ -237,6 +237,7 @@ int main(int argc, char** argv)
     close_uart();
     elog_close();
 
+    log_i("Exit Success.");
     return 0;
 }
 
