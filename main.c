@@ -217,10 +217,12 @@ int main(int argc, char** argv)
     // 初始化完成！
     log_i("Init Success.");
 
-    //// 初始化完成后的自检操作
-    param temp = get_g_x();
-    temp.cmd = GCHECK;
-    update_g_x(temp);
+    ////// 初始化完成后的自检操作
+    ret = check_motion();
+    if(0 != ret){
+        log_e("check operation failed.");
+        set_stop(true);
+    }
 
     //// 循环获取编码器的位置，并发送到控制终端
     int anticlock = get_anticlockwise();
