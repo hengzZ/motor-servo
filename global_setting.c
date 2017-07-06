@@ -1,8 +1,10 @@
 #include "global_setting.h"
 
 
-// 全局控制变量
+// 全局控制参数变量
 volatile param g_x;
+// 全局控制状态变量
+volatile CtrlStatus g_ctrl_status = FREE;
 
 // 启动位置角度
 volatile double g_start_angle;
@@ -30,6 +32,21 @@ param get_g_x()
     return temp_x;
 }
 
+// 更新/读取控制状态
+void update_g_ctrl_status(CtrlStatus status)
+{
+    pthread_mutex_lock(&global_mutex);
+    g_ctrl_status = status;
+    pthread_mutex_unlock(&global_mutex);
+}
+CtrlStatus get_g_ctrl_status()
+{
+    pthread_mutex_lock(&global_mutex);
+    CtrlStatus status = g_ctrl_status;
+    pthread_mutex_unlock(&global_mutex);
+    return status;
+}
+
 // 启动角度、极限角度设定
 void set_g_start_angle(double angle)
 {
@@ -47,6 +64,8 @@ double get_g_start_angle()
 
 void set_g_left_angle(double angle)
 {
+	if(angle < -90) angle = -90.0;
+	if(angle > 90) angle = 90.0;
     pthread_mutex_lock(&global_mutex);
     g_left_angle = angle;
     pthread_mutex_unlock(&global_mutex);
@@ -61,6 +80,8 @@ double get_g_left_angle()
 
 void set_g_right_angle(double angle)
 {
+	if(angle < -90) angle = -90.0;
+	if(angle > 90) angle = 90.0;
     pthread_mutex_lock(&global_mutex);
     g_right_angle = angle;
     pthread_mutex_unlock(&global_mutex);

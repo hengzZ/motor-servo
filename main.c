@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <math.h>
 
 #include "elog.h"
 #include "iniparser.h"
@@ -200,55 +201,44 @@ int main(int argc, char** argv)
     log_i("Init Success.");
 
     //// 初始化完成后的自检操作
-    if(!get_stop()){
-        ret = check_motion();
-        if(0 != ret){
-            log_e("check operation failed.");
-            set_stop(true);
-        }
+    if(!get_stop())
+    {
+        param temp;
+        temp.cmd = GCHECK;
+        update_g_x(temp);
+        update_g_ctrl_status(LEFTORRIGHT);
     }
 
     //// 循环获取编码器的位置，并发送到控制终端
-    int anticlock = get_anticlockwise();
     while(!get_stop()) {
-            double angle = get_encoder_angle();
-            if(get_anticlockwise()) angle *= -1;
-            char buf[64];
-            memset(buf,0,64);
-            sprintf(buf,"$%.3f\r",angle);
-            m_socket_write(buf,strlen(buf));
-            
-            ////// TODO 太频繁，控制器响应不过来
-            ///// 当前状态查询，并发送到控制终端
-            //if(get_status()) 
-            //{
-            //    char buf[64];
-            //    float angle = get_encoder_angle();
+        
+        CtrlStatus ctrl_status = get_g_ctrl_status();
+        double angle = get_encoder_angle();
+        double diff_angle = angle - get_destination_angle();
 
-            //    if(is_INP()) 
-            //    {
-            //        if(angle <= get_g_left_angle()+0.1) {
-            //            const char *ptr = get_anticlockwise() ? "#MAXR\r" : "#MAXL\r";
-            //            memcpy(buf,ptr,strlen(ptr)+1);
-            //        }
-            //        else if(angle >= get_g_right_angle()-0.1) {
-            //            const char *ptr = get_anticlockwise() ? "#MAXL\r" : "#MAXR\r";
-            //            memcpy(buf,ptr,strlen(ptr)+1);
-            //        }else {
-            //            const char *ptr = "#INPO\r";
-            //            memcpy(buf,ptr,strlen(ptr)+1);
-            //        }
-            //        //printf("status: %s\n",buf);
-            //        m_socket_write(buf,strlen(buf));
-            //    } else {
-            //        const char *ptr = "#RUNN\r";
-            //        memcpy(buf,ptr,strlen(ptr)+1);
-            //        m_socket_write(buf,strlen(buf));
-            //    }
-            //    // Check error
-            //}
+        //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
 
-            usleep(1000); // 1ms
+        if( (LOCATING == ctrl_status) &&
+            (fabs(diff_angle) <= 0.005) )
+        {
+            //printf("bb... in main\n");
+
+            int ret = task_cancel();
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
+        }
+
+        // 获取角度信息
+        if(get_anticlockwise()) angle *= -1;
+        // 获取控制状态
+        CtrlStatus status = get_g_ctrl_status();
+        // 生成发送字符串
+        char buf[64];
+        memset(buf,0,64);
+        sprintf(buf,"$A%.3f,%1d\r\n",angle,status);
+        m_socket_write(buf,strlen(buf));
+
+
+        usleep(1000); // 1ms
     }
 
     // 释放伺服，并退出程序
@@ -269,88 +259,72 @@ void signal_handler(void)
 
     while(1){
 
+        // 获取当前指令并清空
         param temp = get_g_x();
+        param temp_update;
+        temp_update.cmd = 0;
+        update_g_x(temp_update);
+        
         if ( temp.cmd & GPST_CANCEL )    // 运动取消
         {
-            printf("signal_handler: cancel\n");
+            //printf("signal_handler: cancel\n");
 
             ret = task_cancel();
-            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            temp.cmd = 0;
-            update_g_x(temp);
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GEMG )      // 停止，并释放伺服
         {
-            printf("signal_handler: stop\n");
+            //printf("signal_handler: stop\n");
 
             ret = force_stop();
-            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
+
             set_stop(true);
-            temp.cmd = 0;
-            update_g_x(temp);
         }
         else if ( temp.cmd & GPOINT )    // run to point 
         {
-            printf("signal_handler: point %f\n", temp.v[0]);
+            //printf("signal_handler: point %f\n", temp.v[0]);
             
             ret = goto_point(temp.v[0]);
-            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            else if(1 == ret) {
-                temp.cmd &= ~GPOINT;
-                update_g_x(temp);
-            }
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GLEFT )     // run to left
         {
-            printf("signal_handler: left\n");
+            //printf("signal_handler: left\n");
 
             ret = goto_left();
-            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            else if(1 == ret) {
-                temp.cmd &= ~GLEFT;
-                update_g_x(temp);
-            }
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GRIGHT )    // run to right 
         {
-            printf("signal_handler: right\n");
+            //printf("signal_handler: right\n");
 
             ret = goto_right();
-            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            else if(1 == ret) {
-                temp.cmd &= ~GRIGHT;
-                update_g_x(temp);
-            }
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GSPEED ) 
         {
-            printf("signal_handler: speed\n");
+            //printf("signal_handler: speed\n");
 
             // degree/s
             ret = set_speed_value(temp.v[0]);
-            if (-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            temp.cmd &= ~GSPEED;
-            update_g_x(temp);
+            if (-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GACCE_TIME ) 
         {
-            printf("signal_handler: accetime\n");
+            //printf("signal_handler: accetime\n");
 
             // 1 means 0.1 ms
             ret = set_acce_value(temp.v[0]);
-            if (-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            temp.cmd &= ~GACCE_TIME;
-            update_g_x(temp);
+            if (-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GDECE_TIME ) 
         {
-            printf("signal_handler: decetime\n");
+            //printf("signal_handler: decetime\n");
 
             // 1 means 0.1 ms
             ret = set_dece_value(temp.v[0]);
-            if (-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
-            temp.cmd &= ~GDECE_TIME;
-            update_g_x(temp);
+            if (-1 == ret) update_g_ctrl_status(ERROOR);
         }
         else if ( temp.cmd & GMAX_POINT )
         {
@@ -359,57 +333,54 @@ void signal_handler(void)
             double right_angle = temp.v[0];
             set_g_left_angle(left_angle);
             set_g_right_angle(right_angle);
-
-            temp.cmd &= ~GMAX_POINT;
-            update_g_x(temp);
         }
         else if ( temp.cmd & GSTATUS )
         {
             bool mode = ((int)temp.v[0]) ? true : false;
             set_status(mode);
-            temp.cmd &= ~GSTATUS;
-            update_g_x(temp);
         }
         else if ( temp.cmd & GCHECK )
         {
-            printf("signal_handler: check\n");
+            //printf("signal_handler: check\n");
             
-            temp.cmd &= ~GCHECK;
-            update_g_x(temp);
             ret = check_motion();
-            if(-1 == ret) m_socket_write("#EOPE\r",strlen("#EOPE\r"));
+            if(-1 == ret) update_g_ctrl_status(ERROOR);
         }
 
-        
-        ///// 当前状态查询，并发送到控制终端
-        //if(get_status()) 
-        //{
-        //    char buf[64];
-        //    float angle = get_encoder_angle();
 
-        //    if(is_INP()) 
-        //    {
-        //        if(angle <= get_g_left_angle()+0.1) {
-        //            const char *ptr = get_anticlockwise() ? "#MAXR\r" : "#MAXL\r";
-        //            memcpy(buf,ptr,strlen(ptr)+1);
-        //        }
-        //        else if(angle >= get_g_right_angle()-0.1) {
-        //            const char *ptr = get_anticlockwise() ? "#MAXL\r" : "#MAXR\r";
-        //            memcpy(buf,ptr,strlen(ptr)+1);
-        //        }else {
-        //            const char *ptr = "#INPO\r";
-        //            memcpy(buf,ptr,strlen(ptr)+1);
-        //        }
-        //        //printf("status: %s\n",buf);
-        //        m_socket_write(buf,strlen(buf));
-        //    } else {
-        //        const char *ptr = "#RUNN\r";
-        //        memcpy(buf,ptr,strlen(ptr)+1);
-        //        m_socket_write(buf,strlen(buf));
-        //    }
-        //    // Check error
-        //}
+        // 更新控制状态
+        CtrlStatus status = get_g_ctrl_status();
+        if(!is_INP()){
+            if(GPOINT & temp.cmd) 
+                update_g_ctrl_status(LOCATING);
+            else 
+                update_g_ctrl_status(LEFTORRIGHT);
+            if(ERROOR == status){
+                update_g_ctrl_status(ERROOR);
+                //取消任务
+                task_cancel();
+            }
+        }
+        else if(ERROOR == status)
+        {
+            update_g_ctrl_status(ERROOR);
+        }
+        else if((LOCATING == status)||(LEFTORRIGHT == status))
+        {
+            update_g_ctrl_status(FINISH);
+        }
+        else{
+            update_g_ctrl_status(FREE);
+        }
 
+        if(get_status()||(FINISH == status)) 
+        {
+            // 若为finish,发送字符串到控制终端
+            char buf[64];
+            memset(buf,0,64);
+            sprintf(buf,"$B\r\n");
+            m_socket_write(buf,strlen(buf));
+        }
 
         usleep(200000);     // 200ms
     }

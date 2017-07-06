@@ -4,6 +4,11 @@
 #include "alpha_motion_control.h"
 
 
+// 更新/获取目标角度
+void update_destination_angle(double angle);
+double get_destination_angle();
+
+
 // 取消当前任务
 int task_cancel();
 // 急停

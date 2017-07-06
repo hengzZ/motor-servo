@@ -23,7 +23,7 @@
 volatile int encoder_is_enable_ = FALSE;
 
 // 编码器的运动
-volatile Direction encoder_movement = NOTMOVE;
+volatile MovementStatus encoder_movement = NOTMOVE;
 // 编码器上一时刻的位置,用于计算运动
 volatile int prev_encoder_position;
 // 编码器的当前位置
@@ -72,10 +72,10 @@ double get_encoder_angle()
     return angle;
 }
 // 获取当前编码器的运动
-Direction get_encoder_movement()
+MovementStatus get_encoder_movement()
 {
     pthread_mutex_lock(&mutex_encoder);
-    Direction direct = encoder_movement;
+    MovementStatus direct = encoder_movement;
     pthread_mutex_unlock(&mutex_encoder);
     return direct;
 }
@@ -284,7 +284,7 @@ void receivethread(void)
     // 监听
     while(1) 
     {
-	usleep(10);
+	usleep(1000);
 
 	//printf("bb...\n");
 
@@ -343,20 +343,17 @@ void receivethread(void)
 	    //printf("am335x: actual position: %.10d\n",temp);
 	    //fflush(stdout);
 
-	    // TODO(wangzhiheng): 限位条件判断
-	    double angle = get_encoder_angle();
-	    Direction motor_movement = get_motor_movement();
-
-	    if( ((angle > get_g_right_angle()) || (angle > 90)) && (RIGHTMOVE == motor_movement) ) {
-		param temp_x;
-		temp_x.cmd = GPST_CANCEL;
-		update_g_x(temp_x);
-	    }else if( ((angle < get_g_left_angle()) || (angle < 90)) && (LEFTMOVE == motor_movement) ) {
-		param temp_x;
-		temp_x.cmd = GPST_CANCEL;
-		update_g_x(temp_x);
-	    }
 	}
+
+	// TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
+	double angle = get_encoder_angle();
+	//MovementStatus motor_movement = get_motor_movement();
+
+	//if( ((angle > get_g_right_angle()) || (angle > 90)) && (RIGHTMOVE == motor_movement) ) {
+	//    // 右限位
+	//}else if( ((angle < get_g_left_angle()) || (angle < 90)) && (LEFTMOVE == motor_movement) ) {
+	//    // 左限位
+	//}
 	
     } 
     return;

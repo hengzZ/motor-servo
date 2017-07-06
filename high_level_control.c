@@ -2,6 +2,29 @@
 #include "am335x_setting.h"
 
 
+// 目标角度
+volatile double destination_angle = 0;
+// 用于变量赋值的互斥
+pthread_mutex_t mutex_dst_angle = PTHREAD_MUTEX_INITIALIZER;
+
+
+// 更新目标角度
+void update_destination_angle(double angle)
+{
+    pthread_mutex_lock(&mutex_dst_angle);
+    destination_angle = angle;
+    pthread_mutex_unlock(&mutex_dst_angle);
+}
+// 获取目标角度
+double get_destination_angle()
+{
+    pthread_mutex_lock(&mutex_dst_angle);
+    double angle = destination_angle;
+    pthread_mutex_unlock(&mutex_dst_angle);
+    return angle;
+}
+
+
 // 取消当前任务
 int task_cancel()
 {
@@ -31,16 +54,21 @@ int force_stop()
 // 转到指定角度
 int goto_point(double angle)
 {
-    // debug语句
-    printf("goto_point %f\n", angle);
-    double test_angle = get_encoder_angle();
-    printf("get encoder angle %f\n", test_angle);
+    //// debug语句
+    //printf("goto_point %f\n", angle);
+    //double test_angle = get_encoder_angle();
+    //printf("get encoder angle %f\n", test_angle);
     //double test_start = get_g_start_angle();
     //printf("zero start angle %d\n", test_start);
 
-    int ret;
+    if(angle < get_g_left_angle()) angle = get_g_left_angle();
+    if(angle > get_g_right_angle()) angle = get_g_right_angle();
 
-    //double actual_angle = angle - get_g_start_angle();
+    int ret;
+    
+    //更新目标角度
+    update_destination_angle(angle);
+
     double actual_angle = angle - get_encoder_angle();
     actual_angle *= TRANSMISSION_RATIO;
     ret = run_inc_angle(actual_angle);
@@ -53,8 +81,11 @@ int goto_left()
 {
     int ret;
 
-    //double actual_angle = get_g_left_angle() - get_g_start_angle();
-    double actual_angle = get_g_left_angle() - get_encoder_angle();
+    //更新目标角度
+    double angle = get_g_left_angle();
+    update_destination_angle(angle);
+
+    double actual_angle = angle - get_encoder_angle();
     actual_angle *= TRANSMISSION_RATIO;
     ret = run_inc_angle(actual_angle);
 
@@ -66,8 +97,11 @@ int goto_right()
 {
     int ret;
 
-    //double actual_angle = get_g_right_angle() - get_g_start_angle();
-    double actual_angle = get_g_right_angle() - get_encoder_angle();
+    //更新目标角度
+    double angle = get_g_right_angle();
+    update_destination_angle(angle);
+    
+    double actual_angle = angle - get_encoder_angle();
     actual_angle *= TRANSMISSION_RATIO;
     ret = run_inc_angle(actual_angle);
 
@@ -80,7 +114,7 @@ int set_speed_value(double speed)
 {
 	int ret;
 
-	uint32_t actual_speed = speed*60*100/360*TRANSMISSION_RATIO;
+	uint32_t actual_speed = speed*60*100*TRANSMISSION_RATIO/360;
 	set_cruise_speed(actual_speed);
 	ret = task_cancel();
 	if(-1 == ret) return -1;

@@ -29,7 +29,7 @@ struct uart_t {
 // 获取当前编码器的角度
 double get_encoder_angle();
 // 获取当前编码器的运动
-Direction get_encoder_movement();
+MovementStatus get_encoder_movement();
 // 判断编码器是否已经工作
 int is_encoder_enable();
 

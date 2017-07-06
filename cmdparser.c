@@ -117,14 +117,12 @@ void parsesocket(void)
 			    //printf("cmdparse: cancel");
 
 			    temp_x.cmd = GPST_CANCEL;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"stop"))
 			{
 			    //printf("cmdparse: stop");
 
 			    temp_x.cmd = GEMG;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf, "point"))
 			{
@@ -142,19 +140,16 @@ void parsesocket(void)
 			    if(get_anticlockwise()) temp_x.v[0] = -position;
 			    else temp_x.v[0] = position;
 			    temp_x.cmd = GPOINT;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runleft"))
 			{
 			    if(get_anticlockwise()) temp_x.cmd = GRIGHT;
 			    else temp_x.cmd = GLEFT;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"runright"))
 			{
 			    if(get_anticlockwise()) temp_x.cmd = GLEFT;
 			    else temp_x.cmd = GRIGHT;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"speed"))
 			{
@@ -162,7 +157,6 @@ void parsesocket(void)
 			    sscanf(buf,"speed %lf",&speed);
 			    temp_x.v[0] = speed;
 			    temp_x.cmd = GSPEED;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"acce"))
 			{
@@ -170,7 +164,6 @@ void parsesocket(void)
 			    sscanf(buf, "acce %lf",&acce);
 			    temp_x.v[0] = acce;
 			    temp_x.cmd = GACCE_TIME;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"dece"))
 			{
@@ -178,7 +171,6 @@ void parsesocket(void)
 			    sscanf(buf, "dece %lf",&dece);
 			    temp_x.v[0] = dece;
 			    temp_x.cmd = GDECE_TIME;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"maxpoint"))
 			{
@@ -193,7 +185,6 @@ void parsesocket(void)
 			    temp_x.v[0] = max_left;
 			    temp_x.v[1] = max_right;
 			    temp_x.cmd = GMAX_POINT;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"status"))
 			{
@@ -201,13 +192,45 @@ void parsesocket(void)
 			    sscanf(buf, "status %d",&status);
 			    temp_x.v[0] = status;
 			    temp_x.cmd = GSTATUS;
-			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"check"))
 			{
 			    temp_x.cmd = GCHECK;
-			    update_g_x(temp_x);
 			}
+
+
+			// 应答条件判断
+			if(0 != temp_x.cmd)
+			{
+			    char sendbuf[64];
+			    memset(sendbuf,0,64);
+
+			    // 任务取消和停止直接响应
+			    if((GPST_CANCEL == temp_x.cmd)||(GEMG == temp_x.cmd))
+			    {
+				// 更新控制命令
+				update_g_x(temp_x);
+				// 应答
+				sprintf(buf,"$C\r\n");
+				m_socket_write(sendbuf,strlen(sendbuf));
+			    }
+
+			    // 获取当前的控制状态
+			    CtrlStatus status = get_g_ctrl_status();
+			    if((FREE == status)||(FINISH == status)){
+				// 更新控制命令
+				update_g_x(temp_x);
+				// 应答
+				sprintf(buf,"$C\r\n");
+				m_socket_write(sendbuf,strlen(sendbuf));
+			    }else{
+				// 发送回复
+				sprintf(buf,"$D\r\n");
+				m_socket_write(sendbuf,strlen(sendbuf));
+			    }
+			}
+
+
 			usleep(200000);	    // 200ms
 		}
 		close(sa);

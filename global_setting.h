@@ -32,12 +32,25 @@ typedef enum{
     NOTMOVE=1,
     LEFTMOVE=2,
     RIGHTMOVE=3
-}Direction;
+}MovementStatus;
+
+// 控制器状态
+typedef enum{
+    FREE=0,
+    LOCATING=1,
+    LEFTORRIGHT=2,
+    ERROOR=3,
+    FINISH=4
+}CtrlStatus;
 
 
 // 更新/读取控制变量
 void update_g_x(param x);
 param get_g_x();
+
+// 更新/读取控制状态
+void update_g_ctrl_status(CtrlStatus status);
+CtrlStatus get_g_ctrl_status();
 
 // 启动角度、极限角度设定
 void set_g_start_angle(double angle);

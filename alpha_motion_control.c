@@ -16,7 +16,7 @@ uint16_t check_dece_time[2]; // 自检操作时的减速时间
 
 
 // 伺服电机的运动
-volatile Direction motor_movement = NOTMOVE;
+volatile MovementStatus motor_movement = NOTMOVE;
 // 用于变量赋值时的互斥
 pthread_mutex_t mutex_motion_ctrl = PTHREAD_MUTEX_INITIALIZER;
 
@@ -33,10 +33,10 @@ void update_motor_movement(double angle)
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 }
 // 获取伺服电机的运动状态
-Direction get_motor_movement()
+MovementStatus get_motor_movement()
 {
 	pthread_mutex_lock(&mutex_motion_ctrl);
-	Direction direct = motor_movement;
+	MovementStatus direct = motor_movement;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return direct;
 }

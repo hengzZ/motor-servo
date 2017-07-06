@@ -22,7 +22,7 @@
 
 
 // 获取伺服电机的运动状态
-Direction get_motor_movement();
+MovementStatus get_motor_movement();
 // 增量旋转
 int run_inc_angle(double angle);
 // 运行到 point_position 的指定位置 (绝对模式)
