@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+// 套接字参数对象格式
 struct am335x_socket_t;
 typedef struct am335x_socket_t am335x_socket_t;
 
@@ -11,6 +13,7 @@ struct am335x_socket_t{
         int server_port;
         int queue_size;
 };
+
 
 // 用于运动方面的反转，安装时用于调整默认方向
 void set_anticlockwise(int mode);

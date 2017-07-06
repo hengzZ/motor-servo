@@ -3,93 +3,104 @@
 #include <pthread.h>
 
 #include "elog.h"
+
 #include "alpha_motion_control.h"
 
 
-// 更新编码器的位置，自检结束之后矫正编码器零点
-extern void update_encoder_position(int position);
-
-// 用于参数设定时的限位 1/4圈
-#define MAX_RIGHT_POSITION	 (M_PULSE_PER_CIRCLE*TRANSMISSION_RATIO/4)
-#define MAX_LEFT_POSITION	(-MAX_RIGHT_POSITION)
-
-// 运动时使用的目标位置
-uint16_t direct_left_position[2]; // 单向运动
-uint16_t direct_right_position[2];
-uint16_t cruise_left_position[2]; // 一侧巡航
-uint16_t cruise_right_position[2];
 uint16_t cruise_speed[2]; // 运行时的速度
 uint16_t imme_acceleration_time[2]; // 运行时的加速时间
 uint16_t imme_deceleration_time[2]; // 运行时的减速时间
-uint16_t point_position[2];
-
 uint16_t check_speed[2]; // 自检操作时的运行速度
 uint16_t check_acce_time[2]; // 自检操作时的加速时间
 uint16_t check_dece_time[2]; // 自检操作时的减速时间
 
-int32_t limit_left_position; // 保存参数表里的限位参数，不会超出用参数设定的宏限位
-int32_t limit_right_position;
+
+// 伺服电机的运动
+volatile Direction motor_movement = NOTMOVE;
 // 用于变量赋值时的互斥
 pthread_mutex_t mutex_motion_ctrl = PTHREAD_MUTEX_INITIALIZER;
 
 
-// 左转
-int left_direction_run()
+// 更新伺服电机的运动状态
+void update_motor_movement(double angle)
 {
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	if(angle > 0)
+		motor_movement = RIGHTMOVE;
+	else if(angle < 0)
+		motor_movement = LEFTMOVE;
+	else motor_movement = NOTMOVE;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+}
+// 获取伺服电机的运动状态
+Direction get_motor_movement()
+{
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	Direction direct = motor_movement;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+	return direct;
+}
+// 更新伺服电机的运动为静止，主要为is_INP调用
+void set_motor_movement_notmove()
+{
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	motor_movement = NOTMOVE;
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+}
+
+
+// 转换角度为位置增量
+void convert_angle_to_inc_position(double angle, uint16_t *inc_position)
+{
+	int32_t position = (int32_t)(angle*M_PULSE_PER_CIRCLE/360);
+	inc_position[1] = position & 0xFFFF;
+	inc_position[0] = (position >> 16) & 0xFFFF;
+
+	// debug语句
+	int32_t test_position = inc_position[0] * (1<<16) + inc_position[1];
+	printf("convert_angle_to_inc_position %f to %d\n", angle, test_position);
+}
+
+// 增量旋转
+int run_inc_angle(double angle)
+{
+	// debug语句
+	printf("run_inc_angle %f\n", angle);
+
 	if(is_INP())
 	{
 		int ret;
+		uint16_t inc_position[2];
+		convert_angle_to_inc_position(angle, inc_position);
 
-		ret = set_abs_control_mode();
+		ret = set_inc_control_mode();
 		if(-1 == ret) {
-			log_e("left_direction_run: set abs control mode failed.");
+			log_e("run_inc_position: set inc control mode failed.");
 			return -1;
 		}
 		
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_left_position); i++){
+		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, inc_position); i++){
 			if(OPLOOPS-1==i)
 			{
-				log_e("left_direction_run: communication failed.");
+				log_e("run_inc_position: communication failed.");
 				return -1;
 			}
 		}
 
 		ret = immediate_value_operation_run();
-		if(0 == ret) return 1;
-		else return -1;
-	}
-	return 0;
-}
-// 右转
-int right_direction_run()
-{
-	if(is_INP())
-	{
-		int ret;
-
-		ret = set_abs_control_mode();
-		if(-1 == ret) {
-			log_e("right_direction_run: set abs control mode failed.");
-			return -1;
-		}
-
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, direct_right_position); i++){
-			if(OPLOOPS-1==i)
-			{
-				log_e("right_direction_run: communication failed.");
-				return -1;
-			}
-		}
-
-		ret = immediate_value_operation_run();
-		if(0 == ret) return 1;
-		else return -1;
+		if(0 == ret) { 
+			// 设定运动状态
+			update_motor_movement(angle);
+			return 1;
+		} else return -1;
 	}
 	return 0;
 }
 
-// 运行到 point_position 的指定位置
-int run_to_point()
+
+// 运行到 point_position 的指定位置 (绝对模式)
+// 输入: uint16_t point_position[2]
+int run_to_position(uint16_t *point_position)
 {
 	if(is_INP())
 	{
@@ -115,80 +126,6 @@ int run_to_point()
 	}
 	return 0;
 }
-
-// 向左巡航
-int	left_cruise()
-{
-	if(is_INP())
-	{
-		int ret;
-
-		ret = set_abs_control_mode();
-		if(-1 == ret) {
-			log_e("left_cruise: set abs control mode failed.");
-			return -1;
-		}
-
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_left_position); i++){
-			if(OPLOOPS-1==i)
-			{
-				log_e("left_cruise: communication failed.");
-				return -1;
-			}
-		}
-
-		ret = immediate_value_operation_run();
-		if(0 == ret) return 1;
-		else return -1;
-	}
-	return 0;
-}
-// 向右巡航
-int right_cruise()
-{
-	if(is_INP())
-	{
-		int ret;
-
-		ret = set_abs_control_mode();
-		if(-1 == ret) {
-			log_e("right_cruise: set abs control mode failed.");
-			return -1;
-		}
-
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, cruise_right_position); i++){
-			if(OPLOOPS-1==i)
-			{
-				log_e("right_cruise: communication failed.");
-				return -1;
-			}
-		}
-
-		ret = immediate_value_operation_run();
-		if(0 == ret) return 1;
-		else return -1;
-	}
-	return 0;
-}
-// 无限巡航，死循环，仅在测试时使用过
-void cruise()
-{
-	while(TRUE)
-	{
-		int ret, drct = 0;
-		if(0 == drct) {
-			ret = left_cruise();
-			if(-1 == ret) break;
-			else if(1 == ret) drct = 1;
-		} else if(1 == drct) {
-			ret = right_cruise();
-			if(-1 == ret) break;
-			else if(1 == ret) drct = 0;
-		}
-		usleep(200000);		// 2ms
-	}
-}
-
 
 //***********************************************************************************************************************
 // Immediate value data setting: 
@@ -251,106 +188,6 @@ int immediate_value_operation_run()
 	return 0;
 }
 
-// 设置左巡航的目标位置
-// 位置取值范围: +/- 2,000,000,000
-int set_cruise_left_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < limit_left_position) position = limit_left_position;
-	if(position > limit_right_position) position = limit_right_position;
-	cruise_left_position[1] = position;
-	cruise_left_position[0] = position >> 16;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return 0;
-}
-// 设置右巡航的目标位置
-int set_cruise_right_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < limit_left_position) position = limit_left_position;
-	if(position > limit_right_position) position = limit_right_position;
-	cruise_right_position[1] = position;
-	cruise_right_position[0] = position >> 16;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return 0;
-}
-
-// 设置目标终点的位置,到达指定点
-int set_point_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < limit_left_position) position = limit_left_position;
-	if(position > limit_right_position) position = limit_right_position;
-	point_position[1] = position;
-	point_position[0] = position >> 16;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return 0;
-}
-// 左转的终点位置
-int set_direct_left_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < limit_left_position) position = limit_left_position;
-	if(position > limit_right_position) position = limit_right_position;
-	direct_left_position[1] = position;
-	direct_left_position[0] = position >> 16;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return 0;
-}
-// 右转的终点位置
-int set_direct_right_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < limit_left_position) position = limit_left_position;
-	if(position > limit_right_position) position = limit_right_position;
-	direct_right_position[1] = position;
-	direct_right_position[0] = position >> 16;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return 0;
-}
-
-// 将参数表中的限位参数保存与内存变量
-int set_limit_left_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < MAX_LEFT_POSITION) position = MAX_LEFT_POSITION;
-	if(position > MAX_RIGHT_POSITION) position = MAX_RIGHT_POSITION;
-	limit_left_position = position;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	set_direct_left_position(position);
-	set_cruise_left_position(position);
-	return 0;
-}
-int set_limit_right_position(int32_t position)
-{
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(position < MAX_LEFT_POSITION) position = MAX_LEFT_POSITION;
-	if(position > MAX_RIGHT_POSITION) position = MAX_RIGHT_POSITION;
-	limit_right_position = position;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	set_direct_right_position(position);
-	set_cruise_right_position(position);
-	return 0;
-}
-
-// 获取当前的实际限位参数
-int32_t get_limit_left_position()
-{
-	int32_t position;
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	position = limit_left_position;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return position;
-}
-int32_t get_limit_right_position()
-{
-	int32_t position;
-	pthread_mutex_lock(&mutex_motion_ctrl);
-	position = limit_right_position;
-	pthread_mutex_unlock(&mutex_motion_ctrl);
-	return position;
-}
-
 // 运行速度变量赋值
 // speed: 0.01r/min
 int set_cruise_speed(uint32_t speed)
@@ -366,6 +203,10 @@ int set_cruise_speed(uint32_t speed)
 // 将目标运行速度值发送至控制器
 int send_cruise_speed()
 {
+	// debug语句
+	uint32_t test_speed = cruise_speed[0] * (1<<16) + cruise_speed[1];
+	printf("send_cruise_speed %d\n", test_speed);
+
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, cruise_speed); i++){
 		if(OPLOOPS-1==i)
 		{
@@ -435,6 +276,17 @@ int set_check_speed(uint32_t speed)
 	check_speed[0] = speed >> 16;
 	return 0;
 }
+int send_check_speed()
+{
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, check_speed); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("send_check_speed: communication failed.");
+			return -1;
+		}
+	}		
+	return 0;
+}
 int set_check_acce_time(uint32_t time)
 {
 	if(time <= 0) time = 0;
@@ -443,12 +295,34 @@ int set_check_acce_time(uint32_t time)
 	check_acce_time[0] = time >> 16;
 	return 0;
 }
+int send_check_acce_time()
+{
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, check_acce_time); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("send_check_acce_time: communication failed.");
+			return -1;
+		}
+	}		
+	return 0;
+}
 int set_check_dece_time(uint32_t time)
 {
 	if(time <= 0) time = 0;
 	if(time >= 99999) time = 99999;	// 9.9999s
 	check_dece_time[1] = time;
 	check_dece_time[0] = time >> 16;
+	return 0;
+}
+int send_check_dece_time()
+{
+	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, check_dece_time); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("send_check_dece_time: communication failed.");
+			return -1;
+		}
+	}		
 	return 0;
 }
 
@@ -462,7 +336,11 @@ int is_INP()
 			return 0;
 		} 
 	}
-	if(1==tab_rp_bits[0]) return 1;
+	if(1==tab_rp_bits[0]){
+		//设定运行状态
+		set_motor_movement_notmove();
+		return 1;
+	}
 	return 0;
 }
 
@@ -616,163 +494,3 @@ int free_run_off()
 	return 0;
 }
 
-// 自检操作,软件开启时的自检操作
-int check_motion()
-{
-	int ret;
-	uint16_t home_position[2];
-	uint16_t left_position[2];
-	uint16_t right_position[2];
-
-	// 判断当前是否有任务，如有，取消当前任务
-	if(!is_INP()) {
-		ret = positioning_cancel_on();
-		if(-1 == ret) return -1;
-		ret = positioning_cancel_off();
-		if(-1 == ret) return -1;
-	}
-
-	// 自检操作目标位置
-	home_position[0] = 0;
-	home_position[1] = 0;
-	left_position[0] = limit_left_position >> 16;
-	left_position[1] = limit_left_position;
-	right_position[0] = limit_right_position >> 16;
-	right_position[1] = limit_right_position;
-
-	// 设置用于自检的速度、加速时间、减速时间
-	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, check_speed); i++){
-		if(OPLOOPS-1==i)
-		{
-			log_e("check_motion: communication failed.");
-			return -1;
-		}
-	}		
-	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_ACC_TIM_ad, 2, check_acce_time); i++){
-		if(OPLOOPS-1==i)
-		{
-			log_e("check_motion: communication failed.");
-			return -1;
-		}
-	}
-	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_DEC_TIM_ad, 2, check_dece_time); i++){
-		if(OPLOOPS-1==i)
-		{
-			log_e("check_motion: communication failed.");
-			return -1;
-		}
-	}		
-
-	// 首先到达原点
-	while(1){
-		if(is_INP())
-		{
-			ret = set_abs_control_mode();
-			if(-1 == ret) {
-				log_e("check_motion: set abs control mode failed.");
-				return -1;
-			}
-
-			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, home_position); i++){
-				if(OPLOOPS-1==i)
-				{
-					log_e("check_motion: communication failed.");
-					return -1;
-				}
-			}
-
-			ret = immediate_value_operation_run();
-			if(0 == ret) break;
-			else return -1;
-		}
-		usleep(200000);		// 200ms
-	}
-
-	// 左侧目标点
-	while(1){
-		if(is_INP())
-		{
-			ret = set_abs_control_mode();
-			if(-1 == ret) {
-				log_e("check_motion: set abs control mode failed.");
-				return -1;
-			}
-
-			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, left_position); i++){
-				if(OPLOOPS-1==i)
-				{
-					log_e("check_motion: communication failed.");
-					return -1;
-				}
-			}
-
-			// TODO(wangzhiheng):在向左侧运行前先重合编码器零点和电机绝对零点
-			update_encoder_position(0);
-
-			ret = immediate_value_operation_run();
-			if(0 == ret) break;
-			else return -1;
-		}
-		usleep(200000);		// 200ms
-	}
-
-	// 右侧目标点
-	while(1){
-		if(is_INP())
-		{
-			ret = set_abs_control_mode();
-			if(-1 == ret) {
-				log_e("check_motion: set abs control mode failed.");
-				return -1;
-			}
-
-			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, right_position); i++){
-				if(OPLOOPS-1==i)
-				{
-					log_e("check_motion: communication failed.");
-					return -1;
-				}
-			}
-
-			ret = immediate_value_operation_run();
-			if(0 == ret) break;
-			else return -1;
-		}
-		usleep(200000);		// 200ms
-	}
-
-	// 重回原点
-	while(1){
-		if(is_INP())
-		{
-			ret = set_abs_control_mode();
-			if(-1 == ret) {
-				log_e("check_motion: set abs control mode failed.");
-				return -1;
-			}
-
-			for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, home_position); i++){
-				if(OPLOOPS-1==i)
-				{
-					log_e("check_motion: communication failed.");
-					return -1;
-				}
-			}
-
-			ret = immediate_value_operation_run();
-			if(0 == ret) break;
-			else return -1;
-		}
-		usleep(200000);		// 200ms
-	}
-
-	// 恢复速度、加速时间、减速时间为原始设定值
-	ret = send_cruise_speed();
-	if(-1 == ret) return -1;
-	ret = send_imme_acceleration_time();
-	if(-1 == ret) return -1;
-	ret = send_imme_deceleration_time();
-	if(-1 == ret) return -1;
-
-	return 0;
-}

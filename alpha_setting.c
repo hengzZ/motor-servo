@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "elog.h"
+
 #include "alpha_setting.h"
 
 
@@ -12,6 +13,7 @@ uint16_t *tab_rq_registers = NULL;
 uint8_t  *tab_rq_bits = NULL;
 uint16_t *tab_rp_registers = NULL; 
 uint8_t	 *tab_rp_bits = NULL;
+
 
 // 线圈与信号的绑定
 void io_signals_mapping();

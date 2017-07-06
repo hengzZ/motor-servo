@@ -13,33 +13,8 @@
 #include "elog.h"
 #include "modbus.h"
 
-#include "alpha_motion_control.h"
+#include "global_setting.h"
 
-
-// 主函数中定义的用于控制的信号编码
-typedef enum{
-    GRIGHT=1,
-    GLEFT=2,
-    GPOINT=4,
-    GPST_CANCEL=8,
-    GEMG=16,
-    GSPEED=32,
-    GACCE_TIME=64,
-    GDECE_TIME=128,
-    GMAX_POINT=256,
-    GSTATUS=512,
-    GCHECK=1024
-} GFLAGS;
-
-// 控制信号的数据对象格式
-typedef struct {
-    GFLAGS cmd;
-    int32_t v[2];
-}param;
-
-// 更新/获取全局的控制信号信息
-extern void update_g_x(param x);
-extern param get_g_x();
 
 // 用于运动方面的反转，安装时用于调整默认方向
 volatile int anticlockwise;
@@ -61,6 +36,7 @@ int get_anticlockwise()
     return mode;
 }
 
+
 // Socket
 int server_port, queue_size;
 int s, b, l, sa;
@@ -80,6 +56,7 @@ int m_socket_write(void *buf, size_t count)
     pthread_mutex_unlock(&mutex_cmd);
     return bytes;
 }
+
 
 // 套接字监听
 //***************************************************************
@@ -137,11 +114,15 @@ void parsesocket(void)
 			param temp_x = get_g_x();
 			if(buf == strstr(buf,"cancel"))
 			{
+			    //printf("cmdparse: cancel");
+
 			    temp_x.cmd = GPST_CANCEL;
 			    update_g_x(temp_x);
 			}
 			else if(buf == strstr(buf,"stop"))
 			{
+			    //printf("cmdparse: stop");
+
 			    temp_x.cmd = GEMG;
 			    update_g_x(temp_x);
 			}
@@ -149,6 +130,7 @@ void parsesocket(void)
 			{
 			    double position;
 			    sscanf(buf,"point %lf",&position);
+
 			    //char tmp_buf[1024];
 			    //sprintf(tmp_buf, buf);
 			    //log_e(tmp_buf);
@@ -156,8 +138,9 @@ void parsesocket(void)
 			    //sprintf(tmp_buf, "cmdparse: point %lf",position);
 			    //log_e(tmp_buf);
 			    //printf("cmdparse: %s\n",tmp_buf);
-			    if(get_anticlockwise()) temp_x.v[0] = -position * 1000;
-			    else temp_x.v[0] = position * 1000;
+
+			    if(get_anticlockwise()) temp_x.v[0] = -position;
+			    else temp_x.v[0] = position;
 			    temp_x.cmd = GPOINT;
 			    update_g_x(temp_x);
 			}
@@ -177,7 +160,7 @@ void parsesocket(void)
 			{
 			    double speed;
 			    sscanf(buf,"speed %lf",&speed);
-			    temp_x.v[0] = speed * 1000;
+			    temp_x.v[0] = speed;
 			    temp_x.cmd = GSPEED;
 			    update_g_x(temp_x);
 			}
@@ -207,8 +190,8 @@ void parsesocket(void)
 				max_right = max_left;
 				max_left = temp;
 			    }
-			    temp_x.v[0] = max_left * 1000;
-			    temp_x.v[1] = max_right * 1000;
+			    temp_x.v[0] = max_left;
+			    temp_x.v[1] = max_right;
 			    temp_x.cmd = GMAX_POINT;
 			    update_g_x(temp_x);
 			}
