@@ -15,8 +15,8 @@
 #include    "am335x_setting.h"
 
 
-#define FALSE 0
-#define TRUE 1
+#define FALSE (0)
+#define TRUE  (1)
 
 
 // 用于判定是否收到编码器的响应
@@ -65,9 +65,9 @@ void encoder_is_enable()
 // 获取当前编码器的角度
 double get_encoder_angle()
 {
-    //pthread_mutex_lock(&mutex_encoder);
+    pthread_mutex_lock(&mutex_encoder);
     int position = encoder_position;
-    //pthread_mutex_unlock(&mutex_encoder);
+    pthread_mutex_unlock(&mutex_encoder);
     double angle = (double)position * 360.0 / (double)E_PULSE_PER_CIRCLE;
     return angle;
 }
@@ -279,7 +279,7 @@ void receivethread(void)
     int nread;
     char buff[128];
 
-    printf("aa....\n");
+    //printf("aa....\n");
 
     // 监听
     while(1) 
@@ -345,16 +345,16 @@ void receivethread(void)
 
 	    // TODO(wangzhiheng): 限位条件判断
 	    double angle = get_encoder_angle();
-	    Direction movement = get_encoder_movement();
+	    Direction motor_movement = get_motor_movement();
 
-	    if( ((angle > get_g_right_angle()) || (angle > 90)) && (RIGHTMOVE == movement) ) {
-		//param temp_x;
-		//temp_x.cmd = GPST_CANCEL;
-		//update_g_x(temp_x);
-	    }else if( ((angle < get_g_left_angle()) || (angle < 90)) && (LEFTMOVE == movement) ) {
-		//param temp_x;
-		//temp_x.cmd = GPST_CANCEL;
-		//update_g_x(temp_x);
+	    if( ((angle > get_g_right_angle()) || (angle > 90)) && (RIGHTMOVE == motor_movement) ) {
+		param temp_x;
+		temp_x.cmd = GPST_CANCEL;
+		update_g_x(temp_x);
+	    }else if( ((angle < get_g_left_angle()) || (angle < 90)) && (LEFTMOVE == motor_movement) ) {
+		param temp_x;
+		temp_x.cmd = GPST_CANCEL;
+		update_g_x(temp_x);
 	    }
 	}
 	

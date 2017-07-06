@@ -17,8 +17,8 @@
 #include "alpha_setting.h"
 
 
-#define ABS_POSITION_MODE   0
-#define INC_POSITION_MODE   1
+#define ABS_POSITION_MODE   (0)
+#define INC_POSITION_MODE   (1)
 
 
 // 获取伺服电机的运动状态

@@ -56,16 +56,16 @@ void convert_angle_to_inc_position(double angle, uint16_t *inc_position)
 	inc_position[1] = position & 0xFFFF;
 	inc_position[0] = (position >> 16) & 0xFFFF;
 
-	// debug语句
-	int32_t test_position = inc_position[0] * (1<<16) + inc_position[1];
-	printf("convert_angle_to_inc_position %f to %d\n", angle, test_position);
+	//// debug语句
+	//int32_t test_position = inc_position[0] * (1<<16) + inc_position[1];
+	//printf("convert_angle_to_inc_position %f to %d\n", angle, test_position);
 }
 
 // 增量旋转
 int run_inc_angle(double angle)
 {
-	// debug语句
-	printf("run_inc_angle %f\n", angle);
+	//// debug语句
+	//printf("run_inc_angle %f\n", angle);
 
 	if(is_INP())
 	{
@@ -203,9 +203,9 @@ int set_cruise_speed(uint32_t speed)
 // 将目标运行速度值发送至控制器
 int send_cruise_speed()
 {
-	// debug语句
-	uint32_t test_speed = cruise_speed[0] * (1<<16) + cruise_speed[1];
-	printf("send_cruise_speed %d\n", test_speed);
+	//// debug语句
+	//uint32_t test_speed = cruise_speed[0] * (1<<16) + cruise_speed[1];
+	//printf("send_cruise_speed %d\n", test_speed);
 
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, cruise_speed); i++){
 		if(OPLOOPS-1==i)
