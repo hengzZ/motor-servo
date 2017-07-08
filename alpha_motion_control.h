@@ -65,10 +65,4 @@ int free_run_on();
 int free_run_off();
 
 
-// functions for test use, implementing in file alpha_test.c (旧的测试，没有使用)
-// **NoTE: PA1_01 must be set 1
-void forward_command_test();
-// **NoTE: PA1_01 must be set 7
-void immediate_value_data_op_test();
-
 #endif	//ALPHA_MOTION_CONTROL_H

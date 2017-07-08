@@ -9,9 +9,10 @@
 #include     <errno.h> 
 #include     <pthread.h> 
 #include     <sys/ioctl.h> 
+#include     <math.h>
+#include     <time.h>
 
 #include    "elog.h"
-
 #include    "am335x_setting.h"
 
 
@@ -22,10 +23,11 @@
 // 用于判定是否收到编码器的响应
 volatile int encoder_is_enable_ = FALSE;
 
-// 编码器的运动
-volatile MovementStatus encoder_movement = NOTMOVE;
+// 编码器的速度，脉冲/毫秒
+volatile double encoder_speed=0;
 // 编码器上一时刻的位置,用于计算运动
 volatile int prev_encoder_position;
+volatile clock_t t1;
 // 编码器的当前位置
 volatile int encoder_position;
 
@@ -42,16 +44,11 @@ void update_encoder_position(int position)
     encoder_position = position;
     pthread_mutex_unlock(&mutex_encoder);
 }
-// 更新编码器的运动状态
-void update_encoder_movement()
+// 更新编码器的速度
+void update_encoder_speed(double speed)
 {
     pthread_mutex_lock(&mutex_encoder);
-    int stride = encoder_position - prev_encoder_position;
-    if(stride > 0)
-	encoder_movement = RIGHTMOVE;
-    else if(stride < 0)
-	encoder_movement = LEFTMOVE;
-    else encoder_movement = NOTMOVE;
+    encoder_speed = speed;
     pthread_mutex_unlock(&mutex_encoder);
 }
 // 更新编码器的响应标志
@@ -62,6 +59,11 @@ void encoder_is_enable()
     pthread_mutex_unlock(&mutex_encoder);
 }
 
+// 判断编码器是否已经工作
+int is_encoder_enable()
+{
+    return encoder_is_enable_;
+}
 // 获取当前编码器的角度
 double get_encoder_angle()
 {
@@ -71,18 +73,25 @@ double get_encoder_angle()
     double angle = (double)position * 360.0 / (double)E_PULSE_PER_CIRCLE;
     return angle;
 }
+// 获取当前编码器的速度
+double get_encoder_speed()
+{
+    pthread_mutex_lock(&mutex_encoder);
+    double speed = encoder_speed;
+    pthread_mutex_unlock(&mutex_encoder);
+    return speed;
+}
 // 获取当前编码器的运动
 MovementStatus get_encoder_movement()
 {
     pthread_mutex_lock(&mutex_encoder);
-    MovementStatus direct = encoder_movement;
+    double speed = encoder_speed;
     pthread_mutex_unlock(&mutex_encoder);
+    MovementStatus direct;
+    if(speed > 0) direct = RIGHTMOVE;
+    else if(speed < 0) direct = LEFTMOVE;
+    else direct = NOTMOVE;
     return direct;
-}
-// 判断编码器是否已经工作
-int is_encoder_enable()
-{
-    return encoder_is_enable_;
 }
 
 
@@ -323,8 +332,8 @@ void receivethread(void)
 	    // 判断编码器是否已经工作
 	    if(!is_encoder_enable()) {
 		update_encoder_position(position);
+		t1 = clock(); 
 		prev_encoder_position = position;
-		update_encoder_movement();
 		// 设定启动点角度
 		double angle = get_encoder_angle();
 		set_g_start_angle(angle);
@@ -333,27 +342,27 @@ void receivethread(void)
 
 	    // Update position
 	    update_encoder_position(position);
-	    update_encoder_movement();
-	    prev_encoder_position = position;
-
-
-	    ////printf("\nhex: %.4x\n",cur_v);
-	    //printf("am335x: dec %d\n",cur_v);
-	    //int temp = get_encoder_position();
-	    //printf("am335x: actual position: %.10d\n",temp);
-	    //fflush(stdout);
+	    // 测速，200ms测一次速
+	    clock_t t2 = clock();
+	    double duration = 1000.0*(t2-t1)/CLOCKS_PER_SEC;
+	    if(duration > 200)
+	    {
+		double speed = (position - prev_encoder_position)/duration;
+		update_encoder_speed(speed);
+		t1 = t2;
+		prev_encoder_position = position;
+	    }
 
 	}
 
 	// TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
-	double angle = get_encoder_angle();
-	//MovementStatus motor_movement = get_motor_movement();
+	// 编码器速度很小的时候，控制器的零速度信号是否有输出
+	// 电机50r/min,零速度信号就响应, 对应编码器为0.27个脉冲/ms
+	double speed = get_encoder_speed();
+	if(fabs(speed) < 0.15){
+	    // 零速度信号判断
 
-	//if( ((angle > get_g_right_angle()) || (angle > 90)) && (RIGHTMOVE == motor_movement) ) {
-	//    // 右限位
-	//}else if( ((angle < get_g_left_angle()) || (angle < 90)) && (LEFTMOVE == motor_movement) ) {
-	//    // 左限位
-	//}
+	}
 	
     } 
     return;
