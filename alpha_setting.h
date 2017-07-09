@@ -190,7 +190,7 @@
 #define     SPD_LMT_DETC_fc                 (11)
 #define     OVER_WR_CMPL_fc                 (13)
 #define     BRK_TIMING_fc                   (14)
-#define     ALRM_DECT_fc                    (16)
+#define     ALRM_DECT_A_fc                  (16)
 #define     POINT_DETC_AREA1_fc             (17)
 #define     POINT_DETC_AREA2_fc             (18)
 #define     LMTER_DETC_fc                   (19)
@@ -226,7 +226,7 @@
 #define     MD6_fc                          (66)
 #define     MD7_fc                          (67)
 #define     PST_PRST_CMPL_fc                (75)
-#define     ALRM_DETC_fc                    (76)
+#define     ALRM_DETC_B_fc                  (76)
 #define     IMME_VLU_CNTIN_PERMS_fc         (79)
 #define     IMME_VLU_CNTIN_CMPL_fc          (80)
 #define     IMME_VLU_CHG_CMPL_fc            (81)
@@ -299,7 +299,7 @@
 #define     SPD_LMT_DETC_ad                 
 #define     OVER_WR_CMPL_ad                 
 #define     BRK_TIMING_ad                   (OUT6_ad)       //制动器时机
-#define     ALRM_DECT_ad                
+#define     ALRM_DECT_A_ad                
 #define     POINT_DETC_AREA1_ad             
 #define     POINT_DETC_AREA2_ad             
 #define     LMTER_DETC_ad                   
@@ -335,7 +335,7 @@
 #define     MD6_ad                          
 #define     MD7_ad                          
 #define     PST_PRST_CMPL_ad                (OUT19_ad)      //位置预置结束
-#define     ALRM_DETC_ad                    (OUT3_ad)       //报警检测b接
+#define     ALRM_DETC_B_ad                  (OUT3_ad)       //报警检测b接，OFF为报警
 #define     IMME_VLU_CNTIN_PERMS_ad         (OUT20_ad)      //立即值继续许可
 #define     IMME_VLU_CNTIN_CMPL_ad          
 #define     IMME_VLU_CHG_CMPL_ad            

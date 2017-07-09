@@ -3,7 +3,6 @@
 #include <pthread.h>
 
 #include "elog.h"
-
 #include "alpha_motion_control.h"
 
 
@@ -49,6 +48,34 @@ void set_motor_movement_notmove()
 }
 
 
+// 获取OUT线圈状态
+// 返回-1表示通信失败，未读取到数据
+int get_out_status(int out_addr)
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx, out_addr, 1, tab_rp_bits); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("get_out_status: communication failed.");
+			return -1;
+		}
+	}
+	return tab_rp_bits[0];
+}
+// 设置CONT线圈状态
+// 返回-1表示通信失败，未设置成功
+int set_cont_status(int cont_addr, int status)
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_write_bit(ctx, cont_addr, status); i++){
+		if(i==OPLOOPS-1)
+		{
+			log_e("set_cont_status: communication failed.");
+			return -1;
+		}
+	}
+	return 0;
+}
+
+
 // 转换角度为位置增量
 void convert_angle_to_inc_position(double angle, uint16_t *inc_position)
 {
@@ -73,7 +100,7 @@ int run_inc_angle(double angle)
 		uint16_t inc_position[2];
 		convert_angle_to_inc_position(angle, inc_position);
 
-		ret = set_inc_control_mode();
+		ret = set_inc_control_mode(); //增量
 		if(-1 == ret) {
 			log_e("run_inc_position: set inc control mode failed.");
 			return -1;
@@ -98,24 +125,28 @@ int run_inc_angle(double angle)
 }
 
 
-// 运行到 point_position 的指定位置 (绝对模式)
-// 输入: uint16_t point_position[2]
-int run_to_position(uint16_t *point_position)
+// 运行到指定角度 (绝对模式)
+int run_to_angle(double angle)
 {
+	//// debug语句
+	//printf("run_inc_angle %f\n", angle);
+	
 	if(is_INP())
 	{
 		int ret;
+		uint16_t inc_position[2];
+		convert_angle_to_inc_position(angle, inc_position);
 
-		ret = set_abs_control_mode();
+		ret = set_abs_control_mode(); //绝对坐标
 		if(-1 == ret) {
-			log_e("run_to_point: set abs control mode failed.");
+			log_e("run_to_angle: set abs control mode failed.");
 			return -1;
 		}
 
-		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, point_position); i++){
+		for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_POSITION_ad, 2, inc_position); i++){
 			if(OPLOOPS-1==i)
 			{
-				log_e("run_to_point: communication failed.");
+				log_e("run_to_angle: communication failed.");
 				return -1;
 			}
 		}

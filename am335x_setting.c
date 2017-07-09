@@ -14,10 +14,7 @@
 
 #include    "elog.h"
 #include    "am335x_setting.h"
-
-
-#define FALSE (0)
-#define TRUE  (1)
+#include    "alpha_motion_control.h"
 
 
 // 用于判定是否收到编码器的响应
@@ -361,7 +358,11 @@ void receivethread(void)
 	double speed = get_encoder_speed();
 	if(fabs(speed) < 0.15){
 	    // 零速度信号判断
-
+	    if(1 != get_motor_zero_speed())
+	    {
+		//停止
+		serve_off();
+	    }
 	}
 	
     } 

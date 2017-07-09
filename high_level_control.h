@@ -4,10 +4,15 @@
 #include "alpha_motion_control.h"
 
 
-// 更新/获取目标角度
-void update_destination_angle(double angle);
-double get_destination_angle();
-
+// 发送错误消息
+// 格式: $E报警代码，其他故障码\r\n
+// 其他故障:使用寿命预警、RS485故障、OT信号
+int send_error_msg();
+// 报警重置，ON边缘复位
+int alarm_reset();
+// 位置预置，在ON边缘上将当前位置及反馈位置设置为PA2_19寄存器内保存的设定值
+// 注意，在伺服电机停止的情况下预置
+int position_reset();
 
 // 取消当前任务
 int task_cancel();

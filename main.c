@@ -8,50 +8,11 @@
 #include "iniparser.h"
 
 #include "global_setting.h"
-
 #include "alpha_setting.h"
 #include "am335x_setting.h"
 #include "cmdparser.h"
 #include "high_level_control.h"
 
-
-// 状态发送开/关
-volatile bool g_status = true;
-// 释放伺服开/关
-volatile bool g_stop = false;
-
-// 变量赋值时的互斥
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-
-// 设置状态发送开关
-void set_status(bool mode)
-{
-    pthread_mutex_lock(&mutex);
-    g_status = mode;
-    pthread_mutex_unlock(&mutex);
-}
-bool get_status()
-{
-    pthread_mutex_lock(&mutex);
-    bool mode = g_status;
-    pthread_mutex_unlock(&mutex);
-    return mode;
-}
-// 设置释放伺服开关
-void set_stop(bool mode)
-{
-    pthread_mutex_lock(&mutex);
-    g_stop = mode;
-    pthread_mutex_unlock(&mutex);
-}
-bool get_stop()
-{
-    pthread_mutex_lock(&mutex);
-    bool mode = g_stop;
-    pthread_mutex_unlock(&mutex);
-    return mode;
-}
 
 // 保存Socket参数的对象
 am335x_socket_t g_am335x_socket;
@@ -63,9 +24,6 @@ uart_t g_am335x_uart;
 // 配置表创建与解析函数
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
-
-// 对全局控制信号进行监听的函数
-void signal_handler(void);
 
 
 int main(int argc, char** argv)
@@ -178,6 +136,7 @@ int main(int argc, char** argv)
     {
         if(!is_encoder_enable()){
             if(i == waittime-1){
+                log_e("encoder is not enable.");
                 set_stop(true);
                 break;
             }
@@ -186,60 +145,55 @@ int main(int argc, char** argv)
         }else
             break;
     }
+    /// TODO 原点复位
+    if(!get_stop()){
+        ret = position_reset();
+        if(-1==ret) set_stop(true);
+    }
 
-    /// 添加全局控制信号检测函数到线程中去
-    pthread_t signalthreadid;
-    if(pthread_create(&signalthreadid,NULL,(void*)signal_handler,NULL) != 0) {
-        log_e("create signal handle thread failed.");
-        set_stop(true);
-    }
-    if(pthread_detach(signalthreadid) != 0) {
-        log_e("detach signal handle thread failed.");
-        set_stop(true);
-    }
     // 初始化完成！
     log_i("Init Success.");
 
-    //// 初始化完成后的自检操作
-    if(!get_stop())
-    {
-        param temp;
-        temp.cmd = GCHECK;
-        update_g_x(temp);
-        update_g_ctrl_status(LEFTORRIGHT);
-    }
+    // //// 初始化完成后的自检操作
+    // if(!get_stop())
+    // {
+    //     param temp;
+    //     temp.cmd = GCHECK;
+    //     update_g_x(temp);
+    //     update_g_ctrl_status(LEFTORRIGHT);
+    // }
 
-    //// 循环获取编码器的位置，并发送到控制终端
-    while(!get_stop()) {
-        
-        CtrlStatus ctrl_status = get_g_ctrl_status();
-        double angle = get_encoder_angle();
-        double diff_angle = angle - get_destination_angle();
+    // //// 循环获取编码器的位置，并发送到控制终端
+    // while(!get_stop()) {
+    //     
+    //     CtrlStatus ctrl_status = get_g_ctrl_status();
+    //     double angle = get_encoder_angle();
+    //     double diff_angle = angle - get_destination_angle();
 
-        //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
+    //     //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
 
-        if( (LOCATING == ctrl_status) &&
-            (fabs(diff_angle) <= 0.005) )
-        {
-            //printf("bb... in main\n");
+    //     if( (LOCATING == ctrl_status) &&
+    //         (fabs(diff_angle) <= 0.005) )
+    //     {
+    //         //printf("bb... in main\n");
 
-            int ret = task_cancel();
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-        }
+    //         int ret = task_cancel();
+    //         if(-1 == ret) update_g_ctrl_status(ERROOR);
+    //     }
 
-        // 获取角度信息
-        if(get_anticlockwise()) angle *= -1;
-        // 获取控制状态
-        CtrlStatus status = get_g_ctrl_status();
-        // 生成发送字符串
-        char buf[64];
-        memset(buf,0,64);
-        sprintf(buf,"$A%.3f,%1d\r\n",angle,status);
-        m_socket_write(buf,strlen(buf));
+    //     // 获取角度信息
+    //     if(get_anticlockwise()) angle *= -1;
+    //     // 获取控制状态
+    //     CtrlStatus status = get_g_ctrl_status();
+    //     // 生成发送字符串
+    //     char buf[64];
+    //     memset(buf,0,64);
+    //     sprintf(buf,"$A%.3f,%1d\r\n",angle,status);
+    //     m_socket_write(buf,strlen(buf));
 
 
-        usleep(1000); // 1ms
-    }
+    //     usleep(1000); // 1ms
+    // }
 
     // 释放伺服，并退出程序
     serve_off();
@@ -253,138 +207,6 @@ int main(int argc, char** argv)
 }
 
 
-void signal_handler(void)
-{
-    int ret;
-
-    while(1){
-
-        // 获取当前指令并清空
-        param temp = get_g_x();
-        param temp_update;
-        temp_update.cmd = 0;
-        update_g_x(temp_update);
-        
-        if ( temp.cmd & GPST_CANCEL )    // 运动取消
-        {
-            //printf("signal_handler: cancel\n");
-
-            ret = task_cancel();
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GEMG )      // 停止，并释放伺服
-        {
-            //printf("signal_handler: stop\n");
-
-            ret = force_stop();
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-
-            set_stop(true);
-        }
-        else if ( temp.cmd & GPOINT )    // run to point 
-        {
-            //printf("signal_handler: point %f\n", temp.v[0]);
-            
-            ret = goto_point(temp.v[0]);
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GLEFT )     // run to left
-        {
-            //printf("signal_handler: left\n");
-
-            ret = goto_left();
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GRIGHT )    // run to right 
-        {
-            //printf("signal_handler: right\n");
-
-            ret = goto_right();
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GSPEED ) 
-        {
-            //printf("signal_handler: speed\n");
-
-            // degree/s
-            ret = set_speed_value(temp.v[0]);
-            if (-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GACCE_TIME ) 
-        {
-            //printf("signal_handler: accetime\n");
-
-            // 1 means 0.1 ms
-            ret = set_acce_value(temp.v[0]);
-            if (-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GDECE_TIME ) 
-        {
-            //printf("signal_handler: decetime\n");
-
-            // 1 means 0.1 ms
-            ret = set_dece_value(temp.v[0]);
-            if (-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-        else if ( temp.cmd & GMAX_POINT )
-        {
-            // degree
-            double left_angle = temp.v[0];
-            double right_angle = temp.v[0];
-            set_g_left_angle(left_angle);
-            set_g_right_angle(right_angle);
-        }
-        else if ( temp.cmd & GSTATUS )
-        {
-            bool mode = ((int)temp.v[0]) ? true : false;
-            set_status(mode);
-        }
-        else if ( temp.cmd & GCHECK )
-        {
-            //printf("signal_handler: check\n");
-            
-            ret = check_motion();
-            if(-1 == ret) update_g_ctrl_status(ERROOR);
-        }
-
-
-        // 更新控制状态
-        CtrlStatus status = get_g_ctrl_status();
-        if(!is_INP()){
-            if(GPOINT & temp.cmd) 
-                update_g_ctrl_status(LOCATING);
-            else 
-                update_g_ctrl_status(LEFTORRIGHT);
-            if(ERROOR == status){
-                update_g_ctrl_status(ERROOR);
-                //取消任务
-                task_cancel();
-            }
-        }
-        else if(ERROOR == status)
-        {
-            update_g_ctrl_status(ERROOR);
-        }
-        else if((LOCATING == status)||(LEFTORRIGHT == status))
-        {
-            update_g_ctrl_status(FINISH);
-        }
-        else{
-            update_g_ctrl_status(FREE);
-        }
-
-        if(get_status()||(FINISH == status)) 
-        {
-            // 若为finish,发送字符串到控制终端
-            char buf[64];
-            memset(buf,0,64);
-            sprintf(buf,"$B\r\n");
-            m_socket_write(buf,strlen(buf));
-        }
-
-        usleep(200000);     // 200ms
-    }
-}
 
 void create_example_ini_file(void)
 {

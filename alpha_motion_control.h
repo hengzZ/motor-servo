@@ -23,10 +23,18 @@
 
 // 获取伺服电机的运动状态
 MovementStatus get_motor_movement();
+
+// 获取OUT线圈状态
+// 返回-1表示通信失败，未读取到数据
+int get_out_status(int out_addr);
+// 设置CONT线圈状态
+// 返回-1表示通信失败，未设置成功
+int set_cont_status(int cont_addr, int status);
+
 // 增量旋转
 int run_inc_angle(double angle);
-// 运行到 point_position 的指定位置 (绝对模式)
-int run_to_position(uint16_t *point_position);
+// 运行到指定角度 (绝对模式)
+int run_to_angle(double angle);
 
 // 运动模式
 int set_abs_control_mode(); //绝对位置模式

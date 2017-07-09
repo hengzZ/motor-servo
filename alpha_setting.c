@@ -143,7 +143,7 @@ void io_signals_mapping()
 	// PA3_52 OUT2 (2)定位结束INP
 	write_register( PA3_52_ad, 0x0000, INP_fc);
 	// PA3_53 OUT3 (76)报警检测b接
-	write_register( PA3_53_ad, 0x0000, ALRM_DECT_fc);
+	write_register( PA3_53_ad, 0x0000, ALRM_DETC_B_fc);
 	// PA3_56 OUT6 (14)制动器时机
 	write_register( PA3_56_ad, 0x0000, BRK_TIMING_fc);
 	// PA3_57 OUT7 (20)OT检测，输入信号的OT处于OFF时，该信号ON
@@ -252,8 +252,8 @@ void parameter_register_setting()
 	
 	// PA2_25~27 软件OT设置，OT检测
 	// PA1_01=7, PA2_25=0; 0 为 PTP mode, 1 为 INC mode and OT invalid
-	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO / 3;
-	const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO / 3;
+	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO / 2;
+	const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO / 2;
 	write_register( PA2_25_ad, 0x0000, 0x0000);
 	// +OT position > -OT position
 	write_register( PA2_26_ad, plus_position & 0xFFFF, (plus_position >> 16) & 0xFFFF);
@@ -364,7 +364,7 @@ int check_parameters()
 	// PA3_52 OUT2 (2)定位结束INP
 	ret = check_io( PA3_52_ad, INP_fc ); if(-1==ret) return -1;
 	// PA3_53 OUT3 (76)报警检测b接
-	ret = check_io( PA3_53_ad, ALRM_DECT_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_53_ad, ALRM_DETC_B_fc); if(-1==ret) return -1;
 	// PA3_56 OUT6 (14)制动器时机
 	ret = check_io( PA3_56_ad, BRK_TIMING_fc ); if(-1==ret) return -1;
 	// PA3_57 OUT7 (20)OT检测，输入信号的OT处于OFF时，该信号ON
@@ -467,8 +467,8 @@ int check_parameters()
 	
 	// PA2_25~27 软件OT设置，OT检测
 	// PA1_01=7, PA2_25=0; 0 为 PTP mode, 1 为 INC mode and OT invalid
-	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO / 3;
-	const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO / 3;
+	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO / 2;
+	const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO / 2;
 	ret = check_register( PA2_25_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// +OT position > -OT position
 	ret = check_register( PA2_26_ad, plus_position & 0xFFFF, (plus_position >> 16) & 0xFFFF); if(-1==ret) return -1;

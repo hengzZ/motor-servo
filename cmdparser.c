@@ -12,36 +12,21 @@
 
 #include "elog.h"
 #include "modbus.h"
-
 #include "global_setting.h"
+#include "alpha_setting.h"
+#include "high_level_control.h"
 
 
-// 用于运动方面的反转，安装时用于调整默认方向
-volatile int anticlockwise;
+// 记录执行的命令
+volatile GFLAGS last_flags = 0;
 // 用于赋值时的互斥
 pthread_mutex_t mutex_cmd = PTHREAD_MUTEX_INITIALIZER;
-
-// 获取当前的坐标方向标记
-void set_anticlockwise(int mode)
-{
-    pthread_mutex_lock(&mutex_cmd);
-    anticlockwise = mode;
-    pthread_mutex_unlock(&mutex_cmd);
-}
-int get_anticlockwise()
-{
-    pthread_mutex_lock(&mutex_cmd);
-    int mode = anticlockwise;
-    pthread_mutex_unlock(&mutex_cmd);
-    return mode;
-}
-
 
 // Socket
 int server_port, queue_size;
 int s, b, l, sa;
 int on = 1;
-
+// Socket收发
 int m_socket_read(void *buf, size_t count)
 {
     pthread_mutex_lock(&mutex_cmd);
@@ -56,6 +41,15 @@ int m_socket_write(void *buf, size_t count)
     pthread_mutex_unlock(&mutex_cmd);
     return bytes;
 }
+// 信息发送
+int message_send(const char* msg)
+{
+    char sendbuf[64];
+    memset(sendbuf,0,64);
+
+    sprintf(sendbuf, msg);
+    return m_socket_write(sendbuf,strlen(sendbuf));
+}
 
 
 // 套接字监听
@@ -69,7 +63,6 @@ void parsesocket(void)
 	channel.sin_family = AF_INET;
 	channel.sin_addr.s_addr = htonl(INADDR_ANY);
 	channel.sin_port = htons(server_port);
-
 	// Passive open
 	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(s < 0) { 
@@ -95,6 +88,7 @@ void parsesocket(void)
 	char buf[128];
 	int connect_loop;
 	
+	// 监听: 信号解析与执行
 	while(1)
 	{
 		sa = accept(s, 0, 0);
@@ -111,17 +105,17 @@ void parsesocket(void)
 			}
 			
 			//fflush(sa);
-			param temp_x = get_g_x();
+			//// TODO 指令解析 ////
+			param temp_x; //控制参数对象
+			temp_x.cmd = 0;
 			if(buf == strstr(buf,"cancel"))
 			{
 			    //printf("cmdparse: cancel");
-
 			    temp_x.cmd = GPST_CANCEL;
 			}
 			else if(buf == strstr(buf,"stop"))
 			{
 			    //printf("cmdparse: stop");
-
 			    temp_x.cmd = GEMG;
 			}
 			else if(buf == strstr(buf, "point"))
@@ -137,7 +131,7 @@ void parsesocket(void)
 			    //log_e(tmp_buf);
 			    //printf("cmdparse: %s\n",tmp_buf);
 
-			    if(get_anticlockwise()) temp_x.v[0] = -position;
+			    if(get_anticlockwise()) temp_x.v[0] = (-position);
 			    else temp_x.v[0] = position;
 			    temp_x.cmd = GPOINT;
 			}
@@ -186,48 +180,130 @@ void parsesocket(void)
 			    temp_x.v[1] = max_right;
 			    temp_x.cmd = GMAX_POINT;
 			}
-			else if(buf == strstr(buf,"status"))
-			{
-			    int32_t status;
-			    sscanf(buf, "status %d",&status);
-			    temp_x.v[0] = status;
-			    temp_x.cmd = GSTATUS;
-			}
 			else if(buf == strstr(buf,"check"))
 			{
 			    temp_x.cmd = GCHECK;
 			}
-
-
-			// 应答条件判断
-			if(0 != temp_x.cmd)
+			else if(buf == strstr(buf,"errormsg"))
 			{
-			    char sendbuf[64];
-			    memset(sendbuf,0,64);
+			    temp_x.cmd = GERROR_MSG;
+			}
+			else if(buf == strstr(buf,"alarmrst"))
+			{
+			    temp_x.cmd = GALARM_RST;
+			}
 
-			    // 任务取消和停止直接响应
-			    if((GPST_CANCEL == temp_x.cmd)||(GEMG == temp_x.cmd))
-			    {
-				// 更新控制命令
-				update_g_x(temp_x);
-				// 应答
-				sprintf(buf,"$C\r\n");
-				m_socket_write(sendbuf,strlen(sendbuf));
-			    }
+			//// TODO 指令执行 ////
+			int ret = 5; // ret=5标志无指令
+			if ( temp_x.cmd & GPST_CANCEL )    // 运动取消
+			{
+			    ret = task_cancel();
+			}
+			else if ( temp_x.cmd & GEMG )      // 停止，并释放伺服
+			{
+			    //printf("signal_handler: stop\n");
+			    ret = force_stop();
+			    // 释放伺服，退出程序
+			    set_stop(true);
+			}
+			else if ( temp_x.cmd & GPOINT )    // run to point 
+			{
+			    //printf("signal_handler: point %f\n", temp.v[0]);
+			    ret = goto_point(temp_x.v[0]);
+			}
+			else if ( temp_x.cmd & GLEFT )     // run to left
+			{
+			    //printf("signal_handler: left\n");
+			    ret = goto_left();
+			}
+			else if ( temp_x.cmd & GRIGHT )    // run to right 
+			{
+			    //printf("signal_handler: right\n");
+			    ret = goto_right();
+			}
+			else if ( temp_x.cmd & GSPEED ) 
+			{
+			    //printf("signal_handler: speed\n");
+			    // degree/s
+			    ret = set_speed_value(temp_x.v[0]);
+			}
+			else if ( temp_x.cmd & GACCE_TIME ) 
+			{
+			    //printf("signal_handler: accetime\n");
+			    // 1 means 0.1 ms
+			    ret = set_acce_value(temp_x.v[0]);
+			}
+			else if ( temp_x.cmd & GDECE_TIME ) 
+			{
+			    //printf("signal_handler: decetime\n");
+			    // 1 means 0.1 ms
+			    ret = set_dece_value(temp_x.v[0]);
+			}
+			else if ( temp_x.cmd & GMAX_POINT )
+			{
+			    // degree
+			    double left_angle = temp_x.v[0];
+			    double right_angle = temp_x.v[0];
+			    set_g_left_angle(left_angle);
+			    set_g_right_angle(right_angle);
+			    ret = 0;
+			}
+			else if ( temp_x.cmd & GCHECK )
+			{
+			    //printf("signal_handler: check\n");
+			    ret = check_motion();
+			}
+			else if ( temp_x.cmd & GERROR_MSG )
+			{
+			    ret = send_error_msg();
+			}
+			else if ( temp_x.cmd & GALARM_RST )
+			{
+			    ret = alarm_reset();
+			}
 
-			    // 获取当前的控制状态
-			    CtrlStatus status = get_g_ctrl_status();
-			    if((FREE == status)||(FINISH == status)){
-				// 更新控制命令
-				update_g_x(temp_x);
-				// 应答
-				sprintf(buf,"$C\r\n");
-				m_socket_write(sendbuf,strlen(sendbuf));
-			    }else{
-				// 发送回复
-				sprintf(buf,"$D\r\n");
-				m_socket_write(sendbuf,strlen(sendbuf));
+			// 指令执行情况发送
+			if(5==ret){
+			    ; //无指令
+			}else{
+			    if(-1==ret) message_send("$D\r\n"); // 未执行
+			    else {
+				// 保存执行的指令
+				last_flags = temp_x.cmd;
+				message_send("$C\r\n");	// 指令被执行
 			    }
+			}
+
+			// FINISH状态判断
+			int is_inp = is_INP();
+			if( (GPOINT == last_flags) && is_inp )
+			{
+			    message_send("$B\r\n"); // position到位
+			    update_g_ctrl_status(FINISH);
+			}
+			else if( (GPOINT != last_flags) && is_inp )
+			{
+			    update_g_ctrl_status(FREE);
+			}
+			else if( (GPOINT == last_flags) && (!is_inp) )
+			{
+			    update_g_ctrl_status(LOCATING);
+			}
+			else if( (GPOINT != last_flags) && (!is_inp) )
+			{
+			    update_g_ctrl_status(LEFTORRIGHT);
+			}
+
+			// 报警检测
+			if( 0 == get_out_status(ALRM_DETC_B_ad) )
+			{
+			    update_g_ctrl_status(ERROOR);
+			}
+
+			// 伺服电机零速度判断
+			if( 1 == get_out_status(ZRO_SPEED_ad) )
+			{
+			    set_motor_zero_speed();
 			}
 
 

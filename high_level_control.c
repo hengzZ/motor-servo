@@ -1,27 +1,91 @@
-#include "high_level_control.h"
+#include <string.h>
+
+#include "cmdparser.h"
 #include "am335x_setting.h"
+#include "alpha_motion_control.h"
+#include "high_level_control.h"
 
 
-// 目标角度
-volatile double destination_angle = 0;
-// 用于变量赋值的互斥
-pthread_mutex_t mutex_dst_angle = PTHREAD_MUTEX_INITIALIZER;
-
-
-// 更新目标角度
-void update_destination_angle(double angle)
+// 发送错误消息
+// 格式: $E报警代码，其他故障码\r\n
+// 其他故障:使用寿命预警、RS485故障、OT信号
+int send_error_msg()
 {
-    pthread_mutex_lock(&mutex_dst_angle);
-    destination_angle = angle;
-    pthread_mutex_unlock(&mutex_dst_angle);
+    int ret=0;
+    char sendbuf[64];
+    memset(sendbuf,0,64);
+
+    // 获取故障码
+    int alm0 = get_out_status(ALRM_CODE0_ad);
+    if(-1==alm0) return -1;
+    int alm1 = get_out_status(ALRM_CODE1_ad);
+    if(-1==alm1) return -1;
+    int alm2 = get_out_status(ALRM_CODE2_ad);
+    if(-1==alm2) return -1;
+    int alm3 =  get_out_status(ALRM_CODE3_ad);
+    if(-1==alm3) return -1;
+    int alm4 =  get_out_status(ALRM_CODE4_ad);
+    if(-1==alm4) return -1;
+    // 其他故障
+    int life_alarm = get_out_status(LIFE_WRNING_ad);
+    if(-1==life_alarm) return -1;
+    int rs485_alarm =  get_out_status(DATA_ERROR_ad);
+    if(-1==rs485_alarm) return -1;
+    int ot_alarm =  get_out_status(OT_DETC_ad);
+    if(-1==ot_alarm) return -1;
+    if(1==ot_alarm) ot_alarm=0;	//未超程时，ON
+    else ot_alarm=1;
+
+    sprintf(sendbuf, "$E%1d%1d%1d%1d%1d,%1d%1d%1d\r\n",alm4,alm3,alm2,alm1,alm0,life_alarm,rs485_alarm,ot_alarm);
+    ret = m_socket_write(sendbuf,strlen(sendbuf));
+    
+    if(ret > 0) return 0;
+    else return -1;
 }
-// 获取目标角度
-double get_destination_angle()
+// 报警重置，ON边缘复位
+int alarm_reset()
 {
-    pthread_mutex_lock(&mutex_dst_angle);
-    double angle = destination_angle;
-    pthread_mutex_unlock(&mutex_dst_angle);
-    return angle;
+    int ret=0;
+
+    ret = set_cont_status(RST_ad,1);
+    if(-1==ret) return -1;
+    ret = set_cont_status(RST_ad,0);
+
+    return ret;
+}
+// 位置预置，在ON边缘上将当前位置及反馈位置设置为PA2_19寄存器内保存的设定值
+// 注意，在伺服电机停止的情况下预置
+int position_reset()
+{
+    int ret=0;
+    
+    ret = task_cancel();
+    if(-1==ret) return -1;
+
+    // 等待停止
+    int waittime = 30; // 30* 200ms
+    for(int i=0; i < waittime; ++i)
+    {
+        if(!is_INP())
+	{
+            if(i == waittime-1){
+		return -1;
+            }
+            usleep(200000); // 200ms
+            continue;
+	}
+	else
+	{
+	    break;
+	}
+    }
+
+    // 位置预置
+    ret = set_cont_status(PST_PRESET_ad,1);
+    if(-1==ret) return -1;
+    ret = set_cont_status(PST_PRESET_ad,0);
+
+    return ret;
 }
 
 
@@ -65,15 +129,15 @@ int goto_point(double angle)
     if(angle > get_g_right_angle()) angle = get_g_right_angle();
 
     int ret;
-    
+    double actual_angle = angle + get_g_start_angle();
+    actual_angle *= TRANSMISSION_RATIO;
     //更新目标角度
     update_destination_angle(angle);
 
-    double actual_angle = angle - get_encoder_angle();
-    actual_angle *= TRANSMISSION_RATIO;
-    ret = run_inc_angle(actual_angle);
+    ret = run_to_angle(actual_angle);
 
-    return ret;
+    if(1==ret) return 0;
+    else return -1;
 }
 
 // 左转
@@ -85,11 +149,12 @@ int goto_left()
     double angle = get_g_left_angle();
     update_destination_angle(angle);
 
-    double actual_angle = angle - get_encoder_angle();
+    double actual_angle = angle + get_g_start_angle();
     actual_angle *= TRANSMISSION_RATIO;
-    ret = run_inc_angle(actual_angle);
+    ret = run_to_angle(actual_angle);
 
-    return ret;
+    if(1==ret) return 0;
+    else return -1;
 }
 
 // 右转
@@ -101,11 +166,12 @@ int goto_right()
     double angle = get_g_right_angle();
     update_destination_angle(angle);
     
-    double actual_angle = angle - get_encoder_angle();
+    double actual_angle = angle + get_g_start_angle();
     actual_angle *= TRANSMISSION_RATIO;
-    ret = run_inc_angle(actual_angle);
+    ret = run_to_angle(actual_angle);
 
-    return ret;
+    if(1==ret) return 0;
+    else return -1;
 }
 
 // 速度设定
@@ -120,7 +186,8 @@ int set_speed_value(double speed)
 	if(-1 == ret) return -1;
 	ret = send_cruise_speed();
 
-	return ret;
+	if(-1==ret) return -1;
+	else return 0;
 }
 // 加速时间设定
 // 输入: 0.1ms
@@ -133,7 +200,8 @@ int set_acce_value(double acce_time)
 	if(-1 == ret) return -1;
 	ret = send_imme_acceleration_time();
 
-	return ret;
+	if(-1==ret) return -1;
+	else return 0;
 }
 // 减速时间设定
 // 输入: 0.1ms
@@ -146,7 +214,8 @@ int set_dece_value(double dece_time)
 	if(-1 == ret) return -1;
 	ret = send_imme_deceleration_time();
 
-	return ret;
+	if(-1==ret) return -1;
+	else return 0;
 }
 
 //// 自检操作

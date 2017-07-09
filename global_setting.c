@@ -5,17 +5,39 @@
 volatile param g_x;
 // 全局控制状态变量
 volatile CtrlStatus g_ctrl_status = FREE;
+// 退出主程序，释放伺服开/关
+volatile int g_stop = 0;
+// 用于运动方面的反转，安装时用于调整默认方向
+volatile int anticlockwise;
 
 // 启动位置角度
 volatile double g_start_angle;
 // 极限位置角度
 volatile double g_left_angle;
 volatile double g_right_angle;
-
+// 目标角度
+volatile double destination_angle = 0;
+// 伺服电机零速度标志
+volatile int motor_zero_speed=1;
 
 // 变量赋值时的互斥
 pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+// 伺服电机零速度更新/获取
+void set_motor_zero_speed()
+{
+    pthread_mutex_lock(&global_mutex);
+    motor_zero_speed = 1;
+    pthread_mutex_unlock(&global_mutex);
+}
+int get_motor_zero_speed()
+{
+    pthread_mutex_lock(&global_mutex);
+    int speed = motor_zero_speed;
+    pthread_mutex_unlock(&global_mutex);
+    return speed;
+}
 
 // 更新/读取控制变量
 void update_g_x(param x)
@@ -45,6 +67,21 @@ CtrlStatus get_g_ctrl_status()
     CtrlStatus status = g_ctrl_status;
     pthread_mutex_unlock(&global_mutex);
     return status;
+}
+
+// 设置退出主程序，释放伺服开关
+void set_stop(int mode)
+{
+    pthread_mutex_lock(&global_mutex);
+    g_stop = mode;
+    pthread_mutex_unlock(&global_mutex);
+}
+int get_stop()
+{
+    pthread_mutex_lock(&global_mutex);
+    int mode = g_stop;
+    pthread_mutex_unlock(&global_mutex);
+    return mode;
 }
 
 // 启动角度、极限角度设定
@@ -92,5 +129,36 @@ double get_g_right_angle()
     double angle = g_right_angle;
     pthread_mutex_unlock(&global_mutex);
     return angle;
+}
+
+// 更新目标角度
+void update_destination_angle(double angle)
+{
+    pthread_mutex_lock(&global_mutex);
+    destination_angle = angle;
+    pthread_mutex_unlock(&global_mutex);
+}
+// 获取目标角度
+double get_destination_angle()
+{
+    pthread_mutex_lock(&global_mutex);
+    double angle = destination_angle;
+    pthread_mutex_unlock(&global_mutex);
+    return angle;
+}
+
+// 获取当前的坐标方向标记
+void set_anticlockwise(int mode)
+{
+    pthread_mutex_lock(&global_mutex);
+    anticlockwise = mode;
+    pthread_mutex_unlock(&global_mutex);
+}
+int get_anticlockwise()
+{
+    pthread_mutex_lock(&global_mutex);
+    int mode = anticlockwise;
+    pthread_mutex_unlock(&global_mutex);
+    return mode;
 }
 
