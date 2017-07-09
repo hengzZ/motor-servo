@@ -22,22 +22,31 @@
 //volatile GFLAGS last_flags = 0;
 // 用于赋值时的互斥
 pthread_mutex_t mutex_cmd = PTHREAD_MUTEX_INITIALIZER;
+
 // Socket
 int server_port, queue_size;
-int s, b, l, sa;
-int on = 1;
+int sock, conneted=0;
+struct sockaddr_in clientAddr;
+
 // Socket收发
 int m_socket_read(void *buf, size_t count)
 {
     pthread_mutex_lock(&mutex_cmd);
-    int bytes = read(sa, buf, count);
+    int len = sizeof(clientAddr);
+    int bytes = recvfrom(sock, buf, count, 0, (struct sockaddr*)&clientAddr, &len);
+    if(bytes>0) conneted = 1;
     pthread_mutex_unlock(&mutex_cmd);
     return bytes;
 }
 int m_socket_write(void *buf, size_t count)
 {
+    int bytes;
     pthread_mutex_lock(&mutex_cmd);
-    int bytes = write(sa, buf, count);
+    if(conneted){
+	bytes = sendto(sock, buf, count, 0, (struct sockaddr *)&clientAddr, sizeof(clientAddr));
+    }else{
+	bytes = 0;
+    }
     pthread_mutex_unlock(&mutex_cmd);
     return bytes;
 }
@@ -56,32 +65,29 @@ int message_send(const char* msg)
 //***************************************************************
 void parsesocket(void)
 {
-	struct sockaddr_in channel;		// holds IP address
+	// udp addr
+	struct sockaddr_in addr;    // holds UDP IP address
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(server_port);
 
-	// Build address structure
-	memset(&channel, 0, sizeof(channel));
-	channel.sin_family = AF_INET;
-	channel.sin_addr.s_addr = htonl(INADDR_ANY);
-	channel.sin_port = htons(server_port);
-	// Passive open
-	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if(s < 0) { 
-		log_e("socket failed.");
-		assert(0);
-		exit(-1);
+	// socket
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if(sock < 0)
+	{
+	    log_e("socket");
+	    exit(-1);
 	}
-	setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on));
-	b = bind(s, (struct sockaddr*)&channel, sizeof(channel));
-	if(b < 0) {
-		log_e("bind failed.");
-		assert(0);
-		exit(-1);
-	}
-	l = listen(s, queue_size);
-	if(l < 0) {
-		log_e("listen failed.");
-		assert(0);
-		exit(-1);
+
+	int flags = fcntl(sock, F_GETFL, 0); // 获取当前状态
+	fcntl(sock, F_SETFL, flags|O_NONBLOCK); // 非阻塞设置
+
+	// bind
+	if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+	    perror("bind");
+	    exit(-1);
 	}
 	// Init Done
 	int bytes = 0;
@@ -93,22 +99,15 @@ void parsesocket(void)
 	// 监听: 信号解析与执行
 	while(1)
 	{
-		sa = accept(s, 0, 0);
-		
-		if(sa < 0) {		
-			log_e("listening_socket: socket accept failed.");
-		}
-
 		connect_loop = 1;
-		while(connect_loop){
-		
-			bytes = m_socket_read(buf, 127);			
+		while(connect_loop)
+		{
+			bytes = m_socket_read(buf,127);	
 			if(bytes <= 0) {
 			    connect_loop = 0;
 			    break;
 			}
 			
-			//fflush(sa);
 			//// TODO 指令解析 ////
 			param temp_x; //控制参数对象
 			temp_x.cmd = 0;
@@ -304,7 +303,6 @@ void parsesocket(void)
 			usleep(200000);	    // 200ms		
 		}	
 		
-		close(sa);
 		usleep(200000);	    // 200ms
 	}
 }
