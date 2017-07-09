@@ -3,6 +3,9 @@
 
 #include    "global_setting.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // 编码器零点
 #define ENCODER_ZERO_POSITION   (0)
@@ -35,8 +38,11 @@ double get_encoder_speed();
 // 获取当前编码器的运动
 MovementStatus get_encoder_movement();
 
-
-int listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit);
+int  listening_uart(const char* device, int baud, char parity, int data_bit, int stop_bit);
 void close_uart();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	//AM335X_SETTING_H

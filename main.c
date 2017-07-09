@@ -1,3 +1,4 @@
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,7 +21,6 @@ am335x_socket_t g_am335x_socket;
 rtu_master_t g_rtu_master;
 // 保存串口参数的对象
 uart_t g_am335x_uart;
-
 // 配置表创建与解析函数
 void create_example_ini_file(void);
 int  parse_ini_file(char* ini_name);
@@ -29,7 +29,8 @@ int  parse_ini_file(char* ini_name);
 int main(int argc, char** argv)
 {
     int ret;
-
+   
+    double duration;
     // EasyLogger Log配置
     elog_init();
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
@@ -43,8 +44,8 @@ int main(int argc, char** argv)
 
     // 读配置表
     ret = parse_ini_file("configure.ini");
-    if(-1 == ret)
-    {
+    if(-1 == ret){
+    
         create_example_ini_file();
         ret = parse_ini_file("configure.ini");
         if(-1 == ret)
@@ -58,6 +59,7 @@ int main(int argc, char** argv)
     // 初始化modbus通信使用的内存缓冲区
     ret = init_buffers_for_modbus();
     if(-1 == ret){
+    
         log_e("Init buffers for modbus communication failed.");
         return -1;
     }
@@ -145,14 +147,16 @@ int main(int argc, char** argv)
         }else
             break;
     }
-    /// TODO 原点复位
-    if(!get_stop()){
+    /// TODO 原点复位 self_chek?
+    if(!get_stop())
+    {
         ret = position_reset();
         if(-1==ret) set_stop(true);
+        update_g_ctrl_status(INITLIZING);
     }
 
     // 初始化完成！
-    log_i("Init Success.");
+   
 
     // //// 初始化完成后的自检操作
     // if(!get_stop())
@@ -162,39 +166,97 @@ int main(int argc, char** argv)
     //     update_g_x(temp);
     //     update_g_ctrl_status(LEFTORRIGHT);
     // }
-
     // //// 循环获取编码器的位置，并发送到控制终端
-    // while(!get_stop()) {
-    //     
-    //     CtrlStatus ctrl_status = get_g_ctrl_status();
-    //     double angle = get_encoder_angle();
-    //     double diff_angle = angle - get_destination_angle();
+     double curangle=0;
+     CtrlStatus  ctrl_status;
+     char buf[64];
+     
+     
+     clock_t curt,pret;    
+     curt=pret=clock();
+     
+     
+     
+     sleep(1);    
+     while(!get_stop()) {
+         
+        ctrl_status = get_g_ctrl_status();
+        curangle = get_encoder_angle();
+        double diff_angle = curangle - get_destination_angle();         
 
-    //     //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
+	    // // TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
+	    // // 编码器速度很小的时候，控制器的零速度信号是否有输出
+	    // // 电机50r/min,零速度信号就响应, 对应编码器为0.27个脉冲/ms
+	    // double speed = get_encoder_speed();
+	    // if(fabs(speed) < 0.1){
+	    //     // 零速度信号判断
+	    //     if(1 != get_motor_zero_speed()){
+		//         //停止
+		//         serve_off();
+	    //     }
+	    // }
 
-    //     if( (LOCATING == ctrl_status) &&
-    //         (fabs(diff_angle) <= 0.005) )
-    //     {
-    //         //printf("bb... in main\n");
+        //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
+         
+         
+         // 获取角度信息
+         if(get_anticlockwise()) curangle *= -1;        
+         sprintf(buf,"$A%.3f,%1d\r\n",curangle,ctrl_status);
+         
+         m_socket_write(buf,strlen(buf));
+         
+         switch (ctrl_status) {
+         
+            case INITLIZING:
+                break;
+            default:
+                break;
+         
+         } 
+         
+        curt = clock();
+        duration = 1000.0 * (double)( curt - pret ) / (double)CLOCKS_PER_SEC;        
+               
+        if(duration > 200){
+        // FINISH状态判断
+        		int is_inp = is_INP();
+        		if( is_inp ){
+        			
+                    // Debug语句
+                    printf("main: is inp\n");
 
-    //         int ret = task_cancel();
-    //         if(-1 == ret) update_g_ctrl_status(ERROOR);
-    //     }
+        			if( LOCATING == ctrl_status ){							
+        		        message_send("$B\r\n"); // position到位			    
+        		    }else if ( INITLIZING == ctrl_status ){
+        		    
+        		        log_i("Init Success.");
+        		    
+        		    }
+        		     
+        		    update_g_ctrl_status(FREE);
+        		}
+        		
+            if( (LOCATING == ctrl_status) &&
+             (fabs(diff_angle) <= 0.005) )
+             {
+                 //printf("bb... in main\n");
+                 int ret = task_cancel();
+                 //if(-1 == ret) update_g_ctrl_status(ERROOR);
+             }
 
-    //     // 获取角度信息
-    //     if(get_anticlockwise()) angle *= -1;
-    //     // 获取控制状态
-    //     CtrlStatus status = get_g_ctrl_status();
-    //     // 生成发送字符串
-    //     char buf[64];
-    //     memset(buf,0,64);
-    //     sprintf(buf,"$A%.3f,%1d\r\n",angle,status);
-    //     m_socket_write(buf,strlen(buf));
-
-
-    //     usleep(1000); // 1ms
-    // }
-
+        		// 报警检测
+        		if( 0 == get_out_status(ALRM_DETC_B_ad) ){			
+        		    update_g_ctrl_status(ERROOR);
+        		}
+        		// 伺服电机零速度判断
+        		if( 1 == get_out_status(ZRO_SPEED_ad) ){			
+        		    set_motor_zero_speed();
+        		}
+                pret = curt;
+        }               
+ 
+        usleep(1000); // 1ms
+    }
     // 释放伺服，并退出程序
     serve_off();
     close_modbus_rtu_master();

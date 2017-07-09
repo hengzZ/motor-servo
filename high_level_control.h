@@ -4,6 +4,9 @@
 #include "alpha_motion_control.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 // 发送错误消息
 // 格式: $E报警代码，其他故障码\r\n
 // 其他故障:使用寿命预警、RS485故障、OT信号
@@ -37,4 +40,7 @@ int set_dece_value(double dece_time);
 int check_motion();
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif // HIGH_LEVEL_CONTROL_H

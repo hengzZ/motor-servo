@@ -4,6 +4,9 @@
 
 #include "modbus.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // 发送次数，用于发送失败时的重复发送
 #define     OPLOOPS     (2)
@@ -28,7 +31,7 @@
 #define     PA2_29_ad    (0x411C)
 #define     PA2_40_ad    (0x4127)
 #define     PA2_41_ad    (0x4128)
-#define     PA2_71_ad    (0x4146)
+#define     PA2_72_ad    (0x4147)
 #define     PA2_73_ad    (0x4148)
 #define     PA2_93_ad    (0x415C)
 #define     PA2_94_ad    (0x415D)
@@ -241,33 +244,33 @@
 #define     CONT_E_THROUGH_fc               (95)
 
 // 对绑定后的线圈地址重命名，便于突出其信号的功能 [输入信号]
-#define     SERVO_ON_ad                 (CONT1_ad)      //伺服
+#define     SERVO_ON_ad                 (CONT9_ad)      //伺服
 #define     FWD_ad                      
 #define     REV_ad                      
-#define     START_ad                    (CONT3_ad)      //自动启动
-#define     ORG_ad                      (CONT4_ad)      //原点复位ORG
-#define     LS_ad                       (CONT5_ad)      //原点LS
-#define     OT_PLUS_ad                  (CONT9_ad)      //+方向超程
-#define     OT_MINUS_ad                 (CONT10_ad)     //-方向超程
-#define     EMG_ad                      (CONT11_ad)     //强制停止EMG
-#define     RST_ad                      (CONT2_ad)      //报警复位RST
+#define     START_ad                    (CONT11_ad)      //自动启动
+#define     ORG_ad                      (CONT1_ad)      //原点复位ORG
+#define     LS_ad                       (CONT2_ad)      //原点LS
+#define     OT_PLUS_ad                  (CONT12_ad)      //+方向超程
+#define     OT_MINUS_ad                 (CONT13_ad)     //-方向超程
+#define     EMG_ad                      (CONT14_ad)     //强制停止EMG
+#define     RST_ad                      (CONT10_ad)      //报警复位RST
 #define     ACCO_ad                     
-#define     PST_PRESET_ad               (CONT12_ad)     //位置预置
+#define     PST_PRESET_ad               (CONT15_ad)     //位置预置
 #define     GAIN_SWITCH_ad              
 #define     TRQ_LMT0_ad                 
 #define     TRQ_LMT1_ad                 
-#define     IMME_VLU_CTINU_ad           (CONT13_ad)     //立即值继续指令
-#define     IMME_VLU_CHG_ad             (CONT14_ad)     //立即值变更指令
+#define     IMME_VLU_CTINU_ad           (CONT16_ad)     //立即值继续指令
+#define     IMME_VLU_CHG_ad             (CONT17_ad)     //立即值变更指令
 #define     ELCT_GEAR_NUM_SEL0_ad       
 #define     ELCT_GEAR_NUM_SEL1_ad       
 #define     CMD_PULSE_INHIBIT_ad        
 #define     CMD_PULSE_RTO1_ad           
 #define     COM_PULSE_RTO2_ad           
 #define     PROPORTIONAL_CTRL_ad        
-#define     PAUSE_ad                    (CONT15_ad)     //临时停止
-#define     PST_CANCEL_ad               (CONT16_ad)     //定位取消
+#define     PAUSE_ad                    (CONT18_ad)     //临时停止
+#define     PST_CANCEL_ad               (CONT19_ad)     //定位取消
 #define     EXTR_REGN_RESIST_OH_ad      
-#define     TEACHING_ad                 (CONT17_ad)     //示教
+#define     TEACHING_ad                 (CONT20_ad)     //示教
 #define     CTRL_MOD_SLCT_ad            
 #define     PST_CTRL_ad                 
 #define     TRQ_CTRL_ad                 
@@ -278,18 +281,18 @@
 #define     OVERRIDE8_ad                
 #define     INTRUPT_IN_EN_ad            
 #define     INTRUPT_IN_ad               
-#define     DEVIATION_CLR_ad            (CONT18_ad)     //偏差清除
+#define     DEVIATION_CLR_ad            (CONT21_ad)     //偏差清除
 #define     X1_ad                       
 #define     X2_ad                       
 #define     X3_ad                       
-#define     FREE_RUN_ad                 (CONT19_ad)     //自由运转BX
+#define     FREE_RUN_ad                 (CONT22_ad)     //自由运转BX
 #define     EDT_PERMISSION_ad           
 #define     ANTI_FREQ_SLCT0_ad          
 #define     ANTI_FREQ_SLCT1_ad          
-#define     AD0_ad                      (CONT20_ad)     //AD0
-#define     AD1_ad                      (CONT21_ad)     //AD1
-#define     AD2_ad                      (CONT22_ad)     //AD2
-#define     AD3_ad                      (CONT23_ad)     //AD3
+#define     AD0_ad                      (CONT23_ad)     //AD0
+#define     AD1_ad                                      //AD1
+#define     AD2_ad                                      //AD2
+#define     AD3_ad                                      //AD3
 #define     PST_DATA_SLCT_ad            
 #define     BRDCST_CANCEL_ad            
 
@@ -396,5 +399,7 @@ void init_parameters();
 // 返回值: 0 表示校验通过， -1 表示寄存器的设置有误
 int check_parameters();
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif	//ALPHA_SETTING_H

@@ -4,17 +4,17 @@
 // 全局控制参数变量
 volatile param g_x;
 // 全局控制状态变量
-volatile CtrlStatus g_ctrl_status = FREE;
+volatile CtrlStatus g_ctrl_status = NONE;
 // 退出主程序，释放伺服开/关
 volatile int g_stop = 0;
 // 用于运动方面的反转，安装时用于调整默认方向
 volatile int anticlockwise;
 
 // 启动位置角度
-volatile double g_start_angle;
+static double g_start_angle;
 // 极限位置角度
-volatile double g_left_angle;
-volatile double g_right_angle;
+static double g_left_angle;
+static double g_right_angle;
 // 目标角度
 volatile double destination_angle = 0;
 // 伺服电机零速度标志
@@ -87,15 +87,15 @@ int get_stop()
 // 启动角度、极限角度设定
 void set_g_start_angle(double angle)
 {
-    pthread_mutex_lock(&global_mutex);
+    printf("set: angle %f\n", angle);
     g_start_angle = angle;
-    pthread_mutex_unlock(&global_mutex);
+    printf("set: g_start_angle %f\n", g_start_angle);
 }
 double get_g_start_angle()
 {
-    pthread_mutex_lock(&global_mutex);
+    printf("get: g_start_angle %f\n", g_start_angle);
     double angle = g_start_angle;
-    pthread_mutex_unlock(&global_mutex);
+    printf("get: angle %f\n", angle);
     return angle;
 }
 

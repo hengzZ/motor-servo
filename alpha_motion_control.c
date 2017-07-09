@@ -133,9 +133,13 @@ int run_to_angle(double angle)
 	
 	if(is_INP())
 	{
-		int ret;
+		int ret = 0;
 		uint16_t inc_position[2];
 		convert_angle_to_inc_position(angle, inc_position);
+
+		// Debug语句
+		printf("run_to_angle: %lf\n",angle);
+		printf("run_to_angle: val0: %4x, val1: %4x\n", inc_position[0], inc_position[1]);
 
 		ret = set_abs_control_mode(); //绝对坐标
 		if(-1 == ret) {

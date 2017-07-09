@@ -6,6 +6,9 @@
 #include "alpha_setting.h"
 
 
+// 用于设置伺服OT，超程范围
+static const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO;
+static const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO;
 // modbus通信句柄
 modbus_t *ctx = NULL;
 uint16_t *tab_rq_registers = NULL;
@@ -96,46 +99,46 @@ void write_register(int addr, uint16_t val0, uint16_t val1)
 void io_signals_mapping()
 {
 	// 输入信号设定
-	// PA3_01 CONT1 (1)伺服
-	write_register( PA3_01_ad, 0x0000, SERVO_ON_fc );
-	// PA3_02 CONT2 (11)报警复位
-	write_register( PA3_02_ad, 0x0000, RST_fc );
-	// PA3_03 CONT3 (4)自动启动
-	write_register( PA3_03_ad, 0x0000, START_fc );
-	// PA3_04 CONT4 (5)原点复位ORG
-	write_register( PA3_04_ad, 0x0000, ORG_fc );
-	// PA3_05 CONT5 (6)原点LS
-	write_register( PA3_05_ad, 0x0000, LS_fc );
-	// PA3_09 CONT9 (7)+方向超程+OT
-	write_register( PA3_09_ad, 0x0000, OT_PLUS_fc );
-	// PA3_10 CONT10 (8)-方向超程-OT
-	write_register( PA3_10_ad, 0x0000, OT_MINUS_fc );
-	// PA3_11 CONT11 (10)强制停止EMG
-	write_register( PA3_11_ad, 0x0000, EMG_fc );
-	// PA3_12 CONT12 (16)位置预置
-	write_register( PA3_12_ad, 0x0000, PST_PRESET_fc );
-	// PA3_13 CONT13 (22)立即值继续指令
-	write_register( PA3_13_ad, 0x0000, IMME_VLU_CTINU_fc );
-	// PA3_14 CONT14 (23)立即值变更指令
-	write_register( PA3_14_ad, 0x0000, IMME_VLU_CHG_fc );
-	// PA3_15 CONT15 (31)临时停止
-	write_register( PA3_15_ad, 0x0000, PAUSE_fc );
-	// PA3_16 CONT16 (32)定位取消
-	write_register( PA3_16_ad, 0x0000, PST_CANCEL_fc );
-	// PA3_17 CONT17 (35)示教
-	write_register( PA3_17_ad, 0x0000, TEACHING_fc );
-	// PA3_18 CONT18 (50)偏差清除
-	write_register( PA3_18_ad, 0x0000, DEVIATION_CLR_fc );
-	// PA3_19 CONT19 (54)自由运转BX
-	write_register( PA3_19_ad, 0x0000, FREE_RUN_fc );
-	// PA3_20 CONT20 (60)AD0
-	write_register( PA3_20_ad, 0x0000, AD0_fc );
-	// PA3_21 CONT21 (61)AD1
-	write_register( PA3_21_ad, 0x0000, AD1_fc );
-	// PA3_22 CONT22 (62)AD2
-	write_register( PA3_22_ad, 0x0000, AD2_fc );
-	// PA3_23 CONT23 (63)AD3
-	write_register( PA3_23_ad, 0x0000, AD3_fc );
+	// PA3_01 CONT1 (5)原点复位ORG_fc 
+	write_register( PA3_01_ad, 0x0000, ORG_fc);
+	// PA3_02 CONT2 (6)原点LS LS_fc     
+	write_register( PA3_02_ad, 0x0000, LS_fc);
+	// PA3_03 CONT3 
+	write_register( PA3_03_ad, 0x0000, 0);
+	// PA3_04 CONT4 
+	write_register( PA3_04_ad, 0x0000, 0);
+	// PA3_05 CONT5 
+	write_register( PA3_05_ad, 0x0000, 0);
+	// PA3_09 CONT9 (1)伺服    
+	write_register( PA3_09_ad, 0x0000, SERVO_ON_fc);
+	// PA3_10 CONT10 (11)报警复位   
+	write_register( PA3_10_ad, 0x0000, RST_fc);
+	// PA3_11 CONT11 (4) 自动启动
+	write_register( PA3_11_ad, 0x0000, START_fc);
+	// PA3_12 CONT12 (7)+方向超程+OT
+	write_register( PA3_12_ad, 0x0000, OT_PLUS_fc );
+	// PA3_13 CONT13 (8)-方向超程-OT
+	write_register( PA3_13_ad, 0x0000, OT_MINUS_fc );
+	// PA3_14 CONT14 (10)强制停止EMG
+	write_register( PA3_14_ad, 0x0000, EMG_fc );
+	// PA3_15 CONT15 (16)位置预置
+	write_register( PA3_15_ad, 0x0000, PST_PRESET_fc );
+	// PA3_16 CONT16 (22)立即值继续指令
+	write_register( PA3_16_ad, 0x0000, IMME_VLU_CTINU_fc );
+	// PA3_17 CONT17 (23)立即值变更指令
+	write_register( PA3_17_ad, 0x0000, IMME_VLU_CHG_fc );
+	// PA3_18 CONT18 (31)临时停止
+	write_register( PA3_18_ad, 0x0000, PAUSE_fc );
+	// PA3_19 CONT19 (32)定位取消
+	write_register( PA3_19_ad, 0x0000, PST_CANCEL_fc );
+	// PA3_20 CONT20 (35)示教
+	write_register( PA3_20_ad, 0x0000, TEACHING_fc );
+	// PA3_21 CONT21 (50)偏差清除
+	write_register( PA3_21_ad, 0x0000, DEVIATION_CLR_fc );
+	// PA3_22 CONT22 (54)自由运转BX
+	write_register( PA3_22_ad, 0x0000, FREE_RUN_fc );
+	// PA3_23 CONT23 (60)AD0
+	write_register( PA3_23_ad, 0x0000, AD0_fc );
 
 	// 输出信号设定
 	// PA3_51 OUT1 (1)运行准备结束RDY
@@ -252,15 +255,13 @@ void parameter_register_setting()
 	
 	// PA2_25~27 软件OT设置，OT检测
 	// PA1_01=7, PA2_25=0; 0 为 PTP mode, 1 为 INC mode and OT invalid
-	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO / 2;
-	const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO / 2;
 	write_register( PA2_25_ad, 0x0000, 0x0000);
 	// +OT position > -OT position
-	write_register( PA2_26_ad, plus_position & 0xFFFF, (plus_position >> 16) & 0xFFFF);
-	write_register( PA2_27_ad, minus_position & 0xFFFF, (minus_position >> 16) & 0xFFFF);
+	write_register( PA2_26_ad, (plus_position >> 16) & 0xFFFF, plus_position & 0xFFFF);
+	write_register( PA2_27_ad, (minus_position >> 16) & 0xFFFF, minus_position & 0xFFFF);
 	// PA2_28~29 限制器检测位置
-	write_register( PA2_28_ad, plus_position & 0xFFFF,(plus_position >> 16) & 0xFFFF);
-	write_register( PA2_29_ad, minus_position & 0xFFFF,(minus_position >> 16) & 0xFFFF);
+	write_register( PA2_28_ad, (plus_position >> 16) & 0xFFFF, plus_position & 0xFFFF);
+	write_register( PA2_29_ad, (minus_position >> 16) & 0xFFFF, minus_position & 0xFFFF);
 	// PA2_40=0 RS485立即值数据运行
 	write_register( PA2_40_ad, 0x0000, 0x0000);
 	// PA2_41=3 顺次起动有效/无效，默认为0; 0无效，1有效，2原点复归，3立即值数据运行
@@ -280,8 +281,8 @@ void parameter_register_setting()
 	// PA2_67=1，电压不足时报警检测，默认为检测
 	// PA2_69=15[rev]，偏差超出检测值，默认值
 	// PA2_70=50%，过载预报值，默认值
-	// PA2_71=1，局号，默认为1
-	write_register( PA2_71_ad, 0x0000, 0x0001);
+	// PA2_72=1，局号，默认为1
+	write_register( PA2_72_ad, 0x0000, 0x0001);
 	// PA2_73=0，默认波特率38400
 	write_register( PA2_73_ad, 0x0000, 0x0000);
 	// PA2_93=0，默认值，偶校验，1个停止位
@@ -311,52 +312,77 @@ int check_register(int addr, uint16_t val0, uint16_t val1)
 	return 0;
 }
 
+
+
+// Debug函数，查看register读取结果
+void debug_resiter_result(int addr)
+{
+	if(2 != modbus_read_registers(ctx,  addr,  2,  tab_rp_registers)) return;
+	printf("addr: 0x%4x val0: 0x%4x val1: 0x%4x\n", addr, tab_rp_registers[0], tab_rp_registers[1]);
+}
+// Debug函数，从地址addr开始，查看后面那个寄存器的值
+void debug_func_code(int addr, int len)
+{
+	for(int i=0; i<len; ++i)
+	{
+		if(2 != modbus_read_registers(ctx,  addr+i,  2,  tab_rp_registers)) return;
+		printf("addr: 0x%4x val0: 0x%4d val1: 0x%4d\n", addr, tab_rp_registers[0], tab_rp_registers[1]);
+	}
+}
+
+
 // 确认参数配置
 int check_parameters()
 {
 	int ret;
 
+	// // Debug语句，获取引脚配置功能码
+	// debug_func_code(PA3_01_ad, 5);
+	// debug_func_code(PA3_09_ad, 16);
+	// debug_func_code(PA3_51_ad, 3);
+	// debug_func_code(PA3_56_ad, 16);
+
 	// 输入信号设定
 	// PA3_01 CONT1 (1)伺服
-	ret = check_io( PA3_01_ad, SERVO_ON_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_01_ad, ORG_fc ); if(-1==ret) return -1;
 	// PA3_02 CONT2 (11)报警复位
-	ret = check_io( PA3_02_ad, RST_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_02_ad, LS_fc ); if(-1==ret) return -1;
 	// PA3_03 CONT3 (4)自动启动
-	ret = check_io( PA3_03_ad, START_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_03_ad, 0 ); if(-1==ret) return -1;
 	// PA3_04 CONT4 (5)原点复位ORG
-	ret = check_io( PA3_04_ad,  ORG_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_04_ad, 0 ); if(-1==ret) return -1;
 	// PA3_05 CONT5 (6)原点LS
-	ret = check_io( PA3_05_ad,  LS_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_05_ad, 0 ); if(-1==ret) return -1;
 	// PA3_09 CONT9 (7)+方向超程+OT
-	ret = check_io( PA3_09_ad,  OT_PLUS_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_09_ad, SERVO_ON_fc ); if(-1==ret) return -1;
 	// PA3_10 CONT10 (8)-方向超程-OT
-	ret = check_io( PA3_10_ad, OT_MINUS_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_10_ad, RST_fc ); if(-1==ret) return -1;
 	// PA3_11 CONT11 (10)强制停止EMG
-	ret = check_io( PA3_11_ad, EMG_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_11_ad, START_fc ); if(-1==ret) return -1;
 	// PA3_12 CONT12 (16)位置预置
-	ret = check_io( PA3_12_ad, PST_PRESET_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_12_ad, OT_PLUS_fc ); if(-1==ret) return -1;
 	// PA3_13 CONT13 (22)立即值继续指令
-	ret = check_io( PA3_13_ad, IMME_VLU_CTINU_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_13_ad, OT_MINUS_fc ); if(-1==ret) return -1;
 	// PA3_14 CONT14 (23)立即值变更指令
-	ret = check_io( PA3_14_ad, IMME_VLU_CHG_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_14_ad, EMG_fc ); if(-1==ret) return -1;
 	// PA3_15 CONT15 (31)临时停止
-	ret = check_io( PA3_15_ad, PAUSE_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_15_ad, PST_PRESET_fc ); if(-1==ret) return -1;
 	// PA3_16 CONT16 (32)定位取消
-	ret = check_io( PA3_16_ad, PST_CANCEL_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_16_ad, IMME_VLU_CTINU_fc ); if(-1==ret) return -1;
 	// PA3_17 CONT17 (35)示教
-	ret = check_io( PA3_17_ad, TEACHING_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_17_ad, IMME_VLU_CHG_fc ); if(-1==ret) return -1;
 	// PA3_18 CONT18 (50)偏差清除
-	ret = check_io( PA3_18_ad, DEVIATION_CLR_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_18_ad, PAUSE_fc ); if(-1==ret) return -1;
 	// PA3_19 CONT19 (54)自由运转BX
-	ret = check_io( PA3_19_ad, FREE_RUN_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_19_ad, PST_CANCEL_fc ); if(-1==ret) return -1;
 	// PA3_20 CONT20 (60)AD0
-	ret = check_io( PA3_20_ad, AD0_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_20_ad, TEACHING_fc ); if(-1==ret) return -1;
 	// PA3_21 CONT21 (61)AD1
-	ret = check_io( PA3_21_ad, AD1_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_21_ad, DEVIATION_CLR_fc ); if(-1==ret) return -1;
 	// PA3_22 CONT22 (62)AD2
-	ret = check_io( PA3_22_ad, AD2_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_22_ad, FREE_RUN_fc ); if(-1==ret) return -1;
 	// PA3_23 CONT23 (63)AD3
-	ret = check_io( PA3_23_ad, AD3_fc ); if(-1==ret) return -1;
+	ret = check_io( PA3_23_ad, AD0_fc ); if(-1==ret) return -1;
 
 	// 输出信号设定
 	// PA3_51 OUT1 (1)运行准备结束RDY
@@ -415,6 +441,7 @@ int check_parameters()
 	ret = check_register( PA1_07_ad, 0x0000, 1); if(-1==ret) return -1;
 	// PA1_12=0,Z相偏置默认值
 	ret = check_register( PA1_12_ad, 0x0000, 0x0000); if(-1==ret) return -1;
+
 	// PA1_13=10 自整定模式，默认值
 	// PA1_14=1.0 负载惯性力矩比，默认值
 	// PA1_15 自整定增益1
@@ -426,6 +453,7 @@ int check_parameters()
 	// TODO PA1_30=50r/min 零速度范围
 	// TODO PA1_31=0 偏差单位选择，0为单位量，1为脉冲量
 	// TODO PA1_32=100 偏差零范围/定位结束范围 (受偏差单位选择的影响)
+	
 	// PA1_33~35 定位结束的信号配置INP
 	// PA1_33=0 等级形态
 	ret = check_register( PA1_33_ad, 0x0000, 0x0000); if(-1==ret) return -1;
@@ -443,6 +471,7 @@ int check_parameters()
 	//Part3. 自动运行设定参数()
 	// PA2_01=0 位置数据小数点位置，默认值
 	ret = check_register( PA2_01_ad, 0x0000, 0x0000); if(-1==ret) return -1;
+
 	// TODO PA2_06~18、24 原点复归设定 (重要！！！) 由于当前时INC控制系统，每次需要原点复归
 	// PA2_06=500r/min 原点复归速度，默认值
 	// PA2_07=50r/min 原点复归爬行速度，默认值
@@ -467,19 +496,18 @@ int check_parameters()
 	
 	// PA2_25~27 软件OT设置，OT检测
 	// PA1_01=7, PA2_25=0; 0 为 PTP mode, 1 为 INC mode and OT invalid
-	const int32_t plus_position = M_PULSE_PER_CIRCLE * TRANSMISSION_RATIO / 2;
-	const int32_t minus_position = (-M_PULSE_PER_CIRCLE) * TRANSMISSION_RATIO / 2;
 	ret = check_register( PA2_25_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// +OT position > -OT position
-	ret = check_register( PA2_26_ad, plus_position & 0xFFFF, (plus_position >> 16) & 0xFFFF); if(-1==ret) return -1;
-	ret = check_register( PA2_27_ad, minus_position & 0xFFFF, (minus_position >> 16) & 0xFFFF); if(-1==ret) return -1;
+	ret = check_register( PA2_26_ad, (plus_position >> 16) & 0xFFFF, plus_position & 0xFFFF); if(-1==ret) return -1;
+	ret = check_register( PA2_27_ad, (minus_position >> 16) & 0xFFFF, minus_position & 0xFFFF); if(-1==ret) return -1;
 	// PA2_28~29 限制器检测位置
-	ret = check_register( PA2_28_ad, plus_position & 0xFFFF,(plus_position >> 16) & 0xFFFF); if(-1==ret) return -1;
-	ret = check_register( PA2_29_ad, minus_position & 0xFFFF,(minus_position >> 16) & 0xFFFF); if(-1==ret) return -1;
+	ret = check_register( PA2_28_ad, (plus_position >> 16) & 0xFFFF, plus_position & 0xFFFF); if(-1==ret) return -1;
+	ret = check_register( PA2_29_ad, (minus_position >> 16) & 0xFFFF, minus_position & 0xFFFF); if(-1==ret) return -1;
 	// PA2_40=0 RS485立即值数据运行
 	ret = check_register( PA2_40_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA2_41=3 顺次起动有效/无效，默认为0; 0无效，1有效，2原点复归，3立即值数据运行
 	ret = check_register( PA2_41_ad, 0x0000, 0x0003); if(-1==ret) return -1;
+
 	// PA2_42 停止定时小数点位置
 	// PA2_43 M代码OFF时输出选择
 	// PA2_44=0，定位扩展功能，默认值
@@ -495,14 +523,15 @@ int check_parameters()
 	// PA2_67=1，电压不足时报警检测，默认为检测
 	// PA2_69=15[rev]，偏差超出检测值，默认值
 	// PA2_70=50%，过载预报值，默认值
-	// PA2_71=1，局号，默认为1
-	ret = check_register( PA2_71_ad, 0x0000, 0x0001); if(-1==ret) return -1;
+	
+	// PA2_72=1，局号，默认为1
+	ret = check_register( PA2_72_ad, 0x0000, 0x0001); if(-1==ret) return -1;
 	// PA2_73=0，默认波特率38400
 	ret = check_register( PA2_73_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA2_93=0，默认值，偶校验，1个停止位
 	ret = check_register( PA2_93_ad, 0x0000, 0x0000); if(-1==ret) return -1;
-	// PA2_94=250，响应时间ms
-	ret = check_register( PA2_94_ad, 0x0000, 250); if(-1==ret) return -1;
+	// PA2_94=250，响应时间ms，寄存器内为25
+	ret = check_register( PA2_94_ad, 0x0000, 25); if(-1==ret) return -1;
 	// PA2_95=0，通信超时时间，默认值0,不检测
 	ret = check_register( PA2_95_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA2_97=1，通信协议选择，1为modbus

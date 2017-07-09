@@ -16,6 +16,9 @@
 #include "global_setting.h"
 #include "alpha_setting.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define ABS_POSITION_MODE   (0)
 #define INC_POSITION_MODE   (1)
@@ -72,5 +75,7 @@ int positioning_cancel_off();
 int free_run_on();
 int free_run_off();
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif	//ALPHA_MOTION_CONTROL_H

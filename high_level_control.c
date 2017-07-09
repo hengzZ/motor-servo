@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "global_setting.h"
 #include "cmdparser.h"
 #include "am335x_setting.h"
 #include "alpha_motion_control.h"
@@ -118,21 +119,24 @@ int force_stop()
 // 转到指定角度
 int goto_point(double angle)
 {
-    //// debug语句
-    //printf("goto_point %f\n", angle);
-    //double test_angle = get_encoder_angle();
-    //printf("get encoder angle %f\n", test_angle);
-    //double test_start = get_g_start_angle();
-    //printf("zero start angle %d\n", test_start);
+    // debug语句
+    printf("goto_point %f\n", angle);
+    double test_angle = get_encoder_angle();
+    printf("get encoder angle %f\n", test_angle);
+    double test_start = get_g_start_angle();
+    printf("zero start angle %f\n", test_start);
 
     if(angle < get_g_left_angle()) angle = get_g_left_angle();
     if(angle > get_g_right_angle()) angle = get_g_right_angle();
 
     int ret;
-    double actual_angle = angle + get_g_start_angle();
+    double actual_angle = angle - get_g_start_angle();
     actual_angle *= TRANSMISSION_RATIO;
     //更新目标角度
     update_destination_angle(angle);
+
+    // Debug
+    printf("actual_angle %f\n", actual_angle);
 
     ret = run_to_angle(actual_angle);
 
@@ -149,7 +153,7 @@ int goto_left()
     double angle = get_g_left_angle();
     update_destination_angle(angle);
 
-    double actual_angle = angle + get_g_start_angle();
+    double actual_angle = angle - get_g_start_angle();
     actual_angle *= TRANSMISSION_RATIO;
     ret = run_to_angle(actual_angle);
 
@@ -166,7 +170,7 @@ int goto_right()
     double angle = get_g_right_angle();
     update_destination_angle(angle);
     
-    double actual_angle = angle + get_g_start_angle();
+    double actual_angle = angle - get_g_start_angle();
     actual_angle *= TRANSMISSION_RATIO;
     ret = run_to_angle(actual_angle);
 
@@ -236,19 +240,19 @@ int check_motion()
     ret = goto_point(0);
     if(-1 == ret) return -1;
     while(!is_INP()){
-	usleep(10000); // 10ms
+	    usleep(10000); // 10ms
     }
 
     ret = goto_left();
     if(-1 == ret) return -1;
     while(!is_INP()){
-	usleep(10000); // 10ms
+	    usleep(10000); // 10ms
     }
 
     ret = goto_right();
     if(-1 == ret) return -1;
-    while(!is_INP()){
-	usleep(10000); // 10ms
+        while(!is_INP()){
+	    usleep(10000); // 10ms
     }
 
     ret = goto_point(0);
