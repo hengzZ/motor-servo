@@ -27,15 +27,18 @@ int goto_point(double angle);
 int goto_left();
 // 右转
 int goto_right();
-// 速度设定
-// 输入: 度/秒
+// 速度设定，输入: 度/秒
 int set_speed_value(double speed);
-// 加速时间设定
-// 输入: 0.1ms
+// 获取当前速度，返回: 度/秒
+double get_speed_value();
+// 加速时间设定，输入: 0.1ms
 int set_acce_value(double acce_time);
-// 减速时间设定
-// 输入: 0.1ms
+// 获取加速时间，返回: 0.1ms
+int get_acce_value();
+// 减速时间设定，输入: 0.1ms
 int set_dece_value(double dece_time);
+// 获取减速时间，输入: 0.1ms
+int get_dece_value();
 //// 自检操作
 int check_motion();
 

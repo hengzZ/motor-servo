@@ -347,11 +347,11 @@ void receivethread(void)
 
 	        // Update position
 	        update_encoder_position(position);
-	        // 测速，200ms测一次速
+	        // 测速，50ms测一次速
 	        curt = clock();
 	        duration = 1000.0 * (double)( curt - pret ) / (double)CLOCKS_PER_SEC;
 	      
-	        if(duration > 200){
+	        if(duration > 50){
 	        
 		        double speed = (position - prev_encoder_position)/duration;
 		        update_encoder_speed(speed);

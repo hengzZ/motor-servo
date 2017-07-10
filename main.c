@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     int ret;
    
     double duration;
-    // EasyLogger Log配置
+    // EasyLogger Log配置,创建log文件的语句在 elog_port.c
     elog_init();
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
     elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
@@ -43,11 +43,11 @@ int main(int argc, char** argv)
     elog_start();
 
     // 读配置表
-    ret = parse_ini_file("configure.ini");
+    ret = parse_ini_file("/home/root/configure.ini");
     if(-1 == ret){
     
         create_example_ini_file();
-        ret = parse_ini_file("configure.ini");
+        ret = parse_ini_file("/home/root/configure.ini");
         if(-1 == ret){
             log_e("Init from configure.ini failed.");
             return -1;
@@ -174,10 +174,8 @@ int main(int argc, char** argv)
      double curangle=0;
      CtrlStatus  ctrl_status;
      char buf[64];
-     clock_t curt,pret;  
      
-     curt = pret = clock();
-     
+
      sleep(1);    
      while(!get_stop()) {
          
@@ -217,7 +215,7 @@ int main(int argc, char** argv)
 void create_example_ini_file(void)
 {
     FILE* ini;
-    if ((ini=fopen("configure.ini", "w"))==NULL) {
+    if ((ini=fopen("/home/root/configure.ini", "w"))==NULL) {
         log_e("Create *.ini failed.");
         return ;
     }

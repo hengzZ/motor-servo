@@ -47,11 +47,10 @@ ElogErrCode elog_port_init(void) {
 
     pthread_mutex_init(&output_lock, NULL);
 
-    // zhihengw add
-    logfile=fopen("./log.txt","a+");
+    //TODO(zhihengw): 创建log文件
+    logfile=fopen("/home/root/log.txt","a+");
     if(NULL==logfile)
     {
-        assert(0);
         exit(-1);
     }
     // set buffer

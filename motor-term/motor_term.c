@@ -37,6 +37,9 @@
 #define SERVER_PORT (2223)
 
 
+int nprintline=0;
+
+
 const char * SERVER_IP = "127.0.0.1";
 static int sock = -1;
 
@@ -90,7 +93,7 @@ int sendbuf( char* buf, size_t len )
 	
 	int r = sendto(sock, buf, len, 0, (struct sockaddr *)&serveraddr, sizeof(serveraddr) );
 	
-	printf( "send:%s,%d\n",buf,r );
+	//printf( "send:%s,%d\n",buf,r );
 	
 	return r;
 
@@ -106,6 +109,8 @@ void recvsocket(void)
 	char buf[128];
 	struct sockaddr_in addr; 
 	int len = sizeof(addr);
+	
+	
 	while(1)
 	{
 	
@@ -114,7 +119,21 @@ void recvsocket(void)
 		if( bytes > 0 )
 		{
 			buf[bytes]=0;
-			printf("recv:%s\n",buf);
+			//printf("recv:%s\n",buf);
+			nprintline++;
+			
+			if( nprintline == 20 )
+			{
+				fputs("\033[2J",stderr);
+				fputs("\033[0;0H",stderr);
+				nprintline=0;
+			}
+			
+			//fputs("\033[K" ,stderr);//清除从光标到行尾的内容
+			
+			fputs("recv:", stderr);
+			fputs(buf, stderr);
+			//fprintf(stderr,"recv:%s\n",buf);
 		
 		}	
 	
@@ -139,7 +158,7 @@ int main()
 	
 		get_command();
 		
-		sleep(1);
+		usleep(1000);
 		
 	}
 	return (0);

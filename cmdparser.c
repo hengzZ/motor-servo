@@ -72,16 +72,17 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
     double left_angle;
     double right_angle;
     double cur_angle;
+    char buf[64];
     
     switch( temp_x->cmd ){
     
         case GPST_CANCEL:
-            ret = task_cancel();
             update_g_ctrl_status(STOPING);
+            ret = task_cancel();
             break;                    
         case GEMG :
-            ret = force_stop();			   
             update_g_ctrl_status(STOPING);
+            ret = force_stop();			   
             set_stop(true); // 释放伺服，退出程序
             break;
         case GSPEED:
@@ -155,16 +156,18 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                 //message_send("$C\r\n");	
             }
             break;
+	case GSPEEDMSG:
+	    // 角度信息格式: $G速度，加速时间，减速时间\r\n
+	    sprintf(buf,"$G%.3f,%05d,%05d\r\n",get_speed_value(),get_acce_value(),get_dece_value());
+	    m_socket_write(buf,strlen(buf));
+	    break;
         default:
             break;
-                               
     
     }
-    
-    
-
 
 }
+
 
 // 套接字监听
 //***************************************************************
@@ -300,6 +303,10 @@ void parsesocket(void)
 		    //printf("%s",buf);
 	            temp_x.cmd = GALARM_RST;
 	        }
+		else if(buf == strstr(buf,"speedmsg")){
+
+		    temp_x.cmd = GSPEEDMSG;
+		}
 	        else{
 
 	           temp_x.cmd = 0;
@@ -313,12 +320,13 @@ void parsesocket(void)
 	        }	
 		else{
 
+		    // 指令执行
 		    run_cmd(&temp_x,curstatus);	
 		}
 	    } //END IF(BYTES>0)
 		
-		//delay for cmd running
-		usleep(100000);	    // 100ms
+		////delay for cmd running
+		usleep(10000);	    // 10ms
 		
 		curstatus = get_g_ctrl_status();
 		if( is_INP() ){
@@ -348,20 +356,20 @@ void parsesocket(void)
 		//      }
 		//  }  
 
-		// 报警检测
+		// TODO(wangzhiheng): 报警检测
 		if( 0 == get_out_status(ALRM_DETC_B_ad) ){			
 		    update_g_ctrl_status(ERROOR);
 		}
-		// TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
-		// 编码器速度很小的时候，控制器的零速度信号是否有输出
-		// 电机50r/min,零速度信号就响应, 对应编码器为0.27个脉冲/ms
+		// TODO(wangzhiheng): 用于校对电机与编码器是否同步一致
+		// 电机50r/min,零速度信号就响应, 对应编码器为0.27个脉冲/ms,线性减速则平均速度为0.13脉冲/毫秒
+		// 注意:由于减速宽慢的问题，要求编码器测速的时间间隔不能太大
 		double speed = get_encoder_speed();
 		if(fabs(speed) < 0.1){
 		    // 零速度信号判断
 		    if(1 != get_motor_zero_speed()){
 			// 速度不一致
 			update_g_ctrl_status(ERROOR);
-			const char* msg = "$F\r\n";
+			const char* msg = "$F\r\n"; // 编码器故障信息
 			message_send(msg);
 		        //set_stop(true);
 		    }
@@ -382,7 +390,6 @@ void parsesocket(void)
 		    set_cont_status(OT_MINUS_ad,0);
 		    set_cont_status(OT_PLUS_ad,0);
 		}
-		// 注意!: 以下两个判断，可以放置于命令解析与执行函数中, 报警检测部分
 		// TODO(wangzhiheng): RS485数据，寿命预警
 		// printf("RS485 data error: %d\n", get_out_status(DATA_ERROR_ad));
 		// printf("Life Time Warn: %d\n", get_out_status(LIFE_WRNING_ad));
@@ -395,9 +402,6 @@ void parsesocket(void)
 		    update_g_ctrl_status(ERROOR);
 		}
 
-		
-		//delay for modbus reading
-		usleep(100000);	    // 100ms
 
 	} // END WHILE(1)
 }

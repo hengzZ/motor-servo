@@ -13,7 +13,7 @@
 int send_error_msg()
 {
     //// Debug语句
-    //printf("in function: send_error_msg()\n");
+    //printf("come in: send_error_msg()\n");
 
     int ret=0;
     char sendbuf[64];
@@ -48,6 +48,7 @@ int send_error_msg()
     if(ret > 0) return 0;
     else return -1;
 }
+
 // 报警重置，ON边缘复位
 int alarm_reset()
 {
@@ -62,6 +63,7 @@ int alarm_reset()
 
     return ret;
 }
+
 // 位置预置，在ON边缘上将当前位置及反馈位置设置为PA2_19寄存器内保存的设定值
 // 偏差清除，PA3_36设置有效形态，默认为ON边缘上有效
 // 注意，在伺服电机停止的情况下预置
@@ -69,6 +71,7 @@ int position_reset()
 {
     int ret=0;
     
+    // 取消当前的运动任务
     ret = task_cancel();
     if(-1==ret) return -1;
 
@@ -94,6 +97,7 @@ int position_reset()
     ret = set_cont_status(PST_PRESET_ad,1);
     if(-1==ret) return -1;
     ret = set_cont_status(PST_PRESET_ad,0);
+    if(-1==ret) return -1;
     // 偏差清除
     ret = set_cont_status(DEVIATION_CLR_ad,1);
     if(-1==ret) return -1;
@@ -141,12 +145,12 @@ int goto_point(double angle)
 
     if(angle < get_g_left_angle()) angle = get_g_left_angle();
     if(angle > get_g_right_angle()) angle = get_g_right_angle();
+    //更新目标角度
+    update_destination_angle(angle);
 
     int ret;
     double actual_angle = angle - get_g_start_angle();
     actual_angle *= TRANSMISSION_RATIO;
-    //更新目标角度
-    update_destination_angle(angle);
 
     //// Debug
     //printf("actual_angle %f\n", actual_angle);
@@ -206,6 +210,16 @@ int set_speed_value(double speed)
 	if(-1==ret) return -1;
 	else return 0;
 }
+// 获取当前速度
+// 返回: 度/秒
+double get_speed_value()
+{
+    uint32_t cruise_speed = get_cruise_speed(); // 0.01r/min
+    double speed = (double)cruise_speed*360/(60*100)/TRANSMISSION_RATIO; // degree/s
+    return speed;
+    
+}
+
 // 加速时间设定
 // 输入: 0.1ms
 int set_acce_value(double acce_time)
@@ -220,6 +234,14 @@ int set_acce_value(double acce_time)
 	if(-1==ret) return -1;
 	else return 0;
 }
+// 获取加速时间
+// 返回: 0.1ms
+int get_acce_value()
+{
+    int acce_time = get_imme_acceleration_time();
+    return acce_time;
+}
+
 // 减速时间设定
 // 输入: 0.1ms
 int set_dece_value(double dece_time)
@@ -233,6 +255,13 @@ int set_dece_value(double dece_time)
 
 	if(-1==ret) return -1;
 	else return 0;
+}
+// 获取减速时间
+// 输入: 0.1ms
+int get_dece_value()
+{
+    int dece_time = get_imme_deceleration_time();
+    return dece_time;
 }
 
 //// 自检操作

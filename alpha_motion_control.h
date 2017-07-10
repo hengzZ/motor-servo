@@ -45,12 +45,17 @@ int run_to_angle(double angle);
 int set_abs_control_mode(); //绝对位置模式
 int set_inc_control_mode();
 int immediate_value_operation_run(); //运行，run
-// 运行速度设置
+// 运行速度
 int set_cruise_speed(uint32_t speed);
+uint32_t get_cruise_speed();
 int send_cruise_speed();
+// 加速时间
 int set_imme_acceleration_time(uint32_t time);
+uint32_t get_imme_acceleration_time();
 int send_imme_acceleration_time();
+// 减速时间
 int set_imme_deceleration_time(uint32_t time);
+uint32_t get_imme_deceleration_time();
 int send_imme_deceleration_time();
 // 自检速度设置
 int set_check_speed(uint32_t speed);

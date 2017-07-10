@@ -22,10 +22,10 @@ typedef enum{
     GACCE_TIME,
     GDECE_TIME,
     GMAX_POINT,
-    GSTATUS,
     GCHECK,
     GERROR_MSG,
-    GALARM_RST
+    GALARM_RST,
+    GSPEEDMSG
 } GFLAGS;
 // 控制信号的数据对象格式
 typedef struct {

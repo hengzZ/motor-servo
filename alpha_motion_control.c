@@ -250,13 +250,18 @@ int set_cruise_speed(uint32_t speed)
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
+// 运行速度变量获取
+uint32_t get_cruise_speed()
+{
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	uint32_t speed = (cruise_speed[0] << 16) + cruise_speed[1];
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+	//printf("get cruise speed: %d 0.01r/min\n",speed);
+	return speed;
+}
 // 将目标运行速度值发送至控制器
 int send_cruise_speed()
 {
-	//// debug语句
-	//uint32_t test_speed = cruise_speed[0] * (1<<16) + cruise_speed[1];
-	//printf("send_cruise_speed %d\n", test_speed);
-
 	for(int i = 0; i < OPLOOPS && 2 != modbus_write_registers(ctx, IMME_VLU_SPEED_ad, 2, cruise_speed); i++){
 		if(OPLOOPS-1==i)
 		{
@@ -278,6 +283,16 @@ int set_imme_acceleration_time(uint32_t time)
 	imme_acceleration_time[0] = (time >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
+}
+// 运行时加速时间读取
+uint32_t get_imme_acceleration_time()
+{
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	uint32_t acce_time = (imme_acceleration_time[0] << 16) + imme_acceleration_time[1];
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+	//printf("get imme acceleration time: %d 0.1ms\n",acce_time);
+	return acce_time;
+
 }
 // 将目标加速时间发送至控制器
 int send_imme_acceleration_time()
@@ -302,6 +317,15 @@ int set_imme_deceleration_time(uint32_t time)
 	imme_deceleration_time[0] = (time >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
+}
+// 减速时间读取
+uint32_t get_imme_deceleration_time()
+{
+	pthread_mutex_lock(&mutex_motion_ctrl);
+	uint32_t dece_time = (imme_deceleration_time[0] << 16) + imme_deceleration_time[1];
+	pthread_mutex_unlock(&mutex_motion_ctrl);
+	//printf("get imme deceleration time: %d 0.1ms\n",dece_time);
+	return dece_time;
 }
 // 发送减速时间到控制器
 int send_imme_deceleration_time()
