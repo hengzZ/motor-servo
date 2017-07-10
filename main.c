@@ -10,9 +10,9 @@
 
 #include "global_setting.h"
 #include "alpha_setting.h"
+#include "high_level_control.h"
 #include "am335x_setting.h"
 #include "cmdparser.h"
-#include "high_level_control.h"
 
 
 // 保存Socket参数的对象
@@ -48,8 +48,7 @@ int main(int argc, char** argv)
     
         create_example_ini_file();
         ret = parse_ini_file("configure.ini");
-        if(-1 == ret)
-        {
+        if(-1 == ret){
             log_e("Init from configure.ini failed.");
             return -1;
         }
@@ -84,25 +83,7 @@ int main(int argc, char** argv)
         free_buffers_for_modbus();
         return -1;
     }
-
-    // 串口监听，监听编码器信息("/dev/ttyO2", 9600, 'N', 8, 1);
-    ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, \
-            g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
-    if(-1 == ret){
-    	log_e("Open am335x uart failed.");
-    	close_modbus_rtu_master();
-    	free_buffers_for_modbus();
-    	return -1;
-    }
-    // 监听套接字，解析终端的控制命令
-    ret = listening_socket(g_am335x_socket.server_port, g_am335x_socket.queue_size);
-    if(-1 == ret){
-        log_e("Open am335x ethernet port failed.");
-        close_modbus_rtu_master();
-        free_buffers_for_modbus();
-        close_uart();
-        return -1;
-    }
+    
 
     // 电机进入伺服
     ret = serve_on();
@@ -110,7 +91,6 @@ int main(int argc, char** argv)
         log_e("servo on failed.");
     	close_modbus_rtu_master();
     	free_buffers_for_modbus();
-        close_uart();
     	return -1;
     }
     // 确认进入就绪态
@@ -130,6 +110,18 @@ int main(int argc, char** argv)
     if(-1 == ret) set_stop(true);
     ret = send_imme_deceleration_time();
     if(-1 == ret) set_stop(true);
+    
+    
+    
+    // 串口监听，监听编码器信息("/dev/ttyO2", 9600, 'N', 8, 1);
+    ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, \
+            g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
+    if(-1 == ret){
+    	log_e("Open am335x uart failed.");
+    	close_modbus_rtu_master();
+    	free_buffers_for_modbus();
+    	return -1;
+    }
 
     //// TODO(wangzhiheng): 为了获得启动时的实际角度，进行零点矫正
     /// 等待编码器响应状态为enable,即编码器有数据
@@ -167,22 +159,31 @@ int main(int argc, char** argv)
     //     update_g_ctrl_status(LEFTORRIGHT);
     // }
     // //// 循环获取编码器的位置，并发送到控制终端
+          
+     
+     // 监听套接字，解析终端的控制命令
+    ret = listening_socket(g_am335x_socket.server_port, g_am335x_socket.queue_size);
+    if(-1 == ret){
+        log_e("Open am335x ethernet port failed.");
+        close_modbus_rtu_master();
+        free_buffers_for_modbus();
+        close_uart();
+        return -1;
+    }
+    
      double curangle=0;
      CtrlStatus  ctrl_status;
      char buf[64];
+     clock_t curt,pret;  
      
-     
-     clock_t curt,pret;    
-     curt=pret=clock();
-     
-     
+     curt = pret = clock();
      
      sleep(1);    
      while(!get_stop()) {
          
         ctrl_status = get_g_ctrl_status();
         curangle = get_encoder_angle();
-        double diff_angle = curangle - get_destination_angle();         
+        //double diff_angle = curangle - get_destination_angle();         
 
 	    // // TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
 	    // // 编码器速度很小的时候，控制器的零速度信号是否有输出
@@ -191,10 +192,26 @@ int main(int argc, char** argv)
 	    // if(fabs(speed) < 0.1){
 	    //     // 零速度信号判断
 	    //     if(1 != get_motor_zero_speed()){
-		//         //停止
-		//         serve_off();
+            //         //停止
+            //         set_stop(true);
 	    //     }
 	    // }
+            // // TODO(wangzhiheng): 超程判断
+            // // 超程时，将+OT或-OT置ON(1)，则电机的OT输出信号将有响应，errormsg可查看
+            // // 超程时，超程时，以PA2_60设定的方式减速停止，仅能反方向运动，或者手动进给
+            // if( curangle < (get_g_left_angle()-2) )
+            // {
+            //     set_cont_status(OT_MINUS_ad,1);
+            // }
+            // if( curangle > (get_g_right_angle()+2) )
+            // {
+            //     set_cont_status(OT_PLUS_ad,1);
+            // }
+            // // 注意!: 以下两个判断，可以放置于命令解析与执行函数中, 报警检测部分
+            // // TODO(wangzhiheng): RS485数据错误判断
+            // // if(1 == get_out_status(DATA_ERROR_ad))
+            // // TODO(wangzhiheng): 寿命预警
+            // // if(1 == get_out_status(LIFE_WRNING_ad))
 
         //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
          
@@ -214,7 +231,7 @@ int main(int argc, char** argv)
          
          } 
          
-        curt = clock();
+        /*curt = clock();
         duration = 1000.0 * (double)( curt - pret ) / (double)CLOCKS_PER_SEC;        
                
         if(duration > 200){
@@ -235,14 +252,14 @@ int main(int argc, char** argv)
         		     
         		    update_g_ctrl_status(FREE);
         		}
-        		
-            if( (LOCATING == ctrl_status) &&
-             (fabs(diff_angle) <= 0.005) )
-             {
-                 //printf("bb... in main\n");
-                 int ret = task_cancel();
-                 //if(-1 == ret) update_g_ctrl_status(ERROOR);
-             }
+            		
+                if( (LOCATING == ctrl_status) &&
+                 (fabs(diff_angle) <= 0.005) )
+                 {
+                     //printf("bb... in main\n");
+                     int ret = task_cancel();
+                     //if(-1 == ret) update_g_ctrl_status(ERROOR);
+                 }
 
         		// 报警检测
         		if( 0 == get_out_status(ALRM_DETC_B_ad) ){			
@@ -253,7 +270,7 @@ int main(int argc, char** argv)
         		    set_motor_zero_speed();
         		}
                 pret = curt;
-        }               
+        }*/             
  
         usleep(1000); // 1ms
     }
@@ -262,7 +279,6 @@ int main(int argc, char** argv)
     close_modbus_rtu_master();
     free_buffers_for_modbus();
     close_uart();
-
     log_i("Exit Success.");
     elog_close();
     return 0;
@@ -289,10 +305,10 @@ void create_example_ini_file(void)
     "anticlockwise = 0"                     "\n"
     "max_left_position = -90"               "\n"    // degree
     "max_right_position = 90"               "\n"    // degree
-    "speed = 4"                             "\n"    // degree/s
+    "speed = 2"                             "\n"    // degree/s
     "imme_acceleration_time = 10000"        "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 10000"        "\n"    // 0.1ms
-    "check_speed = 4"                       "\n"    // degree/s 
+    "check_speed = 2"                       "\n"    // degree/s 
     "check_acce_time = 20000"               "\n"    // 0.1ms    : 20000 means 2s
     "check_dece_time = 20000"               "\n\n"  // 0.1ms
 

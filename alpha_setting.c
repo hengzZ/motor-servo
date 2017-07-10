@@ -197,12 +197,13 @@ void parameter_register_setting()
 	// PA1_04=0,旋转方向切换，默认值
 	write_register( PA1_04_ad, 0x0000, 0x0000);
 	// PA1_05 每转脉冲数设置
-	write_register( PA1_05_ad, 0x0000, M_PULSE_PER_CIRCLE & 0xFFFF);
+	write_register( PA1_05_ad, (M_PULSE_PER_CIRCLE >> 16) & 0xFFFF, M_PULSE_PER_CIRCLE & 0xFFFF);
 	// PA1_06,07 默认值 16,1，注意 用于将脉冲转化为单位量[unit] = 度/pulse
 	write_register( PA1_06_ad, 0x0000, 16);
 	write_register( PA1_07_ad, 0x0000, 1);
 	// PA1_12=0,Z相偏置默认值
 	write_register( PA1_12_ad, 0x0000, 0x0000);
+
 	// PA1_13=10 自整定模式，默认值
 	// PA1_14=1.0 负载惯性力矩比，默认值
 	// PA1_15 自整定增益1
@@ -214,11 +215,13 @@ void parameter_register_setting()
 	// TODO PA1_30=50r/min 零速度范围
 	// TODO PA1_31=0 偏差单位选择，0为单位量，1为脉冲量
 	// TODO PA1_32=100 偏差零范围/定位结束范围 (受偏差单位选择的影响)
+	
 	// PA1_33~35 定位结束的信号配置INP
 	// PA1_33=0 等级形态
 	write_register( PA1_33_ad, 0x0000, 0x0000);
 	// PA1_35=0 判断时间，默认值
 	write_register( PA1_35_ad, 0x0000, 0x0000);
+
 	// PA1-36~40 加速时间和减速时间的设定
 	// TODO 注意！ 加减速时间设定是到达0(零)~2000(r/min)的时间设定
 	
@@ -231,6 +234,7 @@ void parameter_register_setting()
 	//Part3. 自动运行设定参数()
 	// PA2_01=0 位置数据小数点位置，默认值
 	write_register( PA2_01_ad, 0x0000, 0x0000);
+
 	// TODO PA2_06~18、24 原点复归设定 (重要！！！) 由于当前时INC控制系统，每次需要原点复归
 	// PA2_06=500r/min 原点复归速度，默认值
 	// PA2_07=50r/min 原点复归爬行速度，默认值
@@ -266,6 +270,7 @@ void parameter_register_setting()
 	write_register( PA2_40_ad, 0x0000, 0x0000);
 	// PA2_41=3 顺次起动有效/无效，默认为0; 0无效，1有效，2原点复归，3立即值数据运行
 	write_register( PA2_41_ad, 0x0000, 0x0003);
+
 	// PA2_42 停止定时小数点位置
 	// PA2_43 M代码OFF时输出选择
 	// PA2_44=0，定位扩展功能，默认值
@@ -281,14 +286,15 @@ void parameter_register_setting()
 	// PA2_67=1，电压不足时报警检测，默认为检测
 	// PA2_69=15[rev]，偏差超出检测值，默认值
 	// PA2_70=50%，过载预报值，默认值
+	
 	// PA2_72=1，局号，默认为1
 	write_register( PA2_72_ad, 0x0000, 0x0001);
 	// PA2_73=0，默认波特率38400
 	write_register( PA2_73_ad, 0x0000, 0x0000);
 	// PA2_93=0，默认值，偶校验，1个停止位
 	write_register( PA2_93_ad, 0x0000, 0x0000);
-	// PA2_94=250，响应时间ms
-	write_register( PA2_94_ad, 0x0000, 250);
+	// PA2_94=25，响应时间250ms
+	write_register( PA2_94_ad, 0x0000, 25);
 	// PA2_95=0，通信超时时间，默认值0,不检测
 	write_register( PA2_95_ad, 0x0000, 0x0000);
 	// PA2_97=1，通信协议选择，1为modbus
@@ -435,7 +441,7 @@ int check_parameters()
 	// PA1_04=0,旋转方向切换，默认值
 	ret = check_register( PA1_04_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA1_05 每转脉冲数设置
-	ret = check_register( PA1_05_ad, 0x0000, M_PULSE_PER_CIRCLE & 0xFFFF); if(-1==ret) return -1;
+	ret = check_register( PA1_05_ad, (M_PULSE_PER_CIRCLE >> 16) & 0xFFFF, M_PULSE_PER_CIRCLE & 0xFFFF); if(-1==ret) return -1;
 	// PA1_06,07 默认值 16,1，注意 用于将脉冲转化为单位量[unit] = 度/pulse
 	ret = check_register( PA1_06_ad, 0x0000, 16); if(-1==ret) return -1;
 	ret = check_register( PA1_07_ad, 0x0000, 1); if(-1==ret) return -1;

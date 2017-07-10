@@ -184,7 +184,7 @@ int set_speed_value(double speed)
 {
 	int ret;
 
-	uint32_t actual_speed = speed*60*100*TRANSMISSION_RATIO/360;
+	uint32_t actual_speed = speed*60*100*TRANSMISSION_RATIO/360; //寄存器单位0.01r/min
 	set_cruise_speed(actual_speed);
 	ret = task_cancel();
 	if(-1 == ret) return -1;

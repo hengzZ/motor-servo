@@ -18,7 +18,7 @@
 
 
 // 用于判定是否收到编码器的响应
-volatile int encoder_is_enable_ = FALSE;
+volatile int encoder_is_enable_ = 0;
 
 // 编码器的速度，脉冲/毫秒
 volatile double encoder_speed=0;
@@ -55,7 +55,7 @@ void update_encoder_speed(double speed)
 void encoder_is_enable()
 {
     pthread_mutex_lock(&mutex_encoder);
-    encoder_is_enable_ = TRUE;
+    encoder_is_enable_ = 1;
     pthread_mutex_unlock(&mutex_encoder);
 }
 

@@ -230,8 +230,8 @@ int set_cruise_speed(uint32_t speed)
 	pthread_mutex_lock(&mutex_motion_ctrl);
 	if(speed <= 0) speed = 0;
 	if(speed >= 200000) speed = 200000;	// 2000r/min
-	cruise_speed[1] = speed;
-	cruise_speed[0] = speed >> 16;
+	cruise_speed[1] = speed & 0xFFFF;
+	cruise_speed[0] = (speed >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
@@ -259,8 +259,8 @@ int set_imme_acceleration_time(uint32_t time)
 	pthread_mutex_lock(&mutex_motion_ctrl);
 	if(time <= 0) time = 0;
 	if(time >= 99999) time = 99999;	// 9.9999s
-	imme_acceleration_time[1] = time;
-	imme_acceleration_time[0] = time >> 16;
+	imme_acceleration_time[1] = time & 0xFFFF;
+	imme_acceleration_time[0] = (time >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
@@ -283,8 +283,8 @@ int set_imme_deceleration_time(uint32_t time)
 	pthread_mutex_lock(&mutex_motion_ctrl);
 	if(time <= 0) time = 0;
 	if(time >= 99999) time = 99999;	// 9.9999s
-	imme_deceleration_time[1] = time;
-	imme_deceleration_time[0] = time >> 16;
+	imme_deceleration_time[1] = time & 0xFFFF;
+	imme_deceleration_time[0] = (time >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
 	return 0;
 }
@@ -307,8 +307,8 @@ int set_check_speed(uint32_t speed)
 {
 	if(speed <= 0) speed = 0;
 	if(speed >= 200000) speed = 200000;	// 2000r/min
-	check_speed[1] = speed;
-	check_speed[0] = speed >> 16;
+	check_speed[1] = speed & 0xFFFF;
+	check_speed[0] = (speed >> 16) & 0xFFFF;
 	return 0;
 }
 int send_check_speed()
@@ -326,8 +326,8 @@ int set_check_acce_time(uint32_t time)
 {
 	if(time <= 0) time = 0;
 	if(time >= 99999) time = 99999;	// 9.9999s
-	check_acce_time[1] = time;
-	check_acce_time[0] = time >> 16;
+	check_acce_time[1] = time & 0xFFFF;
+	check_acce_time[0] = (time >> 16) & 0xFFFF;
 	return 0;
 }
 int send_check_acce_time()
@@ -345,8 +345,8 @@ int set_check_dece_time(uint32_t time)
 {
 	if(time <= 0) time = 0;
 	if(time >= 99999) time = 99999;	// 9.9999s
-	check_dece_time[1] = time;
-	check_dece_time[0] = time >> 16;
+	check_dece_time[1] = time & 0xFFFF;
+	check_dece_time[0] = (time >> 16) & 0xFFFF;
 	return 0;
 }
 int send_check_dece_time()
