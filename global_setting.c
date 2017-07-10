@@ -87,15 +87,15 @@ int get_stop()
 // 启动角度、极限角度设定
 void set_g_start_angle(double angle)
 {
-    printf("set: angle %f\n", angle);
+    //printf("set: angle %f\n", angle);
     g_start_angle = angle;
-    printf("set: g_start_angle %f\n", g_start_angle);
+    //printf("set: g_start_angle %f\n", g_start_angle);
 }
 double get_g_start_angle()
 {
-    printf("get: g_start_angle %f\n", g_start_angle);
+    //printf("get: g_start_angle %f\n", g_start_angle);
     double angle = g_start_angle;
-    printf("get: angle %f\n", angle);
+    //printf("get: angle %f\n", angle);
     return angle;
 }
 

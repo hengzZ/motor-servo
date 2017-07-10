@@ -184,37 +184,6 @@ int main(int argc, char** argv)
         ctrl_status = get_g_ctrl_status();
         curangle = get_encoder_angle();
         //double diff_angle = curangle - get_destination_angle();         
-
-	    // // TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
-	    // // 编码器速度很小的时候，控制器的零速度信号是否有输出
-	    // // 电机50r/min,零速度信号就响应, 对应编码器为0.27个脉冲/ms
-	    // double speed = get_encoder_speed();
-	    // if(fabs(speed) < 0.1){
-	    //     // 零速度信号判断
-	    //     if(1 != get_motor_zero_speed()){
-            //         //停止
-            //         set_stop(true);
-	    //     }
-	    // }
-            // // TODO(wangzhiheng): 超程判断
-            // // 超程时，将+OT或-OT置ON(1)，则电机的OT输出信号将有响应，errormsg可查看
-            // // 超程时，超程时，以PA2_60设定的方式减速停止，仅能反方向运动，或者手动进给
-            // if( curangle < (get_g_left_angle()-2) )
-            // {
-            //     set_cont_status(OT_MINUS_ad,1);
-            // }
-            // if( curangle > (get_g_right_angle()+2) )
-            // {
-            //     set_cont_status(OT_PLUS_ad,1);
-            // }
-            // // 注意!: 以下两个判断，可以放置于命令解析与执行函数中, 报警检测部分
-            // // TODO(wangzhiheng): RS485数据错误判断
-            // // if(1 == get_out_status(DATA_ERROR_ad))
-            // // TODO(wangzhiheng): 寿命预警
-            // // if(1 == get_out_status(LIFE_WRNING_ad))
-
-        //printf("aa...in mian: diff angle %f, status %d, fabs %f\n", diff_angle, ctrl_status, fabs(diff_angle));
-         
          
          // 获取角度信息
          if(get_anticlockwise()) curangle *= -1;        
@@ -230,49 +199,8 @@ int main(int argc, char** argv)
                 break;
          
          } 
-         
-        /*curt = clock();
-        duration = 1000.0 * (double)( curt - pret ) / (double)CLOCKS_PER_SEC;        
-               
-        if(duration > 200){
-        // FINISH状态判断
-        		int is_inp = is_INP();
-        		if( is_inp ){
-        			
-                    // Debug语句
-                    printf("main: is inp\n");
-
-        			if( LOCATING == ctrl_status ){							
-        		        message_send("$B\r\n"); // position到位			    
-        		    }else if ( INITLIZING == ctrl_status ){
-        		    
-        		        log_i("Init Success.");
-        		    
-        		    }
-        		     
-        		    update_g_ctrl_status(FREE);
-        		}
-            		
-                if( (LOCATING == ctrl_status) &&
-                 (fabs(diff_angle) <= 0.005) )
-                 {
-                     //printf("bb... in main\n");
-                     int ret = task_cancel();
-                     //if(-1 == ret) update_g_ctrl_status(ERROOR);
-                 }
-
-        		// 报警检测
-        		if( 0 == get_out_status(ALRM_DETC_B_ad) ){			
-        		    update_g_ctrl_status(ERROOR);
-        		}
-        		// 伺服电机零速度判断
-        		if( 1 == get_out_status(ZRO_SPEED_ad) ){			
-        		    set_motor_zero_speed();
-        		}
-                pret = curt;
-        }*/             
  
-        usleep(1000); // 1ms
+        usleep(20000); // 20ms
     }
     // 释放伺服，并退出程序
     serve_off();

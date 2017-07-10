@@ -33,6 +33,8 @@ int get_out_status(int out_addr);
 // 设置CONT线圈状态
 // 返回-1表示通信失败，未设置成功
 int set_cont_status(int cont_addr, int status);
+// Debug函数，获取当前CONT线圈状态
+int get_cont_status(int cont_addr);
 
 // 增量旋转
 int run_inc_angle(double angle);

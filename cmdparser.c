@@ -37,7 +37,7 @@ int m_socket_read(void *buf, size_t count)
     
     int len = sizeof(clientAddr);
     
-    int bytes = recvfrom(sock, buf, count, 0, (struct sockaddr*)&clientAddr, &len);
+    int bytes = recvfrom(sock, buf, count, 0, (struct sockaddr*)&clientAddr, (socklen_t*)&len);
     if(bytes>0) conneted = 1;
     
     
@@ -62,9 +62,6 @@ int m_socket_write(const void *buf, size_t count)
 // 信息发送
 int message_send(const char* msg)
 {
-    //char sendbuf[64];
-    //memset(sendbuf,0,64);
-    //sprintf(sendbuf, msg);
     return m_socket_write(msg,strlen(msg));
 }
 
@@ -106,7 +103,7 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
             ret = 0;
             break;
         case   GCHECK:			
-            //printf("signal_handler: check\n");
+	    update_g_ctrl_status(LEFTORRIGHT);
             ret = check_motion();
             break;
         case   GERROR_MSG:			
@@ -126,8 +123,8 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                  cur_angle = get_encoder_angle();
                 
                  if( fabs(cur_angle - temp_x->v[0] ) > 0.005) {
-                    ret = goto_point(temp_x->v[0]);
                     update_g_ctrl_status(LOCATING);
+                    ret = goto_point(temp_x->v[0]);
                     //message_send("$C\r\n");	
                  }else{
                     message_send("$D\r\n"); // 未执行
@@ -142,8 +139,8 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                 message_send("$D\r\n"); // 未执行
             }
             else{
-                ret = goto_left();
                 update_g_ctrl_status(LEFTORRIGHT);
+                ret = goto_left();
                 //message_send("$C\r\n");	
             }
             break;
@@ -153,8 +150,8 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                 message_send("$D\r\n"); // 未执行
             }
             else{
-                ret = goto_right();
                 update_g_ctrl_status(LEFTORRIGHT);
+                ret = goto_right();
                 //message_send("$C\r\n");	
             }
             break;
@@ -208,10 +205,6 @@ void parsesocket(void)
 	// 监听: 信号解析与执行
 	while(1)
 	{
-		//connect_loop = 1;
-		//while(connect_loop)
-		//{
-		//connect_loop = 0;
 	    bytes = m_socket_read(buf,127);	
 	    if(bytes > 0) {  
 	    
@@ -232,14 +225,14 @@ void parsesocket(void)
 	            double position;
 	            sscanf(buf,"point %lf",&position);
 
-	            // Debug语句
-	            char tmp_buf[1024];
-	            sprintf(tmp_buf, buf);
-	            log_e(tmp_buf);
-	            printf("cmdparse: %s\n",tmp_buf);
-	            sprintf(tmp_buf, "cmdparse: point %lf",position);
-	            log_e(tmp_buf);
-	            printf("cmdparse: %s\n",tmp_buf);
+	            // // Debug语句
+	            // char tmp_buf[1024];
+	            // sprintf(tmp_buf, buf);
+	            // log_e(tmp_buf);
+	            // printf("cmdparse: %s\n",tmp_buf);
+	            // sprintf(tmp_buf, "cmdparse: point %lf",position);
+	            // log_e(tmp_buf);
+	            // printf("cmdparse: %s\n",tmp_buf);
 
 	            if(get_anticlockwise()) 
 	                 temp_x.v[0] = (-position);
@@ -299,14 +292,16 @@ void parsesocket(void)
 	        }
 	        else if(buf == strstr(buf,"errormsg")){
 	
+		    //printf("%s",buf);
 	            temp_x.cmd = GERROR_MSG;
 	        }
 	        else if(buf == strstr(buf,"alarmrst")){
 	
+		    //printf("%s",buf);
 	            temp_x.cmd = GALARM_RST;
 	        }
-	        else
-	        {
+	        else{
+
 	           temp_x.cmd = 0;
 	        }
 	        curstatus = get_g_ctrl_status();
@@ -316,9 +311,9 @@ void parsesocket(void)
 	            message_send("$D\r\n"); // 未执行
 	            //continue;		
 	        }	
-		else
-		{
-		        run_cmd(&temp_x,curstatus);	
+		else{
+
+		    run_cmd(&temp_x,curstatus);	
 		}
 	    } //END IF(BYTES>0)
 		
@@ -329,7 +324,7 @@ void parsesocket(void)
 		if( is_INP() ){
 			
 		    // Debug语句
-		    //printf("main: is inp\n");
+		    //printf("is inp\n");
 
 		    if( LOCATING == curstatus ){							
 		        message_send("$B\r\n"); // position到位			    
@@ -342,6 +337,7 @@ void parsesocket(void)
 		}
 		
     		
+		// 到位判断
 		if( LOCATING == curstatus ){
 		     //printf("bb... in main\n");
 		     double curangle = get_encoder_angle();
@@ -356,14 +352,58 @@ void parsesocket(void)
 		if( 0 == get_out_status(ALRM_DETC_B_ad) ){			
 		    update_g_ctrl_status(ERROOR);
 		}
-		// 伺服电机零速度判断
-		if( 1 == get_out_status(ZRO_SPEED_ad) ){			
-		    set_motor_zero_speed();
-		}			
+		// TODO(wangzhiheng): 限位条件判断,用于校对电机与编码器是否同步一致
+		// 编码器速度很小的时候，控制器的零速度信号是否有输出
+		// 电机50r/min,零速度信号就响应, 对应编码器为0.27个脉冲/ms
+		double speed = get_encoder_speed();
+		if(fabs(speed) < 0.1){
+		    // 零速度信号判断
+		    if(1 != get_motor_zero_speed()){
+		        //停止
+			printf("encoder error.\n");
+			update_g_ctrl_status(ERROOR);
+		        //set_stop(true);
+		    }
+		}
+		// TODO(wangzhiheng): 超程判断
+		// 超程时，将+OT或-OT置ON(1)，则电机的OT输出信号将有响应，errormsg可查看
+		// 超程时，超程时，以PA2_60设定的方式减速停止，仅能反方向运动，或者手动进给
+		double curangle = get_encoder_angle();
+		if( curangle < (get_g_left_angle()-0.1) )
+		{
+		    set_cont_status(OT_MINUS_ad,1);
+		}
+		else if( curangle > (get_g_right_angle()+0.1) )
+		{
+		    set_cont_status(OT_PLUS_ad,1);
+		}
+		else {
+		    set_cont_status(OT_MINUS_ad,0);
+		    set_cont_status(OT_PLUS_ad,0);
+		}
+		// 注意!: 以下两个判断，可以放置于命令解析与执行函数中, 报警检测部分
+		// TODO(wangzhiheng): RS485数据，寿命预警
+		// printf("RS485 data error: %d\n", get_out_status(DATA_ERROR_ad));
+		// printf("Life Time Warn: %d\n", get_out_status(LIFE_WRNING_ad));
+		if(1 == get_out_status(DATA_ERROR_ad))
+		{
+		    // Debug
+		    //printf("RS485 failed\n");
+		    update_g_ctrl_status(ERROOR);
+		}
+		// TODO(wangzhiheng): 寿命预警
+		if(1 == get_out_status(LIFE_WRNING_ad))
+		{
+		    // Debug
+		    //printf("Life Warning\n");
+		    update_g_ctrl_status(ERROOR);
+		}
+
 		
 		//delay for modbus reading
 		usleep(100000);	    // 100ms
-	}
+
+	} // END WHILE(1)
 }
 
 int listening_socket(int _server_port, int _queue_size)

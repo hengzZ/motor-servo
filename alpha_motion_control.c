@@ -74,7 +74,18 @@ int set_cont_status(int cont_addr, int status)
 	}
 	return 0;
 }
-
+// Debug函数，获取当前CONT线圈状态
+int get_cont_status(int cont_addr)
+{
+	for(int i = 0; i < OPLOOPS && 1 != modbus_read_bits(ctx, cont_addr, 1, tab_rp_bits); i++){
+		if(OPLOOPS-1==i)
+		{
+			log_e("get_cont_status: communication failed.");
+			return -1;
+		}
+	}
+	return tab_rp_bits[0];
+}
 
 // 转换角度为位置增量
 void convert_angle_to_inc_position(double angle, uint16_t *inc_position)
@@ -137,9 +148,9 @@ int run_to_angle(double angle)
 		uint16_t inc_position[2];
 		convert_angle_to_inc_position(angle, inc_position);
 
-		// Debug语句
-		printf("run_to_angle: %lf\n",angle);
-		printf("run_to_angle: val0: %4x, val1: %4x\n", inc_position[0], inc_position[1]);
+		// // Debug语句
+		// printf("run_to_angle: %lf\n",angle);
+		// printf("run_to_angle: val0: %4x, val1: %4x\n", inc_position[0], inc_position[1]);
 
 		ret = set_abs_control_mode(); //绝对坐标
 		if(-1 == ret) {
