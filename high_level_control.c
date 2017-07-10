@@ -38,7 +38,7 @@ int send_error_msg()
     int ot_alarm =  get_out_status(OT_DETC_ad);
     if(-1==ot_alarm) return -1;
 
-    //sprintf(sendbuf, "$E%1d%1d%1d%1d%1d,%1d%1d%1d\r\n",alm4,alm3,alm2,alm1,alm0,life_alarm,rs485_alarm,ot_alarm);
+    sprintf(sendbuf, "$E%1d%1d%1d%1d%1d,%1d%1d%1d\r\n",alm4,alm3,alm2,alm1,alm0,life_alarm,rs485_alarm,ot_alarm);
     ret = m_socket_write(sendbuf,strlen(sendbuf));
     
     //// Debug语句
@@ -63,6 +63,7 @@ int alarm_reset()
     return ret;
 }
 // 位置预置，在ON边缘上将当前位置及反馈位置设置为PA2_19寄存器内保存的设定值
+// 偏差清除，PA3_36设置有效形态，默认为ON边缘上有效
 // 注意，在伺服电机停止的情况下预置
 int position_reset()
 {
@@ -93,6 +94,10 @@ int position_reset()
     ret = set_cont_status(PST_PRESET_ad,1);
     if(-1==ret) return -1;
     ret = set_cont_status(PST_PRESET_ad,0);
+    // 偏差清除
+    ret = set_cont_status(DEVIATION_CLR_ad,1);
+    if(-1==ret) return -1;
+    ret = set_cont_status(DEVIATION_CLR_ad,0);
 
     return ret;
 }

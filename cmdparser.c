@@ -337,16 +337,16 @@ void parsesocket(void)
 		}
 		
     		
-		// 到位判断
-		if( LOCATING == curstatus ){
-		     //printf("bb... in main\n");
-		     double curangle = get_encoder_angle();
-		     double diff_angle = curangle - get_destination_angle(); 
-		     if (fabs(diff_angle) <= 0.005){                          
-			 int r = task_cancel();
-			 //if(-1 == r) update_g_ctrl_status(ERROOR);
-		     }
-		 }  
+		// // 到位判断
+		// if( LOCATING == curstatus ){
+		//      //printf("bb... in main\n");
+		//      double curangle = get_encoder_angle();
+		//      double diff_angle = curangle - get_destination_angle(); 
+		//      if (fabs(diff_angle) <= 0.001){                          
+		// 	 int r = task_cancel();
+		// 	 //if(-1 == r) update_g_ctrl_status(ERROOR);
+		//      }
+		//  }  
 
 		// 报警检测
 		if( 0 == get_out_status(ALRM_DETC_B_ad) ){			
@@ -359,9 +359,10 @@ void parsesocket(void)
 		if(fabs(speed) < 0.1){
 		    // 零速度信号判断
 		    if(1 != get_motor_zero_speed()){
-		        //停止
-			printf("encoder error.\n");
+			// 速度不一致
 			update_g_ctrl_status(ERROOR);
+			const char* msg = "$F\r\n";
+			message_send(msg);
 		        //set_stop(true);
 		    }
 		}
@@ -387,15 +388,10 @@ void parsesocket(void)
 		// printf("Life Time Warn: %d\n", get_out_status(LIFE_WRNING_ad));
 		if(1 == get_out_status(DATA_ERROR_ad))
 		{
-		    // Debug
-		    //printf("RS485 failed\n");
 		    update_g_ctrl_status(ERROOR);
 		}
-		// TODO(wangzhiheng): 寿命预警
 		if(1 == get_out_status(LIFE_WRNING_ad))
 		{
-		    // Debug
-		    //printf("Life Warning\n");
 		    update_g_ctrl_status(ERROOR);
 		}
 

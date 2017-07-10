@@ -60,6 +60,7 @@ extern "C" {
 #define     PA3_22_ad    (0x4215)
 #define     PA3_23_ad    (0x4216)
 #define     PA3_24_ad    (0x4217)
+#define     PA3_36_ad    (0x4223)
 
 #define     PA3_51_ad    (0x4232)
 #define     PA3_52_ad    (0x4233)

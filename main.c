@@ -298,9 +298,9 @@ int parse_ini_file(char * ini_name)
     max_right_position = temp_angle;
 
     double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 0);
-    speed = temp_speed*60*100/360*TRANSMISSION_RATIO;
+    speed = temp_speed*60*100*TRANSMISSION_RATIO/360;
     temp_speed = iniparser_getdouble(ini, "Motion Control:check_speed", 0);
-    check_speed = temp_speed*60*100/360*TRANSMISSION_RATIO;
+    check_speed = temp_speed*60*100*TRANSMISSION_RATIO/360;
 
     imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 0);
     imme_deceleration_time = iniparser_getint(ini, "Motion Control:imme_deceleration_time", 0);

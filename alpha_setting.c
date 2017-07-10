@@ -133,7 +133,7 @@ void io_signals_mapping()
 	write_register( PA3_19_ad, 0x0000, PST_CANCEL_fc );
 	// PA3_20 CONT20 (35)示教
 	write_register( PA3_20_ad, 0x0000, TEACHING_fc );
-	// PA3_21 CONT21 (50)偏差清除
+	// PA3_21 CONT21 (50)偏差清除，寄存器PA3_36设定清除时的输入形态
 	write_register( PA3_21_ad, 0x0000, DEVIATION_CLR_fc );
 	// PA3_22 CONT22 (54)自由运转BX
 	write_register( PA3_22_ad, 0x0000, FREE_RUN_fc );
@@ -293,14 +293,18 @@ void parameter_register_setting()
 	write_register( PA2_73_ad, 0x0000, 0x0000);
 	// PA2_93=0，默认值，偶校验，1个停止位
 	write_register( PA2_93_ad, 0x0000, 0x0000);
-	// PA2_94=25，响应时间250ms
-	write_register( PA2_94_ad, 0x0000, 25);
+	// PA2_94=0，响应时间0ms，默认值
+	write_register( PA2_94_ad, 0x0000, 0x0000);
 	// PA2_95=0，通信超时时间，默认值0,不检测
 	write_register( PA2_95_ad, 0x0000, 0x0000);
 	// PA2_97=1，通信协议选择，1为modbus
 	write_register( PA2_97_ad, 0x0000, 0x0001);
 	// PA2_99=0，选择编码器，默认值0为20bit编码器
 	write_register( PA2_99_ad, 0x0000, 0x0000);
+
+	//
+	// PA3_36=0，设定偏差清零信号的有效形态，0为边缘ON边缘清除，1为等级，至少保持2ms以上才有效
+	write_register( PA3_36_ad, 0x0000, 0x0000);
 
 }
 
@@ -536,14 +540,18 @@ int check_parameters()
 	ret = check_register( PA2_73_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA2_93=0，默认值，偶校验，1个停止位
 	ret = check_register( PA2_93_ad, 0x0000, 0x0000); if(-1==ret) return -1;
-	// PA2_94=250，响应时间ms，寄存器内为25
-	ret = check_register( PA2_94_ad, 0x0000, 25); if(-1==ret) return -1;
+	// PA2_94=0，响应时间0.00ms，默认值
+	ret = check_register( PA2_94_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA2_95=0，通信超时时间，默认值0,不检测
 	ret = check_register( PA2_95_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 	// PA2_97=1，通信协议选择，1为modbus
 	ret = check_register( PA2_97_ad, 0x0000, 0x0001); if(-1==ret) return -1;
 	// PA2_99=0，选择编码器，默认值0为20bit编码器
 	ret = check_register( PA2_99_ad, 0x0000, 0x0000); if(-1==ret) return -1;
+
+	//
+	// PA3_36=0，设定偏差清零信号的有效形态，0为边缘ON边缘清除，1为等级，至少保持2ms以上才有效
+	ret = check_register( PA3_36_ad, 0x0000, 0x0000); if(-1==ret) return -1;
 
 	return 0;
 }

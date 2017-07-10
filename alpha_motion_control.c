@@ -6,6 +6,10 @@
 #include "alpha_motion_control.h"
 
 
+#define MAX_MOTOR_SPEED (200000) // 0.01r/min
+#define MIN_MOTOR_SPEED (1)
+#define MAX_ACCE_DECE_TIME (99999) // 0.1ms
+#define MIN_ACCE_DECE_TIME (1)
 uint16_t cruise_speed[2]; // 运行时的速度
 uint16_t imme_acceleration_time[2]; // 运行时的加速时间
 uint16_t imme_deceleration_time[2]; // 运行时的减速时间
@@ -239,8 +243,8 @@ int immediate_value_operation_run()
 int set_cruise_speed(uint32_t speed)
 {
 	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(speed <= 0) speed = 0;
-	if(speed >= 200000) speed = 200000;	// 2000r/min
+	if(speed <= MIN_MOTOR_SPEED) speed = MIN_MOTOR_SPEED;
+	if(speed >= MAX_MOTOR_SPEED) speed = MAX_MOTOR_SPEED;	// 0.01r/min
 	cruise_speed[1] = speed & 0xFFFF;
 	cruise_speed[0] = (speed >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
@@ -268,8 +272,8 @@ int send_cruise_speed()
 int set_imme_acceleration_time(uint32_t time)
 {
 	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(time <= 0) time = 0;
-	if(time >= 99999) time = 99999;	// 9.9999s
+	if(time <= MIN_ACCE_DECE_TIME) time = MIN_ACCE_DECE_TIME;
+	if(time >= MAX_ACCE_DECE_TIME) time = MAX_ACCE_DECE_TIME;	// 0.1ms
 	imme_acceleration_time[1] = time & 0xFFFF;
 	imme_acceleration_time[0] = (time >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
@@ -292,8 +296,8 @@ int send_imme_acceleration_time()
 int set_imme_deceleration_time(uint32_t time)
 {
 	pthread_mutex_lock(&mutex_motion_ctrl);
-	if(time <= 0) time = 0;
-	if(time >= 99999) time = 99999;	// 9.9999s
+	if(time <= MIN_ACCE_DECE_TIME) time = MIN_ACCE_DECE_TIME;
+	if(time >= MAX_ACCE_DECE_TIME) time = MAX_ACCE_DECE_TIME;	// 0.1ms
 	imme_deceleration_time[1] = time & 0xFFFF;
 	imme_deceleration_time[0] = (time >> 16) & 0xFFFF;
 	pthread_mutex_unlock(&mutex_motion_ctrl);
@@ -316,8 +320,8 @@ int send_imme_deceleration_time()
 // check motion speed, acce time, dece time
 int set_check_speed(uint32_t speed)
 {
-	if(speed <= 0) speed = 0;
-	if(speed >= 200000) speed = 200000;	// 2000r/min
+	if(speed <= MIN_MOTOR_SPEED) speed = MIN_MOTOR_SPEED;
+	if(speed >= MAX_MOTOR_SPEED) speed = MAX_MOTOR_SPEED;	// 0.01r/min
 	check_speed[1] = speed & 0xFFFF;
 	check_speed[0] = (speed >> 16) & 0xFFFF;
 	return 0;
