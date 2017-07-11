@@ -71,8 +71,7 @@ int position_reset()
 {
     int ret=0;
     
-    // 取消当前的运动任务
-    ret = task_cancel();
+    ret = task_cancel(); //取消当前运动
     if(-1==ret) return -1;
 
     // 等待停止
@@ -107,7 +106,7 @@ int position_reset()
 }
 
 
-// 取消当前任务
+// 取消当前运动
 int task_cancel()
 {
     int ret;
@@ -137,7 +136,6 @@ int force_stop()
 int goto_point(double angle)
 {
     //// debug语句
-    //printf("goto_point %f\n", angle);
     //double test_angle = get_encoder_angle();
     //printf("get encoder angle %f\n", test_angle);
     //double test_start = get_g_start_angle();
@@ -153,6 +151,7 @@ int goto_point(double angle)
     actual_angle *= TRANSMISSION_RATIO;
 
     //// Debug
+    //printf("goto_point %f\n", angle);
     //printf("actual_angle %f\n", actual_angle);
 
     ret = run_to_angle(actual_angle);
@@ -203,20 +202,20 @@ int set_speed_value(double speed)
 
 	uint32_t actual_speed = speed*60*100*TRANSMISSION_RATIO/360; //寄存器单位0.01r/min
 	set_cruise_speed(actual_speed);
-	ret = task_cancel();
+	ret = task_cancel(); //取消当前运动
 	if(-1 == ret) return -1;
 	ret = send_cruise_speed();
-
 	if(-1==ret) return -1;
-	else return 0;
+
+	return 0;
 }
 // 获取当前速度
 // 返回: 度/秒
 double get_speed_value()
 {
-    uint32_t cruise_speed = get_cruise_speed(); // 0.01r/min
-    double speed = (double)cruise_speed*360/(60*100)/TRANSMISSION_RATIO; // degree/s
-    return speed;
+	uint32_t cruise_speed = get_cruise_speed(); // 0.01r/min
+	double speed = (double)cruise_speed*360/(60*100)/TRANSMISSION_RATIO; // degree/s
+	return speed;
     
 }
 
@@ -227,19 +226,19 @@ int set_acce_value(double acce_time)
 	int ret;
 
 	set_imme_acceleration_time(acce_time);
-	ret = task_cancel();
+	ret = task_cancel(); //取消当前运动
 	if(-1 == ret) return -1;
 	ret = send_imme_acceleration_time();
-
 	if(-1==ret) return -1;
-	else return 0;
+
+	return 0;
 }
 // 获取加速时间
 // 返回: 0.1ms
 int get_acce_value()
 {
-    int acce_time = get_imme_acceleration_time();
-    return acce_time;
+	int acce_time = get_imme_acceleration_time();
+	return acce_time;
 }
 
 // 减速时间设定
@@ -249,19 +248,19 @@ int set_dece_value(double dece_time)
 	int ret;
 
 	set_imme_deceleration_time(dece_time);
-	ret = task_cancel();
+	ret = task_cancel(); //取消当前运动
 	if(-1 == ret) return -1;
 	ret = send_imme_deceleration_time();
-
 	if(-1==ret) return -1;
-	else return 0;
+
+	return 0;
 }
 // 获取减速时间
 // 输入: 0.1ms
 int get_dece_value()
 {
-    int dece_time = get_imme_deceleration_time();
-    return dece_time;
+	int dece_time = get_imme_deceleration_time();
+	return dece_time;
 }
 
 //// 自检操作
@@ -269,9 +268,9 @@ int check_motion()
 {
     int ret;
 
-    // 速度设定
-    ret = task_cancel();
+    ret = task_cancel(); //取消当前运动
     if(-1 == ret) return -1;
+    // 速度设定
     ret = send_check_speed();
     if(-1 == ret) return -1;
     ret = send_check_acce_time();

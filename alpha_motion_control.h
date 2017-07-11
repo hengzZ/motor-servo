@@ -57,7 +57,7 @@ int send_imme_acceleration_time();
 int set_imme_deceleration_time(uint32_t time);
 uint32_t get_imme_deceleration_time();
 int send_imme_deceleration_time();
-// 自检速度设置
+// 自检运动速度设置
 int set_check_speed(uint32_t speed);
 int send_check_speed();
 int set_check_acce_time(uint32_t time);

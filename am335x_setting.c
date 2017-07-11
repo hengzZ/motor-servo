@@ -314,10 +314,7 @@ void receivethread(void)
 	        cur_v = val;
 
 	        //printf("cc...\n");
-
 	        //printf("am335x: current position %d\n", cur_v);
-	        //double test_angle = get_encoder_angle();
-	        //printf("am35x: get_encoder_angle %f\n", test_angle);
 
 	        // Calculate position
 	        int position;

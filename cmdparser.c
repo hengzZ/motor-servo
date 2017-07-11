@@ -27,7 +27,6 @@ int server_port, queue_size;
 
 static int sock = -1;
 static int conneted = 0;
-
 struct sockaddr_in clientAddr;
 
 // Socket收发
@@ -85,33 +84,75 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
             ret = force_stop();			   
             set_stop(true); // 释放伺服，退出程序
             break;
+
         case GSPEED:
-            ret = set_speed_value(temp_x->v[0]);
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		ret = set_speed_value(temp_x->v[0]);
+	    }
             break;
+
         case GACCE_TIME :
-            ret = set_acce_value(temp_x->v[0]);
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		ret = set_acce_value(temp_x->v[0]);
+	    }
             break;
+
         case GDECE_TIME  :
-            ret = set_dece_value(temp_x->v[0]);
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		ret = set_dece_value(temp_x->v[0]);
+	    }
             break;                    
+
        case GMAX_POINT:               		
             // degreea			        
             //??????????? same value
-            left_angle = temp_x->v[0];
-            right_angle = temp_x->v[1];
-            set_g_left_angle(left_angle);
-            set_g_right_angle(right_angle);
-            ret = 0;
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		left_angle = temp_x->v[0];
+		right_angle = temp_x->v[1];
+		set_g_left_angle(left_angle);
+		set_g_right_angle(right_angle);
+		ret = 0;
+	    }
             break;
+
         case   GCHECK:			
-	    update_g_ctrl_status(LEFTORRIGHT);
-            ret = check_motion();
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		update_g_ctrl_status(LEFTORRIGHT);
+		ret = check_motion();
+	    }
             break;
+
         case   GERROR_MSG:			
-            ret = send_error_msg();
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		ret = send_error_msg();
+	    }
             break;
+
         case   GALARM_RST:
-            ret = alarm_reset();
+            if(  FREE != curstatus ){						
+                message_send("$D\r\n"); // 未执行
+            }
+            else{
+		ret = alarm_reset();
+	    }
             break;
 
         case    GPOINT:			
@@ -121,19 +162,22 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
             }
             else{
                 
-                 cur_angle = get_encoder_angle();
-                
-                 if( fabs(cur_angle - temp_x->v[0] ) > 0.005) {
-                    update_g_ctrl_status(LOCATING);
-                    ret = goto_point(temp_x->v[0]);
-                    //message_send("$C\r\n");	
-                 }else{
-                    message_send("$D\r\n"); // 未执行
-                 }		                
+		update_g_ctrl_status(LOCATING);
+		ret = goto_point(temp_x->v[0]);
+                //message_send("$C\r\n"); // 指令被执行
+
+		//cur_angle = get_encoder_angle();
+		//if( fabs(cur_angle - temp_x->v[0] ) > 0.005) {
+		//    update_g_ctrl_status(LOCATING);
+		//    ret = goto_point(temp_x->v[0]);
+		//    //message_send("$C\r\n");	
+		//}else{
+		//    message_send("$D\r\n"); // 未执行
+		//}		                
                 
             }
-            
             break;
+
         case GLEFT:			
             //printf("signal_handler: left\n");
             if(  FREE != curstatus ){						
@@ -146,8 +190,8 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
             }
             break;
         case  GRIGHT: 
-	        //printf("signal_handler: right\n");
-	        if(  FREE != curstatus ){						
+	    //printf("signal_handler: right\n");
+	    if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
             }
             else{
@@ -156,11 +200,13 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                 //message_send("$C\r\n");	
             }
             break;
+
 	case GSPEEDMSG:
 	    // 角度信息格式: $G速度，加速时间，减速时间\r\n
 	    sprintf(buf,"$G%.3f,%05d,%05d\r\n",get_speed_value(),get_acce_value(),get_dece_value());
 	    m_socket_write(buf,strlen(buf));
 	    break;
+
         default:
             break;
     
@@ -326,7 +372,7 @@ void parsesocket(void)
 	    } //END IF(BYTES>0)
 		
 		////delay for cmd running
-		usleep(10000);	    // 10ms
+		usleep(20000);	    // 20ms
 		
 		curstatus = get_g_ctrl_status();
 		if( is_INP() ){
@@ -340,17 +386,17 @@ void parsesocket(void)
 		    	    
 		        log_i("Init Success.");		    
 		    }
-		     
+		    // 更新为空闲状态 
 		    update_g_ctrl_status(FREE);
 		}
 		
     		
-		// // 到位判断
+		// // 到位强制停止
 		// if( LOCATING == curstatus ){
-		//      //printf("bb... in main\n");
+		//      //printf("ccc...\n");
 		//      double curangle = get_encoder_angle();
 		//      double diff_angle = curangle - get_destination_angle(); 
-		//      if (fabs(diff_angle) <= 0.001){                          
+		//      if (fabs(diff_angle) <= 0.005){                          
 		// 	 int r = task_cancel();
 		// 	 //if(-1 == r) update_g_ctrl_status(ERROOR);
 		//      }
@@ -378,11 +424,11 @@ void parsesocket(void)
 		// 超程时，将+OT或-OT置ON(1)，则电机的OT输出信号将有响应，errormsg可查看
 		// 超程时，超程时，以PA2_60设定的方式减速停止，仅能反方向运动，或者手动进给
 		double curangle = get_encoder_angle();
-		if( curangle < (get_g_left_angle()-0.1) )
+		if( curangle < (get_g_left_angle()-0.2) )
 		{
 		    set_cont_status(OT_MINUS_ad,1);
 		}
-		else if( curangle > (get_g_right_angle()+0.1) )
+		else if( curangle > (get_g_right_angle()+0.2) )
 		{
 		    set_cont_status(OT_PLUS_ad,1);
 		}

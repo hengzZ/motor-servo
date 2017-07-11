@@ -122,7 +122,6 @@ int main(int argc, char** argv)
     	free_buffers_for_modbus();
     	return -1;
     }
-
     //// TODO(wangzhiheng): 为了获得启动时的实际角度，进行零点矫正
     /// 等待编码器响应状态为enable,即编码器有数据
     int waittime = 300; // 5分钟
@@ -139,6 +138,7 @@ int main(int argc, char** argv)
         }else
             break;
     }
+
     /// TODO 原点复位 self_chek?
     if(!get_stop())
     {
@@ -149,19 +149,15 @@ int main(int argc, char** argv)
 
     // 初始化完成！
    
-
     // //// 初始化完成后的自检操作
     // if(!get_stop())
     // {
-    //     param temp;
-    //     temp.cmd = GCHECK;
-    //     update_g_x(temp);
-    //     update_g_ctrl_status(LEFTORRIGHT);
+    //     ret = check_motion();
+    //     if(-1 == ret) set_stop(true);
     // }
-    // //// 循环获取编码器的位置，并发送到控制终端
           
      
-     // 监听套接字，解析终端的控制命令
+    // 监听套接字，解析终端的控制命令
     ret = listening_socket(g_am335x_socket.server_port, g_am335x_socket.queue_size);
     if(-1 == ret){
         log_e("Open am335x ethernet port failed.");
@@ -171,34 +167,35 @@ int main(int argc, char** argv)
         return -1;
     }
     
-     double curangle=0;
-     CtrlStatus  ctrl_status;
-     char buf[64];
-     
 
-     sleep(1);    
-     while(!get_stop()) {
-         
-        ctrl_status = get_g_ctrl_status();
-        curangle = get_encoder_angle();
-        //double diff_angle = curangle - get_destination_angle();         
-         
-         // 获取角度信息
-         if(get_anticlockwise()) curangle *= -1;        
-         sprintf(buf,"$A%.3f,%1d\r\n",curangle,ctrl_status);
-         
-         m_socket_write(buf,strlen(buf));
-         
-         switch (ctrl_status) {
-         
-            case INITLIZING:
-                break;
-            default:
-                break;
-         
-         } 
- 
-        usleep(20000); // 20ms
+    double curangle=0;
+    CtrlStatus  ctrl_status;
+    char buf[64];
+
+    sleep(1);    
+    while(!get_stop()) {
+        
+       ctrl_status = get_g_ctrl_status();
+       curangle = get_encoder_angle();
+       //double diff_angle = curangle - get_destination_angle();         
+        
+        // 获取角度信息
+        if(get_anticlockwise()) curangle *= -1;        
+        sprintf(buf,"$A%.3f,%1d\r\n",curangle,ctrl_status);
+        
+        m_socket_write(buf,strlen(buf));
+        
+        switch (ctrl_status) {
+        
+           case INITLIZING:
+               break;
+           default:
+               break;
+        
+        } 
+
+       usleep(20000); // 20ms
+
     }
     // 释放伺服，并退出程序
     serve_off();

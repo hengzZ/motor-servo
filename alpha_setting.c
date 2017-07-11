@@ -88,6 +88,7 @@ void close_modbus_rtu_master()
 }
 
 
+// 写寄存器
 void write_register(int addr, uint16_t val0, uint16_t val1)
 {
 	tab_rq_registers[0] = val0;

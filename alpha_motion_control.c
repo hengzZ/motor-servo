@@ -340,8 +340,7 @@ int send_imme_deceleration_time()
 	return 0;
 }
 
-// 自检操作使用的速度、加速时间、减速时间变量赋值
-// check motion speed, acce time, dece time
+// 自检运动速度
 int set_check_speed(uint32_t speed)
 {
 	if(speed <= MIN_MOTOR_SPEED) speed = MIN_MOTOR_SPEED;
@@ -361,10 +360,11 @@ int send_check_speed()
 	}		
 	return 0;
 }
+// 自检运动加速时间
 int set_check_acce_time(uint32_t time)
 {
-	if(time <= 0) time = 0;
-	if(time >= 99999) time = 99999;	// 9.9999s
+	if(time <= MIN_ACCE_DECE_TIME) time = MIN_ACCE_DECE_TIME;
+	if(time >= MAX_ACCE_DECE_TIME) time = MAX_ACCE_DECE_TIME;	// 0.1ms
 	check_acce_time[1] = time & 0xFFFF;
 	check_acce_time[0] = (time >> 16) & 0xFFFF;
 	return 0;
@@ -380,10 +380,11 @@ int send_check_acce_time()
 	}		
 	return 0;
 }
+// 自检运动减速时间
 int set_check_dece_time(uint32_t time)
 {
-	if(time <= 0) time = 0;
-	if(time >= 99999) time = 99999;	// 9.9999s
+	if(time <= MIN_ACCE_DECE_TIME) time = MIN_ACCE_DECE_TIME;
+	if(time >= MAX_ACCE_DECE_TIME) time = MAX_ACCE_DECE_TIME;	// 0.1ms
 	check_dece_time[1] = time & 0xFFFF;
 	check_dece_time[0] = (time >> 16) & 0xFFFF;
 	return 0;
@@ -411,7 +412,7 @@ int is_INP()
 		} 
 	}
 	if(1==tab_rp_bits[0]){
-		//设定运行状态
+		//设定运行状态为NOTMOVE
 		set_motor_movement_notmove();
 		return 1;
 	}

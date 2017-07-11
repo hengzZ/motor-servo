@@ -248,13 +248,13 @@ extern "C" {
 #define     SERVO_ON_ad                 (CONT9_ad)      //伺服
 #define     FWD_ad                      
 #define     REV_ad                      
-#define     START_ad                    (CONT11_ad)      //自动启动
+#define     START_ad                    (CONT11_ad)     //自动启动
 #define     ORG_ad                      (CONT1_ad)      //原点复位ORG
 #define     LS_ad                       (CONT2_ad)      //原点LS
-#define     OT_PLUS_ad                  (CONT12_ad)      //+方向超程
+#define     OT_PLUS_ad                  (CONT12_ad)     //+方向超程
 #define     OT_MINUS_ad                 (CONT13_ad)     //-方向超程
 #define     EMG_ad                      (CONT14_ad)     //强制停止EMG
-#define     RST_ad                      (CONT10_ad)      //报警复位RST
+#define     RST_ad                      (CONT10_ad)     //报警复位RST
 #define     ACCO_ad                     
 #define     PST_PRESET_ad               (CONT15_ad)     //位置预置
 #define     GAIN_SWITCH_ad              

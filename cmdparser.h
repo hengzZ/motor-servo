@@ -24,6 +24,7 @@ struct am335x_socket_t{
 int m_socket_read(void *buf, size_t count);
 int m_socket_write(const void *buf, size_t count);
 int message_send(const char* msg);
+
 int listening_socket(int server_port, int queue_size);
 
 #ifdef __cplusplus
