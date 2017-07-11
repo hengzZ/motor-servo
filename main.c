@@ -229,11 +229,11 @@ void create_example_ini_file(void)
     "max_left_position = -90"               "\n"    // degree
     "max_right_position = 90"               "\n"    // degree
     "speed = 2"                             "\n"    // degree/s
-    "imme_acceleration_time = 10000"        "\n"    // 0.1ms    : 10000 means 1s
-    "imme_deceleration_time = 10000"        "\n"    // 0.1ms
-    "check_speed = 2"                       "\n"    // degree/s 
-    "check_acce_time = 20000"               "\n"    // 0.1ms    : 20000 means 2s
-    "check_dece_time = 20000"               "\n\n"  // 0.1ms
+    "imme_acceleration_time = 100"          "\n"    // 0.1ms    : 10000 means 1s
+    "imme_deceleration_time = 100"          "\n"    // 0.1ms
+    "check_speed = 4"                       "\n"    // degree/s 
+    "check_acce_time = 100"                 "\n"    // 0.1ms    : 20000 means 2s
+    "check_dece_time = 100"                 "\n\n"  // 0.1ms
 
     "[RTU MASTER]"                          "\n"
     "device = /dev/ttyO1"                   "\n"
@@ -254,7 +254,7 @@ void create_example_ini_file(void)
     "[SOCKET]"                              "\n"
     "server_port = 12345"                   "\n"
     "queue_size = 1"                        "\n"
-    "mode = TCP"                            "\n\n"
+    "mode = UDP"                            "\n\n"
     
     );
 
@@ -283,26 +283,26 @@ int parse_ini_file(char * ini_name)
     }
     iniparser_dump(ini, stderr);
 
-    // Get configure
+    // 坐标系反转标记
     int anticlock = iniparser_getint(ini, "Motion Control:anticlockwise", 0);
     set_anticlockwise(anticlock);
-
-    double temp_angle = iniparser_getdouble(ini, "Motion Control:max_left_position", 0);
+    // 极限角度
+    double temp_angle = iniparser_getdouble(ini, "Motion Control:max_left_position", -90);
     max_left_position = temp_angle;
-    temp_angle = iniparser_getdouble(ini, "Motion Control:max_right_position", 0);
+    temp_angle = iniparser_getdouble(ini, "Motion Control:max_right_position", 90);
     max_right_position = temp_angle;
-
-    double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 0);
+    // 速度
+    double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 0.1);
     speed = temp_speed*60*100*TRANSMISSION_RATIO/360;
-    temp_speed = iniparser_getdouble(ini, "Motion Control:check_speed", 0);
+    temp_speed = iniparser_getdouble(ini, "Motion Control:check_speed", 0.1);
     check_speed = temp_speed*60*100*TRANSMISSION_RATIO/360;
+    // 加减速时间，默认为100×0.1ms
+    imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 100);
+    imme_deceleration_time = iniparser_getint(ini, "Motion Control:imme_deceleration_time", 100);
+    check_acce_time = iniparser_getint(ini, "Motion Control:check_acce_time", 100);
+    check_dece_time = iniparser_getint(ini, "Motion Control:check_dece_time", 100);
 
-    imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 0);
-    imme_deceleration_time = iniparser_getint(ini, "Motion Control:imme_deceleration_time", 0);
-    check_acce_time = iniparser_getint(ini, "Motion Control:check_acce_time", 0);
-    check_dece_time = iniparser_getint(ini, "Motion Control:check_dece_time", 0);
-
-    // Port 
+    // Modbus 
     const char* ptr;
     ptr = iniparser_getstring(ini, "RTU MASTER:device", "/dev/ttyO1");
     memcpy(g_rtu_master.device, ptr, strlen(ptr));
@@ -316,6 +316,7 @@ int parse_ini_file(char * ini_name)
     g_rtu_master.slave = iniparser_getint(ini, "RTU MASTER:slave", 1);
     g_rtu_master.reset_parameter = iniparser_getint(ini, "RTU MASTER:RESET", 0);
 
+    // UART
     ptr = iniparser_getstring(ini, "UART:device", "/dev/ttyO2");
     memcpy(g_am335x_uart.device, ptr, strlen(ptr));
     g_am335x_uart.device[strlen(ptr)] = '\0';
@@ -325,14 +326,15 @@ int parse_ini_file(char * ini_name)
     g_am335x_uart.baud = iniparser_getint(ini, "UART:baud", 9600);
     g_am335x_uart.data_bit = iniparser_getint(ini, "UART:data_bit", 8);
     g_am335x_uart.stop_bit = iniparser_getint(ini, "UART:stop_bit", 1);
-
+    
+    // Socket
     g_am335x_socket.server_port = iniparser_getint(ini, "SOCKET:server_port", 12345);
     g_am335x_socket.queue_size = iniparser_getint(ini, "SOCKET:queue_size", 1);
 
-    // Set control parameter
+    // 设置最大偏转角
     set_g_left_angle(max_left_position);
     set_g_right_angle(max_right_position);
-
+    // 速度，注意设置之后需要发送到寄存器才有效，其对应发送在主函数开始部分
     set_cruise_speed(speed);
     set_imme_acceleration_time(imme_acceleration_time);
     set_imme_deceleration_time(imme_deceleration_time);
