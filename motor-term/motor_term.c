@@ -28,19 +28,20 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
 
 
 #define BUFFSIZE     (64)	 
 #define MY_PORT	    (2222)
-#define SERVER_PORT (2223)
+#define SERVER_PORT (12345)
 
 
 int nprintline=0;
 
 
-const char * SERVER_IP = "127.0.0.1";
+const char * SERVER_IP = "192.168.1.15";
 static int sock = -1;
 
 struct sockaddr_in serveraddr;    
@@ -114,7 +115,7 @@ void recvsocket(void)
 	while(1)
 	{
 	
-		bytes = recvfrom(sock, buf, 127, 0, (struct sockaddr*)&addr, &len);
+		bytes = recvfrom(sock, buf, 127, 0, (struct sockaddr*)&addr, (socklen_t*)&len);
 		
 		if( bytes > 0 )
 		{

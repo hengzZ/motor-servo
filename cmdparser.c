@@ -72,6 +72,7 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
     double right_angle;
     double cur_angle;
     char buf[64];
+    int  bytes=0;
     
     switch( temp_x->cmd ){
     
@@ -82,9 +83,9 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
         case GEMG :
             update_g_ctrl_status(STOPING);
             ret = force_stop();			   
-            set_stop(true); // 释放伺服，退出程序
+	    ret = serve_off(); //释放伺服
+            set_stop(true); // 退出程序
             break;
-
         case GSPEED:
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
@@ -93,7 +94,6 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = set_speed_value(temp_x->v[0]);
 	    }
             break;
-
         case GACCE_TIME :
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
@@ -102,7 +102,6 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = set_acce_value(temp_x->v[0]);
 	    }
             break;
-
         case GDECE_TIME  :
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
@@ -111,7 +110,6 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = set_dece_value(temp_x->v[0]);
 	    }
             break;                    
-
        case GMAX_POINT:               		
             // degreea			        
             //??????????? same value
@@ -126,7 +124,6 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = 0;
 	    }
             break;
-
         case   GCHECK:			
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
@@ -136,16 +133,15 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = check_motion();
 	    }
             break;
-
         case   GERROR_MSG:			
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
             }
             else{
+
 		ret = send_error_msg();
 	    }
             break;
-
         case   GALARM_RST:
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
@@ -154,8 +150,7 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = alarm_reset();
 	    }
             break;
-
-        case    GPOINT:			
+        case  GPOINT:			
             //printf("signal_handler: point %f\n", temp.v[0]);
             if(  FREE != curstatus ){						
                 message_send("$D\r\n"); // 未执行
@@ -177,7 +172,6 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                 
             }
             break;
-
         case GLEFT:			
             //printf("signal_handler: left\n");
             if(  FREE != curstatus ){						
@@ -204,9 +198,10 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 	case GSPEEDMSG:
 	    // 角度信息格式: $G速度，加速时间，减速时间\r\n
 	    sprintf(buf,"$G%.3f,%05d,%05d\r\n",get_speed_value(),get_acce_value(),get_dece_value());
-	    m_socket_write(buf,strlen(buf));
+	    bytes = m_socket_write(buf,strlen(buf));
+	    //printf("speed message ack: %d bytes sent\n", bytes);
+	    //printf("speed message: %s\n", buf);
 	    break;
-
         default:
             break;
     
@@ -249,8 +244,8 @@ void parsesocket(void)
 	int bytes = 0;
 	char buf[128];
 
-	CtrlStatus  curstatus;
-	param temp_x; //控制参数对象
+	CtrlStatus  curstatus; // 运行状态
+	param temp_x; //控制参数
 	// 监听: 信号解析与执行
 	while(1)
 	{
@@ -259,48 +254,41 @@ void parsesocket(void)
 	    
 	        //important
 	        buf[bytes]=0;
-	        
-	        //// TODO 指令解析 ////	       
+
+	        //// TODO 指令解析 ////	注意，指令之间严禁有包含关系
 	        temp_x.cmd = 0;
-	        if(buf == strstr(buf,"cancel")){
+	        if( strstr(buf,"cancel") ){
 	            //printf("cmdparse: cancel");
 	            temp_x.cmd = GPST_CANCEL;
 	        }
-	        else if(buf == strstr(buf,"stop")){
+	        else if( strstr(buf,"stop") ){
 	            //printf("cmdparse: stop");
 	            temp_x.cmd = GEMG;
 	        }
-	        else if(buf == strstr(buf, "point")){
+		else if(buf == strstr(buf, "point")){
+
 	            double position;
 	            sscanf(buf,"point %lf",&position);
-
-	            // // Debug语句
-	            // char tmp_buf[1024];
-	            // sprintf(tmp_buf, buf);
-	            // log_e(tmp_buf);
-	            // printf("cmdparse: %s\n",tmp_buf);
-	            // sprintf(tmp_buf, "cmdparse: point %lf",position);
-	            // log_e(tmp_buf);
-	            // printf("cmdparse: %s\n",tmp_buf);
+		    //printf("point %lf\n", position);
 
 	            if(get_anticlockwise()) 
 	                 temp_x.v[0] = (-position);
 	            else temp_x.v[0] = position;
 	            temp_x.cmd = GPOINT;
 	        }
-	        else if(buf == strstr(buf,"runleft")){
-	
+	        else if( strstr(buf,"runleft") ){
 	            if(get_anticlockwise()) temp_x.cmd = GRIGHT;
 	            else temp_x.cmd = GLEFT;
 	        }
-	        else if(buf == strstr(buf,"runright")){
-	
+	        else if( strstr(buf,"runright") ){
 	            if(get_anticlockwise()) temp_x.cmd = GLEFT;
 	            else temp_x.cmd = GRIGHT;
 	        }
 	        else if(buf == strstr(buf,"speed")){
+
 	            double speed;
 	            sscanf(buf,"speed %lf",&speed);
+		    //printf("speed %lf\n", speed);
 	            temp_x.v[0] = speed;
 	            temp_x.cmd = GSPEED;
 	        }
@@ -308,6 +296,7 @@ void parsesocket(void)
 	
 	            double acce;
 	            sscanf(buf, "acce %lf",&acce);
+		    //printf("acce %lf\n", acce);
 	            temp_x.v[0] = acce;
 	            temp_x.cmd = GACCE_TIME;
 	        }
@@ -315,6 +304,7 @@ void parsesocket(void)
 	
 	            double dece;
 	            sscanf(buf, "dece %lf",&dece);
+		    //printf("dece %lf\n", dece);
 	            temp_x.v[0] = dece;
 	            temp_x.cmd = GDECE_TIME;
 	        }
@@ -322,6 +312,7 @@ void parsesocket(void)
 	
 	            double max_left, max_right;
 	            sscanf(buf, "maxpoint %lf %lf",&max_left, &max_right);
+		    //printf("maxpoint %lf %lf\n", max_left, max_right);
 	            
 	            if(get_anticlockwise()) max_left *= -1, max_right *= -1;
 	            
@@ -335,28 +326,22 @@ void parsesocket(void)
 	            temp_x.v[1] = max_right;
 	            temp_x.cmd = GMAX_POINT;
 	        }
-	        else if(buf == strstr(buf,"check")){
-	
+	        else if( strstr(buf,"check") ){
 	            temp_x.cmd = GCHECK;
 	        }
-	        else if(buf == strstr(buf,"errormsg")){
-	
-		    //printf("%s",buf);
+	        else if( strstr(buf,"errormsg") ){
 	            temp_x.cmd = GERROR_MSG;
 	        }
-	        else if(buf == strstr(buf,"alarmrst")){
-	
-		    //printf("%s",buf);
+	        else if( strstr(buf,"alarmrst") ){
 	            temp_x.cmd = GALARM_RST;
 	        }
-		else if(buf == strstr(buf,"speedmsg")){
-
+		else if( strstr(buf,"spdmsg") ){
 		    temp_x.cmd = GSPEEDMSG;
 		}
 	        else{
-
-	           temp_x.cmd = 0;
+		    temp_x.cmd = 0;
 	        }
+
 	        curstatus = get_g_ctrl_status();
 	        //if initiliazing then return;
 	        if(  INITLIZING == curstatus || NONE == curstatus ){
@@ -369,11 +354,13 @@ void parsesocket(void)
 		    // 指令执行
 		    run_cmd(&temp_x,curstatus);	
 		}
+
 	    } //END IF(BYTES>0)
 		
 		////delay for cmd running
-		usleep(20000);	    // 20ms
+		usleep(40000);	    // 40ms
 		
+
 		curstatus = get_g_ctrl_status();
 		if( is_INP() ){
 			
@@ -411,12 +398,11 @@ void parsesocket(void)
 		// 注意:由于减速宽慢的问题，要求编码器测速的时间间隔不能太大
 		double speed = get_encoder_speed();
 		if(fabs(speed) < 0.1){
-		    // 零速度信号判断
-		    if(1 != get_motor_zero_speed()){
-			// 速度不一致
+		    
+		    if(1 != get_motor_zero_speed()){ // 零速度信号判断
+
 			update_g_ctrl_status(ERROOR);
-			const char* msg = "$F\r\n"; // 编码器故障信息
-			message_send(msg);
+			message_send("$F\r\n"); // 编码器故障信息
 		        //set_stop(true);
 		    }
 		}

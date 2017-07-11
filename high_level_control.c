@@ -61,6 +61,7 @@ int alarm_reset()
     if(-1==ret) return -1;
     ret = set_cont_status(RST_ad,0);
 
+    //printf("alarm reset success.\n");
     return ret;
 }
 
