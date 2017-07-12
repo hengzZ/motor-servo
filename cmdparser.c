@@ -410,11 +410,11 @@ void parsesocket(void)
 		// 超程时，将+OT或-OT置ON(1)，则电机的OT输出信号将有响应，errormsg可查看
 		// 超程时，超程时，以PA2_60设定的方式减速停止，仅能反方向运动，或者手动进给
 		double curangle = get_encoder_angle();
-		if( curangle < (get_g_left_angle()-0.2) )
+		if( curangle < (get_g_left_angle()-0.1) )
 		{
 		    set_cont_status(OT_MINUS_ad,1);
 		}
-		else if( curangle > (get_g_right_angle()+0.2) )
+		else if( curangle > (get_g_right_angle()+0.1) )
 		{
 		    set_cont_status(OT_PLUS_ad,1);
 		}

@@ -122,7 +122,7 @@ int main(int argc, char** argv)
     	free_buffers_for_modbus();
     	return -1;
     }
-    //// TODO(wangzhiheng): 为了获得启动时的实际角度，进行零点矫正
+    //// TODO(wangzhiheng): 为了获得启动时的实际角度，用于进行零点矫正
     /// 等待编码器响应状态为enable,即编码器有数据
     int waittime = 300; // 5分钟
     for(int i=0; i < waittime; ++i)
@@ -231,7 +231,7 @@ void create_example_ini_file(void)
     "speed = 2"                             "\n"    // degree/s
     "imme_acceleration_time = 100"          "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 100"          "\n"    // 0.1ms
-    "check_speed = 4"                       "\n"    // degree/s 
+    "check_speed = 20"                      "\n"    // degree/s 
     "check_acce_time = 100"                 "\n"    // 0.1ms    : 20000 means 2s
     "check_dece_time = 100"                 "\n\n"  // 0.1ms
 
