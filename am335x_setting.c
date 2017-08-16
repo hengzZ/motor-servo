@@ -343,7 +343,11 @@ void receivethread(void)
 	        }
 
 	        // Update position
-	        update_encoder_position(position);
+		//int speed_threshold = get_speed_value()*2*16*65535/1000/360;
+		int speed_threshold = 100;
+		if(abs(encoder_position - position) < speed_threshold)
+		    update_encoder_position(position);
+
 	        // 测速，50ms测一次速
 	        curt = clock();
 	        duration = 1000.0 * (double)( curt - pret ) / (double)CLOCKS_PER_SEC;

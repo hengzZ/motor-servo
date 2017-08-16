@@ -181,7 +181,7 @@ int main(int argc, char** argv)
         
         // 获取角度信息
         if(get_anticlockwise()) curangle *= -1;        
-        sprintf(buf,"$A%.3f,%1d\r\n",curangle,ctrl_status);
+        sprintf(buf,"$A%.4f,%1d\r\n",curangle,ctrl_status);
         
         m_socket_write(buf,strlen(buf));
         
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
         
         } 
 
-       usleep(20000); // 20ms
+       usleep(5000); // 20ms
 
     }
     // 释放伺服，并退出程序

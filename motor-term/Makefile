@@ -23,7 +23,7 @@ count:
 	wc *.c *.cc *.C *.cpp *.h *.hpp
 
 clean:
-	rm -f *.o
+	rm -f *.o motor_term
 
 .PHONY: all
 .PHONY: count

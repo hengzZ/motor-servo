@@ -31,7 +31,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
+#include <math.h>
 
 #define BUFFSIZE     (64)	 
 #define MY_PORT	    (2222)
@@ -43,6 +43,8 @@ int nprintline=0;
 
 const char * SERVER_IP = "192.168.1.15";
 static int sock = -1;
+volatile int finish = 1;
+volatile float fsh_angle = 0;
 
 struct sockaddr_in serveraddr;    
 struct sockaddr_in myaddr;   
@@ -108,10 +110,15 @@ void recvsocket(void)
 	// Init Done
 	int bytes = 0;
 	char buf[128];
+	char bufvalue[64];
 	struct sockaddr_in addr; 
 	int len = sizeof(addr);
-	
-	
+
+	float v=0;
+	float vpre=0;
+	float vdlt = 0;
+	float speed = 2.4;
+
 	while(1)
 	{
 	
@@ -123,23 +130,52 @@ void recvsocket(void)
 			//printf("recv:%s\n",buf);
 			nprintline++;
 			
-			if( nprintline == 20 )
+			if( nprintline == 60 )
 			{
-				fputs("\033[2J",stderr);
-				fputs("\033[0;0H",stderr);
+				//fputs("\033[2J",stderr);
+				//fputs("\033[0;0H",stderr);
 				nprintline=0;
 			}
-			
+
+			// angle
+			char* pstart = strstr(buf,"$A");
+			char* pend = strstr(buf,"," );
+			if( pend - pstart > 2 )
+			{ 
+				
+				memcpy( bufvalue,pstart+2, pend - pstart-2);
+				bufvalue[pend - pstart-1]=0;
+				v = atof(bufvalue);
+
+				vdlt = fabs(v - vpre);
+				if( fabs(vdlt - speed*16/1000) > 0.012 && vdlt > 0.005 )
+				{
+					fprintf(stderr,"vdlt:%f stp:%f, rs:%f\n", vdlt, speed*16/1000, vdlt - speed*16/1000);
+				}
+
+				vpre = v;
+
+				// finish angle
+				fsh_angle = v;
+				
+			}else{
+			    printf("aaaaa..\n");
+			    printf("%s\n", buf);
+			}
 			//fputs("\033[K" ,stderr);//清除从光标到行尾的内容
-			
-			fputs("recv:", stderr);
-			fputs(buf, stderr);
+			//fputs("recv:", stderr);
+			//fputs(buf, stderr);
 			//fprintf(stderr,"recv:%s\n",buf);
 		
+			// finish flag
+			char* fsh = strstr(buf, "$B");
+			if(fsh != NULL) finish = 1;
+			
 		}	
-	
+
+
 		
-		usleep(1000); 
+		usleep(10); 
 	}
 	
 	
@@ -153,10 +189,21 @@ int main()
 
 	if(0 != pthread_create(&parsesocketid,NULL,(void*)recvsocket,NULL)) return -1;
 	if(0 != pthread_detach(parsesocketid)) return -1;
-	
+
 	for(;;)
 	{
 	
+		if(finish){
+		    if(fabs(fsh_angle-90) < 10){
+			sendbuf("point -90", strlen("point -90"));
+		    }else if(fabs(fsh_angle+90) < 10){
+			sendbuf("point 90", strlen("point 90"));
+		    }else{
+			sendbuf("point 90", strlen("point 90"));
+		    }
+		    finish = 0;
+		}
+
 		get_command();
 		
 		usleep(1000);
@@ -170,7 +217,7 @@ static int get_command()
     fd_set rfds;
     struct timeval tv;
     int n=0;
-	char buf_show[BUFFSIZE];
+    char buf_show[BUFFSIZE];
 	
     FD_ZERO(&rfds);
     FD_SET(0, &rfds);
@@ -180,11 +227,11 @@ static int get_command()
 	
     if (select(1, &rfds, NULL, NULL, &tv) > 0)
     {
-		n = read(STDIN_FILENO, buf_show, BUFFSIZE);
-		buf_show[n-1]=0;		
-	
-		if( strcmp(buf_show,"exit" ) ==0 ||
-		         strcmp(buf_show,"q" ) ==0)
+	n = read(STDIN_FILENO, buf_show, BUFFSIZE);
+	buf_show[n-1]=0;		
+
+	if( strcmp(buf_show,"exit" ) ==0 ||
+	     strcmp(buf_show,"q" ) ==0)
         {
 			printf( "exit\n");
 			exit(1);
