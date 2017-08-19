@@ -171,6 +171,9 @@ int main(int argc, char** argv)
     double curangle=0;
     CtrlStatus  ctrl_status;
     char buf[64];
+    char bufpre[64];
+    memcpy(buf,"buf",strlen("buf")+1);
+    memcpy(bufpre,"bufpre",strlen("bufpre")+1);
 
     sleep(1);    
     while(!get_stop()) {
@@ -182,8 +185,11 @@ int main(int argc, char** argv)
         // 获取角度信息
         if(get_anticlockwise()) curangle *= -1;        
         sprintf(buf,"$A%.4f,%1d\r\n",curangle,ctrl_status);
-        
-        m_socket_write(buf,strlen(buf));
+
+        if(!strcmp(buf,bufpre)){
+            memcpy(bufpre,buf,strlen(buf)+1);
+            m_socket_write(buf,strlen(buf));
+        }
         
         switch (ctrl_status) {
         
@@ -194,7 +200,7 @@ int main(int argc, char** argv)
         
         } 
 
-       usleep(5000); // 20ms
+       usleep(5000); // 5ms
 
     }
     // 释放伺服，并退出程序
