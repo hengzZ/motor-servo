@@ -343,7 +343,7 @@ void receivethread(void)
 	        }
 
 	        // Update position
-		int dlt_threshold = get_speed_value()*2*16*65535/1000/360;
+		//int dlt_threshold = get_speed_value()*2*16*65535/1000/360;
 		int dlt_threshold = 100;
 		if(abs(encoder_position - position) < dlt_threshold)
 		    update_encoder_position(position);
