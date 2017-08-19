@@ -150,7 +150,7 @@ void recvsocket(void)
 				vdlt = fabs(v - vpre);
 				if( fabs(vdlt - speed*16/1000) > 0.012 && vdlt > 0.005 )
 				{
-					fprintf(stderr,"vdlt:%f stp:%f, rs:%f\n", vdlt, speed*16/1000, vdlt - speed*16/1000);
+					fprintf(stderr,"v:%f vdlt:%f stdvdlt:%f, rs:%f\n", v, vdlt, speed*16/1000, vdlt - speed*16/1000);
 				}
 
 				vpre = v;
