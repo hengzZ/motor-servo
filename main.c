@@ -186,7 +186,7 @@ int main(int argc, char** argv)
         if(get_anticlockwise()) curangle *= -1;        
         sprintf(buf,"$A%.4f,%1d\r\n",curangle,ctrl_status);
 
-        if(!strcmp(buf,bufpre)){
+        if(strcmp(buf,bufpre)){
             memcpy(bufpre,buf,strlen(buf)+1);
             m_socket_write(buf,strlen(buf));
         }
