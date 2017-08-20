@@ -68,11 +68,7 @@ int message_send(const char* msg)
 static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 {
     int ret = 5;
-    double left_angle;
-    double right_angle;
-    double cur_angle;
     char buf[64];
-    int  bytes=0;
     
     switch( temp_x->cmd ){
     
@@ -117,8 +113,8 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
                 message_send("$D\r\n"); // 未执行
             }
             else{
-		left_angle = temp_x->v[0];
-		right_angle = temp_x->v[1];
+		double left_angle = temp_x->v[0];
+		double right_angle = temp_x->v[1];
 		set_g_left_angle(left_angle);
 		set_g_right_angle(right_angle);
 		ret = 0;
@@ -161,7 +157,7 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 		ret = goto_point(temp_x->v[0]);
                 //message_send("$C\r\n"); // 指令被执行
 
-		//cur_angle = get_encoder_angle();
+		//double cur_angle = get_encoder_angle();
 		//if( fabs(cur_angle - temp_x->v[0] ) > 0.005) {
 		//    update_g_ctrl_status(LOCATING);
 		//    ret = goto_point(temp_x->v[0]);
@@ -198,9 +194,7 @@ static void run_cmd(param *temp_x,  CtrlStatus  curstatus )
 	case GSPEEDMSG:
 	    // 角度信息格式: $G速度，加速时间，减速时间\r\n
 	    sprintf(buf,"$G%.3f,%05d,%05d\r\n",get_speed_value(),get_acce_value(),get_dece_value());
-	    bytes = m_socket_write(buf,strlen(buf));
-	    //printf("speed message ack: %d bytes sent\n", bytes);
-	    //printf("speed message: %s\n", buf);
+	    int bytes = m_socket_write(buf,strlen(buf));
 	    break;
         default:
             break;

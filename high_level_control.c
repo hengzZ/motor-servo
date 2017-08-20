@@ -203,6 +203,11 @@ int set_speed_value(double speed)
 
 	//uint32_t actual_speed = speed*60*100*TRANSMISSION_RATIO/360; //寄存器单位0.01r/min
 	
+	//TODO: dlt_threshold = 100 约束条件，am335_setting.c
+	// double dlt = (speed/360) * (65535) * (16/1000)
+	double dlt = (double)speed*E_PULSE_PER_CIRCLE/22500.0;
+	if(dlt>100) speed = 34.0;
+	
 	uint32_t actual_speed = (int)(speed*100.0*TRANSMISSION_RATIO/6.0); //寄存器单位0.01r/min
 	
 	set_cruise_speed(actual_speed);

@@ -2,6 +2,7 @@
 #include     <stdlib.h>
 #include     <string.h>
 #include     <unistd.h>
+#include     <sys/time.h>
 #include     <sys/types.h>
 #include     <sys/stat.h>  
 #include     <fcntl.h>  
@@ -10,7 +11,6 @@
 #include     <pthread.h> 
 #include     <sys/ioctl.h> 
 #include     <math.h>
-#include     <time.h>
 
 #include    "elog.h"
 #include    "am335x_setting.h"
@@ -288,9 +288,9 @@ void receivethread(void)
     int nread;
     char buff[128];
     
-    clock_t curt,pret;    
-    curt=pret=clock();
-    double duration;
+    struct timeval t_last, t_now;
+    gettimeofday(&t_now,NULL);
+    t_last = t_now;
     //printf("aa....\n");
 
     // 监听
@@ -298,7 +298,6 @@ void receivethread(void)
     {
 	    usleep(1000);
 	    //printf("bb...\n");
-	    //if((nread = read(fd,buff,120))>3) 
 	    
 	    if((nread = read(fd,buff,120))>0) 
 	    {
@@ -314,7 +313,7 @@ void receivethread(void)
 	        cur_v = val;
 
 	        //printf("cc...\n");
-	        //printf("am335x: current position %d\n", cur_v);
+	        //printf("am335x: pst val %d\n", cur_v);
 
 	        // Calculate position
 	        int position;
@@ -332,7 +331,7 @@ void receivethread(void)
 	        if(!is_encoder_enable()){
 	        
 		        update_encoder_position(position);
-		        pret = clock(); 
+		        gettimeofday(&t_last,NULL); 
 		        prev_encoder_position = position;
 		        // 设定启动点角度
 		        double angle = get_encoder_angle();
@@ -344,19 +343,18 @@ void receivethread(void)
 
 	        // Update position
 		//int dlt_threshold = get_speed_value()*2*16*65535/1000/360;
-		int dlt_threshold = 100;
+		int dlt_threshold = 100; // 对应34度／秒
 		if(abs(encoder_position - position) < dlt_threshold)
 		    update_encoder_position(position);
 
-	        // 测速，50ms测一次速
-	        curt = clock();
-	        duration = 1000.0 * (double)( curt - pret ) / (double)CLOCKS_PER_SEC;
-	      
-	        if(duration > 50){
-	        
-		        double speed = (position - prev_encoder_position)/duration;
+	        // 测速，60ms测一次速
+		gettimeofday(&t_now,NULL);
+		long t_slice = 1000000*(t_now.tv_sec - t_last.tv_sec)+(t_now.tv_usec - t_last.tv_usec);
+		//printf("t_slice: %f\n",t_slice/1000.0);
+	        if(t_slice > 60000){
+		        double speed = (position - prev_encoder_position)/(t_slice/1000.0);
 		        update_encoder_speed(speed);
-		        pret = curt;
+			t_last = t_now;
 		        prev_encoder_position = position;
 	        }
 

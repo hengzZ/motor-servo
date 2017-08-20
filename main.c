@@ -30,7 +30,6 @@ int main(int argc, char** argv)
 {
     int ret;
    
-    double duration;
     // EasyLogger Log配置,创建log文件的语句在 elog_port.c
     elog_init();
     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
@@ -112,7 +111,6 @@ int main(int argc, char** argv)
     if(-1 == ret) set_stop(true);
     
     
-    
     // 串口监听，监听编码器信息("/dev/ttyO2", 9600, 'N', 8, 1);
     ret = listening_uart(g_am335x_uart.device, g_am335x_uart.baud, \
             g_am335x_uart.parity, g_am335x_uart.data_bit, g_am335x_uart.stop_bit);
@@ -124,7 +122,7 @@ int main(int argc, char** argv)
     }
     //// TODO(wangzhiheng): 为了获得启动时的实际角度，用于进行零点矫正
     /// 等待编码器响应状态为enable,即编码器有数据
-    int waittime = 300; // 5分钟
+    int waittime = 180; // 3分钟
     for(int i=0; i < waittime; ++i)
     {
         if(!is_encoder_enable()){
@@ -148,13 +146,6 @@ int main(int argc, char** argv)
     }
 
     // 初始化完成！
-   
-    // //// 初始化完成后的自检操作
-    // if(!get_stop())
-    // {
-    //     ret = check_motion();
-    //     if(-1 == ret) set_stop(true);
-    // }
           
      
     // 监听套接字，解析终端的控制命令
@@ -234,7 +225,7 @@ void create_example_ini_file(void)
     "anticlockwise = 0"                     "\n"
     "max_left_position = -90"               "\n"    // degree
     "max_right_position = 90"               "\n"    // degree
-    "speed = 2"                             "\n"    // degree/s
+    "speed = 2.4"                           "\n"    // degree/s
     "imme_acceleration_time = 100"          "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 100"          "\n"    // 0.1ms
     "check_speed = 20"                      "\n"    // degree/s 
@@ -298,9 +289,9 @@ int parse_ini_file(char * ini_name)
     temp_angle = iniparser_getdouble(ini, "Motion Control:max_right_position", 90);
     max_right_position = temp_angle;
     // 速度
-    double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 0.1);
+    double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 2.4);
     speed = temp_speed*60*100*TRANSMISSION_RATIO/360;
-    temp_speed = iniparser_getdouble(ini, "Motion Control:check_speed", 0.1);
+    temp_speed = iniparser_getdouble(ini, "Motion Control:check_speed", 2.4);
     check_speed = temp_speed*60*100*TRANSMISSION_RATIO/360;
     // 加减速时间，默认为100×0.1ms
     imme_acceleration_time = iniparser_getint(ini, "Motion Control:imme_acceleration_time", 100);
