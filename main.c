@@ -162,25 +162,26 @@ int main(int argc, char** argv)
     double curangle=0;
     CtrlStatus  ctrl_status;
     char buf[64];
-    char bufpre[64];
-    memcpy(buf,"buf",strlen("buf")+1);
-    memcpy(bufpre,"bufpre",strlen("bufpre")+1);
+    //char bufpre[64];
+    //memcpy(buf,"buf",strlen("buf")+1);
+    //memcpy(bufpre,"bufpre",strlen("bufpre")+1);
 
     sleep(1);    
     while(!get_stop()) {
         
        ctrl_status = get_g_ctrl_status();
        curangle = get_encoder_angle();
-       //double diff_angle = curangle - get_destination_angle();         
         
         // 获取角度信息
         if(get_anticlockwise()) curangle *= -1;        
         sprintf(buf,"$A%.4f,%1d\r\n",curangle,ctrl_status);
 
-        if(strcmp(buf,bufpre)){
-            memcpy(bufpre,buf,strlen(buf)+1);
-            m_socket_write(buf,strlen(buf));
-        }
+        //if(strcmp(buf,bufpre)){
+        //    memcpy(bufpre,buf,strlen(buf)+1);
+        //    m_socket_write(buf,strlen(buf));
+        //}
+        m_socket_write(buf,strlen(buf));
+
         
         switch (ctrl_status) {
         
