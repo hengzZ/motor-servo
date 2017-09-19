@@ -41,7 +41,7 @@
 int nprintline=0;
 
 
-const char * SERVER_IP = "192.168.1.15";
+const char * SERVER_IP = "192.168.0.15";
 static int sock = -1;
 volatile int finish = 1;
 volatile float fsh_angle = 0;
@@ -117,7 +117,7 @@ void recvsocket(void)
 	float v=0;
 	float vpre=0;
 	float vdlt = 0;
-	float speed = 2.4;
+
 
 	while(1)
 	{
@@ -146,13 +146,15 @@ void recvsocket(void)
 				memcpy( bufvalue,pstart+2, pend - pstart-2);
 				bufvalue[pend - pstart-1]=0;
 				v = atof(bufvalue);
+				//fprintf(stderr, "angle: %.4f\n",v);
+				
+				float speed = 2.4;
 
 				vdlt = fabs(v - vpre);
-				if( fabs(vdlt - speed*16/1000) > 0.012 && vdlt > 0.005 )
+				if( fabs(vdlt - speed*10/1000) > 0.01 && vdlt > 0.01 )
 				{
-					fprintf(stderr,"v:%f vdlt:%f stdvdlt:%f, rs:%f\n", v, vdlt, speed*16/1000, vdlt - speed*16/1000);
+					fprintf(stderr,"v:%f vpre: %f vdlt:%f stdvdlt:%f, rs:%f\n", v, vpre, vdlt, speed*10/1000, vdlt - speed*10/1000);
 				}
-
 				vpre = v;
 
 				// finish angle
@@ -192,14 +194,14 @@ int main()
 
 	for(;;)
 	{
-	
+
 		if(finish){
-		    if(fabs(fsh_angle-90) < 10){
-			sendbuf("point -90", strlen("point -90"));
-		    }else if(fabs(fsh_angle+90) < 10){
-			sendbuf("point 90", strlen("point 90"));
+		    if(fabs(fsh_angle-80) < 5){
+			sendbuf("point -80", strlen("point -80"));
+		    }else if(fabs(fsh_angle+80) < 5){
+			sendbuf("point 80", strlen("point 80"));
 		    }else{
-			sendbuf("point 90", strlen("point 90"));
+			sendbuf("point 80", strlen("point 80"));
 		    }
 		    finish = 0;
 		}

@@ -25,7 +25,7 @@ void io_signals_mapping();
 // 参数设定
 void init_parameters()
 {
-	//parameter_register_setting();
+	parameter_register_setting();
 	io_signals_mapping();
 }
 // 确认参数配置

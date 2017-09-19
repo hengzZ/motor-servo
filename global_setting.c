@@ -63,9 +63,9 @@ void update_g_ctrl_status(CtrlStatus status)
 }
 CtrlStatus get_g_ctrl_status()
 {
-    pthread_mutex_lock(&global_mutex);
+    //pthread_mutex_lock(&global_mutex);
     CtrlStatus status = g_ctrl_status;
-    pthread_mutex_unlock(&global_mutex);
+    //pthread_mutex_unlock(&global_mutex);
     return status;
 }
 
@@ -156,9 +156,9 @@ void set_anticlockwise(int mode)
 }
 int get_anticlockwise()
 {
-    pthread_mutex_lock(&global_mutex);
+    //pthread_mutex_lock(&global_mutex);
     int mode = anticlockwise;
-    pthread_mutex_unlock(&global_mutex);
+    //pthread_mutex_unlock(&global_mutex);
     return mode;
 }
 

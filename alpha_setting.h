@@ -355,7 +355,7 @@ extern "C" {
 
 // 伺服电机的每圈脉冲数量、传动减速比
 #define     M_PULSE_PER_CIRCLE          (36000)
-#define     TRANSMISSION_RATIO          (202)
+#define     TRANSMISSION_RATIO          (202*10)
 // 为modbus控制准备的缓冲区内存
 #define		REGISTERS_BUFFER_SIZE       (12)
 #define		BITS_BUFFER_SIZE	        (24)

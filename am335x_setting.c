@@ -40,9 +40,9 @@ int name_arr[] = {115200, 57600, 38400,  19200,  9600,  4800,  2400, 1200};
 // 更新编码器的位置
 void update_encoder_position(int position)
 {
-    pthread_mutex_lock(&mutex_encoder);
+    //pthread_mutex_lock(&mutex_encoder);
     encoder_position = position;
-    pthread_mutex_unlock(&mutex_encoder);
+    //pthread_mutex_unlock(&mutex_encoder);
 }
 // 更新编码器的速度
 void update_encoder_speed(double speed)
@@ -54,9 +54,9 @@ void update_encoder_speed(double speed)
 // 更新编码器的响应标志
 void encoder_is_enable()
 {
-    pthread_mutex_lock(&mutex_encoder);
+    //pthread_mutex_lock(&mutex_encoder);
     encoder_is_enable_ = 1;
-    pthread_mutex_unlock(&mutex_encoder);
+    //pthread_mutex_unlock(&mutex_encoder);
 }
 
 // 判断编码器是否已经工作
@@ -67,9 +67,9 @@ int is_encoder_enable()
 // 获取当前编码器的角度
 double get_encoder_angle()
 {
-    pthread_mutex_lock(&mutex_encoder);
+    //pthread_mutex_lock(&mutex_encoder);
     int position = encoder_position;
-    pthread_mutex_unlock(&mutex_encoder);
+    //pthread_mutex_unlock(&mutex_encoder);
     double angle = (double)position * 360.0 / (double)E_PULSE_PER_CIRCLE;
     return angle;
 }
@@ -109,53 +109,49 @@ unsigned char CRC_check(unsigned char *buf, int n)
 // 返回值 -1 表示没有解析到编码器的值
 int recv_pst_data(char *str,int len )
 {
+    //printf("len: %d\n", len);
+    static int sz = 0;
+    static char buf[32];
+    if(len>0){
+        memcpy(buf+sz, str, len);
+        sz += len;
+    }
 
     int startpos=-1;
-
-    for(int i=0;i<len-3;i++ ){
+    for(int i=0;i<sz-3;i++ ){
     
-	    if( *(str) == 0xff &&
-	        *(str+1) == 0x81 &&
-	        *(str+2) == 0x00) {
-	        
-	        startpos = i;
-	        break;
-	    }    
+            if( *(buf+i) == 0xff &&
+                *(buf+i+1) == 0x81 &&
+                *(buf+i+2) == 0x00) {
+                
+                startpos = i;
+                break;
+            }    
     }
-    
+
     if(-1 == startpos) return -1;
 
-    if( startpos + 7 <= len ){
-    
-	    unsigned char act_chk;
-	    memcpy(&act_chk,(unsigned char*)str+startpos+5,1);
-	    unsigned char chk = CRC_check((unsigned char*)str+startpos+3,2);
-	    
-	    if(chk == act_chk) {
-	        char sorted_buff[2];
-	        unsigned short ret;
-	        memcpy(&sorted_buff[1],str+startpos+3,1);
-	        memcpy(&sorted_buff[0],str+startpos+4,1);
-	        memcpy(&ret,sorted_buff,2);
-	        return ret;
-	    }
-    }
+    if( startpos + 7 <= sz ){
+            // Get number 
+            unsigned short ret;
+            char sorted_buff[2];
+            memcpy(&sorted_buff[1],buf+startpos+3,1);
+            memcpy(&sorted_buff[0],buf+startpos+4,1);
+            memcpy(&ret,sorted_buff,2);
+            // Get check code
+            unsigned char act_chk;
+            memcpy(&act_chk,(unsigned char*)buf+startpos+5,1);
+            unsigned char chk = CRC_check((unsigned char*)buf+startpos+3,2);
 
-    //char *ptr = strstr(str,"\xff\x81\x00");
-    ////char *ptr_end = strchr(ptr+3,'\0');
-    //if(NULL != ptr && NULL != ptr_end && (ptr_end - ptr >= 6)) {
-    //    unsigned char act_chk;
-    //    memcpy(&act_chk,ptr+5,1);
-    //    unsigned char chk = CRC_check((unsigned char*)ptr+3,2);
-    //    if(chk == act_chk) {
-    //        char sorted_buff[2];
-    //        unsigned short ret;
-    //        memcpy(&sorted_buff[1],ptr+3,1);
-    //        memcpy(&sorted_buff[0],ptr+4,1);
-    //        memcpy(&ret,sorted_buff,2);
-    //        return ret;
-    //    }
-    //}
+            // Buffer update
+            char temp[32];
+            sz = sz - (startpos+7);
+            memcpy(temp, buf+startpos+7, sz);
+            memcpy(buf,temp,sz);
+
+            if(chk == act_chk)
+                return ret;
+    }
 
     return -1;
 }
@@ -296,70 +292,81 @@ void receivethread(void)
     // 监听
     while(1) 
     {
-	    usleep(1000);
 	    //printf("bb...\n");
 	    
-	    if((nread = read(fd,buff,120))>0) 
-	    {
-	        buff[nread]='\0';
+	    nread = read(fd,buff,120);
+	    nread = (nread > 0) ? nread : 0;
 
-	        //printf("[RECEIVE LEN] is %d, content is:\n",nread);
-	        //for(int i = 0; i < nread; i++){
-	        //	fprintf(stderr,"%.2x ",buff[i]);
-	        //}
+	    //printf("[RECEIVE LEN] is %d, content is:\n",nread);
+	    //for(int i = 0; i < nread; i++){
+	    //	fprintf(stderr,"%.2x ",buff[i]);
+	    //}
 
-	        int val = recv_pst_data(buff,nread);
-	        if(-1 == val) continue;
-	        cur_v = val;
 
-	        //printf("cc...\n");
-	        //printf("am335x: pst val %d\n", cur_v);
+	    for(int i=0; i<4; ++i){
+		
+		int val = -1;
+		if(0==i){
+		    val = recv_pst_data(buff,nread);
+		}else {
+		    val = recv_pst_data(NULL,0);
+		}
 
-	        // Calculate position
-	        int position;
-	        int temp_stride = cur_v - ENCODER_ZERO_POSITION;
-	        if(abs(temp_stride) > MAX_STRIDE && temp_stride > 0)
-	            position = cur_v - 65535 - ENCODER_ZERO_POSITION;
-	        else if (abs(temp_stride) > MAX_STRIDE && temp_stride < 0)
-	            position = cur_v + 65535 - ENCODER_ZERO_POSITION;
-	        else
-	            position = temp_stride;
-	        // 使其和电机的运动方向一致
-	        position *= -1;
+		if(-1 == val) continue;
+		cur_v = val;
 
-	        // 判断编码器是否已经工作
-	        if(!is_encoder_enable()){
-	        
-		        update_encoder_position(position);
-		        gettimeofday(&t_last,NULL); 
-		        prev_encoder_position = position;
-		        // 设定启动点角度
-		        double angle = get_encoder_angle();
-			//// Debug
+		//printf("cc...\n");
+		//printf("am335x: pst val %d\n", cur_v);
+		//printf("frame_%d: val %d\n", i+1, val);
+
+		// Calculate position
+		int position;
+		int temp_stride = cur_v - ENCODER_ZERO_POSITION;
+		if(abs(temp_stride) > MAX_STRIDE && temp_stride > 0)
+		    position = cur_v - 65535 - ENCODER_ZERO_POSITION;
+		else if (abs(temp_stride) > MAX_STRIDE && temp_stride < 0)
+		    position = cur_v + 65535 - ENCODER_ZERO_POSITION;
+		else
+		    position = temp_stride;
+		// 使其和电机的运动方向一致
+		position *= -1;
+
+		// 判断编码器是否已经工作
+		if(!is_encoder_enable()){
+		
+			update_encoder_position(position);
+			gettimeofday(&t_last,NULL); 
+			prev_encoder_position = position;
+			// 设定启动点角度
+			double angle = get_encoder_angle();
 			//printf("start angle %f\n", angle);
-		        set_g_start_angle(angle);
-		        encoder_is_enable();
-	        }
+			set_g_start_angle(angle);
+			encoder_is_enable();
+		}
 
-	        // Update position
-		//int dlt_threshold = get_speed_value()*2*16*65535/1000/360;
-		int dlt_threshold = 100; // 对应34度／秒
-		if(abs(encoder_position - position) < dlt_threshold)
+		// Update position
+		//int dlt_threshold = get_speed_value()*2*10*65535/1000/360;
+		int dlt_threshold = 100; // 对应27度／秒
+		if(abs(encoder_position - position) < dlt_threshold){
 		    update_encoder_position(position);
+		}
 
-	        // 测速，60ms测一次速
+		// 测速，60ms测一次速
 		gettimeofday(&t_now,NULL);
 		long t_slice = 1000000*(t_now.tv_sec - t_last.tv_sec)+(t_now.tv_usec - t_last.tv_usec);
 		//printf("t_slice: %f\n",t_slice/1000.0);
-	        if(t_slice > 60000){
-		        double speed = (position - prev_encoder_position)/(t_slice/1000.0);
-		        update_encoder_speed(speed);
+		if(t_slice > 60000){
+			double speed = (position - prev_encoder_position)/(t_slice/1000.0);
+			update_encoder_speed(speed);
 			t_last = t_now;
-		        prev_encoder_position = position;
-	        }
+			prev_encoder_position = position;
+		}
+
+		// 数据稳定
+		usleep(9573);
 
 	    }
-	
+
     } 
     return;
 }
@@ -369,13 +376,13 @@ int listening_uart(const char* device, int baud, char parity, int data_bit, int 
 {
     pthread_t receiveid;
 
-    fd = open(device, O_RDWR);
+    fd = open(device, O_RDWR|O_NDELAY); // 非阻塞
     if (fd < 0){
     
 	    log_e("listening_uart: open device failed.");
 	    return -1;
     }
-    
+    fcntl(fd,F_SETFL,FNDELAY); // 非阻塞
     set_speed(fd,baud);
     set_Parity(fd,data_bit,stop_bit,parity);
 
@@ -387,3 +394,4 @@ void close_uart()
 {
     close(fd);
 }
+

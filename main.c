@@ -1,4 +1,3 @@
-
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -192,7 +191,7 @@ int main(int argc, char** argv)
         
         } 
 
-       usleep(5000); // 5ms
+       usleep(1000); // 1ms
 
     }
     // 释放伺服，并退出程序
@@ -224,12 +223,12 @@ void create_example_ini_file(void)
 
     "[Motion Control]"                      "\n"
     "anticlockwise = 0"                     "\n"
-    "max_left_position = -90"               "\n"    // degree
-    "max_right_position = 90"               "\n"    // degree
+    "max_left_position = -80"               "\n"    // degree
+    "max_right_position = 80"               "\n"    // degree
     "speed = 2.4"                           "\n"    // degree/s
     "imme_acceleration_time = 100"          "\n"    // 0.1ms    : 10000 means 1s
     "imme_deceleration_time = 100"          "\n"    // 0.1ms
-    "check_speed = 20"                      "\n"    // degree/s 
+    "check_speed = 5"                       "\n"    // degree/s 
     "check_acce_time = 100"                 "\n"    // 0.1ms    : 20000 means 2s
     "check_dece_time = 100"                 "\n\n"  // 0.1ms
 
@@ -285,9 +284,9 @@ int parse_ini_file(char * ini_name)
     int anticlock = iniparser_getint(ini, "Motion Control:anticlockwise", 0);
     set_anticlockwise(anticlock);
     // 极限角度
-    double temp_angle = iniparser_getdouble(ini, "Motion Control:max_left_position", -90);
+    double temp_angle = iniparser_getdouble(ini, "Motion Control:max_left_position", -80);
     max_left_position = temp_angle;
-    temp_angle = iniparser_getdouble(ini, "Motion Control:max_right_position", 90);
+    temp_angle = iniparser_getdouble(ini, "Motion Control:max_right_position", 80);
     max_right_position = temp_angle;
     // 速度
     double temp_speed = iniparser_getdouble(ini, "Motion Control:speed", 2.4);
