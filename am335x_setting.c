@@ -47,9 +47,9 @@ void update_encoder_position(int position)
 // 更新编码器的速度
 void update_encoder_speed(double speed)
 {
-    pthread_mutex_lock(&mutex_encoder);
+    //pthread_mutex_lock(&mutex_encoder);
     encoder_speed = speed;
-    pthread_mutex_unlock(&mutex_encoder);
+    //pthread_mutex_unlock(&mutex_encoder);
 }
 // 更新编码器的响应标志
 void encoder_is_enable()
@@ -76,17 +76,17 @@ double get_encoder_angle()
 // 获取当前编码器的速度
 double get_encoder_speed()
 {
-    pthread_mutex_lock(&mutex_encoder);
+    //pthread_mutex_lock(&mutex_encoder);
     double speed = encoder_speed;
-    pthread_mutex_unlock(&mutex_encoder);
+    //pthread_mutex_unlock(&mutex_encoder);
     return speed;
 }
 // 获取当前编码器的运动
 MovementStatus get_encoder_movement()
 {
-    pthread_mutex_lock(&mutex_encoder);
+    //pthread_mutex_lock(&mutex_encoder);
     double speed = encoder_speed;
-    pthread_mutex_unlock(&mutex_encoder);
+    //pthread_mutex_unlock(&mutex_encoder);
     MovementStatus direct;
     if(speed > 0) direct = RIGHTMOVE;
     else if(speed < 0) direct = LEFTMOVE;
@@ -105,7 +105,7 @@ unsigned char CRC_check(unsigned char *buf, int n)
 }
 
 // 用于对编码器的返回字符串解析，返回编码器的值
-// Check and parse the encoder data frame
+// Check and parse the encoder data serial
 // 返回值 -1 表示没有解析到编码器的值
 int recv_pst_data(char *str,int len )
 {
@@ -303,6 +303,7 @@ void receivethread(void)
 	    //}
 
 
+	    // 一次读取多次解析
 	    for(int i=0; i<4; ++i){
 		
 		int val = -1;
@@ -316,7 +317,6 @@ void receivethread(void)
 		cur_v = val;
 
 		//printf("cc...\n");
-		//printf("am335x: pst val %d\n", cur_v);
 		//printf("frame_%d: val %d\n", i+1, val);
 
 		// Calculate position
@@ -362,7 +362,7 @@ void receivethread(void)
 			prev_encoder_position = position;
 		}
 
-		// 数据稳定
+		// 帧间延迟
 		usleep(9573);
 
 	    }

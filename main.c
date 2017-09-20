@@ -179,6 +179,7 @@ int main(int argc, char** argv)
         //    memcpy(bufpre,buf,strlen(buf)+1);
         //    m_socket_write(buf,strlen(buf));
         //}
+
         m_socket_write(buf,strlen(buf));
 
         
@@ -191,9 +192,10 @@ int main(int argc, char** argv)
         
         } 
 
-       usleep(1000); // 1ms
+       usleep(5000); // 5ms
 
     }
+
     // 释放伺服，并退出程序
     serve_off();
     close_modbus_rtu_master();
